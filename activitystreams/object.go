@@ -79,10 +79,10 @@ type Object struct {
 
 type TopLevelObject struct {
 	ObjectIface
-	Context string `json:"@context,omitempty"`
+	Context string
 }
 
-func (t *TopLevelObject) MarshalJSON() ([]byte, error) {
+func (t TopLevelObject) MarshalJSON() ([]byte, error) {
 	j, err := MarshalObject(t.ObjectIface)
 	if err != nil {
 		return nil, err
@@ -94,7 +94,10 @@ func (t *TopLevelObject) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	jMap["@context"] = t.Context
+	if t.Context != "" {
+		jMap["@context"] = t.Context
+	}
+
 	return json.Marshal(jMap)
 }
 
@@ -104,11 +107,6 @@ func (o *Object) object() *Object {
 
 func (o *Object) Type() string {
 	return ""
-}
-
-type ContextObject struct {
-	Object
-	Context string `json:"@context,omitempty"`
 }
 
 type Relationship struct {
@@ -124,8 +122,12 @@ func (r *Relationship) Type() string {
 	return "Relationship"
 }
 
-func (r *Relationship) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawRelationship)(r))
+func (r *rawRelationship) Type() string {
+	return "Relationship"
+}
+
+func (r Relationship) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawRelationship)(&r))
 }
 
 type Article Object
@@ -144,8 +146,8 @@ func (d *Document) Type() string {
 	return "Document"
 }
 
-func (d *Document) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawDocument)(d))
+func (d Document) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawDocument)(&d))
 }
 
 type Audio struct {
@@ -158,8 +160,8 @@ func (a *Audio) Type() string {
 	return "Audio"
 }
 
-func (a *Audio) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawAudio)(a))
+func (a Audio) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawAudio)(&a))
 }
 
 type Image struct {
@@ -172,8 +174,8 @@ func (i *Image) Type() string {
 	return "Image"
 }
 
-func (i *Image) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawImage)(i))
+func (i Image) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawImage)(&i))
 }
 
 type Video struct {
@@ -186,8 +188,8 @@ func (v *Video) Type() string {
 	return "Video"
 }
 
-func (v *Video) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawVideo)(v))
+func (v Video) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawVideo)(&v))
 }
 
 type Note struct {
@@ -200,8 +202,8 @@ func (n *Note) Type() string {
 	return "Note"
 }
 
-func (n *Note) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawNote)(n))
+func (n Note) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawNote)(&n))
 }
 
 type Page struct {
@@ -214,8 +216,8 @@ func (p *Page) Type() string {
 	return "Page"
 }
 
-func (p *Page) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawPage)(p))
+func (p Page) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawPage)(&p))
 }
 
 type Event struct {
@@ -228,8 +230,8 @@ func (e *Event) Type() string {
 	return "Event"
 }
 
-func (e *Event) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawEvent)(e))
+func (e Event) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawEvent)(&e))
 }
 
 type Place struct {
@@ -248,8 +250,8 @@ func (p *Place) Type() string {
 	return "Place"
 }
 
-func (p *Place) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawPlace)(p))
+func (p Place) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawPlace)(&p))
 }
 
 type Profile struct {
@@ -263,8 +265,8 @@ func (p *Profile) Type() string {
 	return "Profile"
 }
 
-func (p *Profile) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawProfile)(p))
+func (p Profile) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawProfile)(&p))
 }
 
 type Tombstone struct {
@@ -279,6 +281,6 @@ func (t *Tombstone) Type() string {
 	return "Tombstone"
 }
 
-func (t *Tombstone) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawTombstone)(t))
+func (t Tombstone) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawTombstone)(&t))
 }

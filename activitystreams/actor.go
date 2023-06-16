@@ -28,8 +28,8 @@ func (p *Person) Type() string {
 	return "Person"
 }
 
-func (p *Person) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawPerson)(p))
+func (p Person) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawPerson)(&p))
 }
 
 type Service Object

@@ -57,9 +57,9 @@ func (c *Collection) collection() *Collection {
 	return c
 }
 
-func (c *Collection) MarshalJSON() ([]byte, error) {
+func (c Collection) MarshalJSON() ([]byte, error) {
 	return MarshalCollection(rawCollection{
-		c,
+		&c,
 	})
 }
 

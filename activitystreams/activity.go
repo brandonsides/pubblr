@@ -13,8 +13,8 @@ type IntransitiveActivity struct {
 
 type rawIntransitiveActivity IntransitiveActivity
 
-func (a *IntransitiveActivity) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawIntransitiveActivity)(a))
+func (a IntransitiveActivity) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawIntransitiveActivity)(&a))
 }
 
 func (a *IntransitiveActivity) Type() string {
@@ -32,8 +32,8 @@ type Activity struct {
 
 type rawActivity Activity
 
-func (a *Activity) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawActivity)(a))
+func (a Activity) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawActivity)(&a))
 }
 
 func (a *Activity) Type() string {
@@ -243,8 +243,8 @@ type SingleAnswerQuestion struct {
 
 type rawSingleAnswerQuestion SingleAnswerQuestion
 
-func (q *SingleAnswerQuestion) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawSingleAnswerQuestion)(q))
+func (q SingleAnswerQuestion) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawSingleAnswerQuestion)(&q))
 }
 
 type MultiAnswerQuestion struct {
@@ -254,8 +254,8 @@ type MultiAnswerQuestion struct {
 
 type rawMultiAnswerQuestion MultiAnswerQuestion
 
-func (q *MultiAnswerQuestion) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawMultiAnswerQuestion)(q))
+func (q MultiAnswerQuestion) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawMultiAnswerQuestion)(&q))
 }
 
 type ClosedQuestion struct {
@@ -265,6 +265,6 @@ type ClosedQuestion struct {
 
 type rawClosedQuestion ClosedQuestion
 
-func (q *ClosedQuestion) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawClosedQuestion)(q))
+func (q ClosedQuestion) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawClosedQuestion)(&q))
 }
