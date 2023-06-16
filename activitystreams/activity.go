@@ -1,27 +1,50 @@
 package activitystreams
 
-import "github.com/brandonsides/pubblr/util"
+import (
+	"encoding/json"
+	"reflect"
+
+	"github.com/brandonsides/pubblr/util"
+)
 
 type IntransitiveActivity struct {
 	Object
-	Actor      *util.Either[ObjectIface, LinkIface] `json:"actor,omitempty"`
-	Target     *util.Either[ObjectIface, LinkIface] `json:"target,omitempty"`
-	Result     *util.Either[ObjectIface, LinkIface] `json:"result,omitempty"`
-	Origin     *util.Either[ObjectIface, LinkIface] `json:"origin,omitempty"`
-	Instrument *util.Either[ObjectIface, LinkIface] `json:"instrument,omitempty"`
+	Actor      *util.Either[ObjectIface, LinkIface] `json:"actor"`
+	Target     *util.Either[ObjectIface, LinkIface] `json:"target"`
+	Result     *util.Either[ObjectIface, LinkIface] `json:"result"`
+	Origin     *util.Either[ObjectIface, LinkIface] `json:"origin"`
+	Instrument *util.Either[ObjectIface, LinkIface] `json:"instrument"`
 }
 
-type rawIntransitiveActivity IntransitiveActivity
+func (a *IntransitiveActivity) MarshalJSON() ([]byte, error) {
+	objJson, err := ToObject(a).MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
 
-func (a IntransitiveActivity) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawIntransitiveActivity)(&a))
+	var objMap map[string]interface{}
+	err = json.Unmarshal(objJson, &objMap)
+	if err != nil {
+		return nil, err
+	}
+
+	IntransitiveActivityReflectType := reflect.TypeOf((*IntransitiveActivity)(nil)).Elem()
+	for fieldIndex := 0; fieldIndex < IntransitiveActivityReflectType.NumField(); fieldIndex++ {
+		field := IntransitiveActivityReflectType.Field(fieldIndex)
+		tag := field.Tag.Get("json")
+		if tag == "" {
+			continue
+		}
+
+		objMap[tag] = reflect.ValueOf(a).Elem().Field(fieldIndex).Interface()
+	}
+
+	objMap["type"] = a.Type()
+
+	return json.Marshal(objMap)
 }
 
 func (a *IntransitiveActivity) Type() string {
-	return "IntransitiveActivity"
-}
-
-func (a *rawIntransitiveActivity) Type() string {
 	return "IntransitiveActivity"
 }
 
