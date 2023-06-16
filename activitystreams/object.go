@@ -151,18 +151,12 @@ type Relationship struct {
 	Relationship ObjectIface                     `json:"relationship,omitempty"`
 }
 
-type rawRelationship Relationship
-
 func (r *Relationship) Type() string {
 	return "Relationship"
 }
 
-func (r *rawRelationship) Type() string {
-	return "Relationship"
-}
-
 func (r Relationship) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawRelationship)(&r))
+	return MarshalObject(&r)
 }
 
 // Represents an ActivityStreams Article object
@@ -170,14 +164,12 @@ type Article struct {
 	Object
 }
 
-type rawArticle Article
-
 func (a *Article) Type() string {
 	return "Article"
 }
 
-func (p *rawArticle) Type() string {
-	return "Article"
+func (a Article) MarshalJSON() ([]byte, error) {
+	return MarshalObject(&a)
 }
 
 // Represents an ActivityStreams Document object
@@ -185,18 +177,12 @@ type Document struct {
 	Object
 }
 
-type rawDocument Document
-
 func (d *Document) Type() string {
 	return "Document"
 }
 
-func (p *rawDocument) Type() string {
-	return "Document"
-}
-
 func (d Document) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawDocument)(&d))
+	return MarshalObject(&d)
 }
 
 // Represents an ActivityStreams Audio object
@@ -204,18 +190,12 @@ type Audio struct {
 	Object
 }
 
-type rawAudio Audio
-
 func (a *Audio) Type() string {
 	return "Audio"
 }
 
-func (p *rawAudio) Type() string {
-	return "Audio"
-}
-
 func (a Audio) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawAudio)(&a))
+	return MarshalObject(&a)
 }
 
 // Represents an ActivityStreams Image object
@@ -223,18 +203,12 @@ type Image struct {
 	Object
 }
 
-type rawImage Image
-
 func (i *Image) Type() string {
 	return "Image"
 }
 
-func (p *rawImage) Type() string {
-	return "Image"
-}
-
 func (i Image) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawImage)(&i))
+	return MarshalObject(&i)
 }
 
 // Represents an ActivityStreams Video object
@@ -242,18 +216,12 @@ type Video struct {
 	Object
 }
 
-type rawVideo Video
-
 func (v *Video) Type() string {
 	return "Video"
 }
 
-func (p *rawVideo) Type() string {
-	return "Video"
-}
-
 func (v Video) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawVideo)(&v))
+	return MarshalObject(&v)
 }
 
 // Represents an ActivityStreams Note object
@@ -261,18 +229,12 @@ type Note struct {
 	Object
 }
 
-type rawNote Note
-
 func (n *Note) Type() string {
 	return "Note"
 }
 
-func (p *rawNote) Type() string {
-	return "Note"
-}
-
 func (n Note) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawNote)(&n))
+	return MarshalObject(&n)
 }
 
 // Represents an ActivityStreams Page object
@@ -280,18 +242,12 @@ type Page struct {
 	Object
 }
 
-type rawPage Page
-
 func (p *Page) Type() string {
 	return "Page"
 }
 
-func (p *rawPage) Type() string {
-	return "Page"
-}
-
 func (p Page) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawPage)(&p))
+	return MarshalObject(&p)
 }
 
 // Represents an ActivityStreams Event object
@@ -299,18 +255,12 @@ type Event struct {
 	Object
 }
 
-type rawEvent Event
-
-func (p *rawEvent) Type() string {
-	return "Event"
-}
-
 func (e *Event) Type() string {
 	return "Event"
 }
 
 func (e Event) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawEvent)(&e))
+	return MarshalObject(&e)
 }
 
 // Represents an ActivityStreams Place object
@@ -324,18 +274,12 @@ type Place struct {
 	Units     string  `json:"units,omitempty"`
 }
 
-type rawPlace Place
-
-func (p *rawPlace) Type() string {
-	return "Place"
-}
-
 func (p *Place) Type() string {
 	return "Place"
 }
 
 func (p Place) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawPlace)(&p))
+	return MarshalObject(&p)
 }
 
 // Represents an ActivityStreams Profile object
@@ -344,18 +288,12 @@ type Profile struct {
 	Describes ObjectIface `json:"describes,omitempty"`
 }
 
-type rawProfile Profile
-
-func (p *rawProfile) Type() string {
-	return "Profile"
-}
-
 func (p *Profile) Type() string {
 	return "Profile"
 }
 
 func (p Profile) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawProfile)(&p))
+	return MarshalObject(&p)
 }
 
 // Represents an ActivityStreams Tombstone object
@@ -365,16 +303,10 @@ type Tombstone struct {
 	Deleted    *time.Time  `json:"deleted,omitempty"`
 }
 
-type rawTombstone Tombstone
-
-func (p *rawTombstone) Type() string {
-	return "Tombstone"
-}
-
 func (t *Tombstone) Type() string {
 	return "Tombstone"
 }
 
 func (t Tombstone) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawTombstone)(&t))
+	return MarshalObject(&t)
 }
