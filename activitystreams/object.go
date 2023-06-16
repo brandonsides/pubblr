@@ -2,6 +2,7 @@ package activitystreams
 
 import (
 	"encoding/json"
+	"reflect"
 	"time"
 
 	"github.com/brandonsides/pubblr/util"
@@ -32,22 +33,36 @@ func ToObject(o ObjectIface) *Object {
 // Marshals the implementing type to JSON and adds a "type" field to the JSON
 // representation with the value returned by the Type() method.
 func MarshalObject(o ObjectIface) ([]byte, error) {
-	var mapped map[string]interface{}
-	j, err := json.Marshal(o)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(j, &mapped)
+	objJson, err := json.Marshal((*rawObject)(ToObject(o)))
 	if err != nil {
 		return nil, err
 	}
 
-	objectType := o.Type()
-	if objectType != "" {
-		mapped["type"] = objectType
+	var objMap map[string]interface{}
+	err = json.Unmarshal(objJson, &objMap)
+	if err != nil {
+		return nil, err
 	}
 
-	return json.Marshal(mapped)
+	IntransitiveActivityReflectType := reflect.TypeOf(o).Elem()
+	for fieldIndex := 0; fieldIndex < IntransitiveActivityReflectType.NumField(); fieldIndex++ {
+		field := IntransitiveActivityReflectType.Field(fieldIndex)
+		tag := util.FromString(field.Tag.Get("json"))
+		if tag.Name == "-" || tag.OmitEmpty && reflect.ValueOf(o).Elem().Field(fieldIndex).IsZero() {
+			continue
+		}
+
+		v := reflect.ValueOf(o).Elem().Field(fieldIndex)
+		if tag.String {
+			objMap[tag.Name] = v.String()
+		} else {
+			objMap[tag.Name] = v.Interface()
+		}
+	}
+
+	objMap["type"] = o.Type()
+
+	return json.Marshal(objMap)
 }
 
 // Concrete type representing an ActivityStreams Object
@@ -83,14 +98,6 @@ type Object struct {
 
 type rawObject Object
 
-func (o *rawObject) object() *Object {
-	return (*Object)(o)
-}
-
-func (o *rawObject) Type() string {
-	return "Object"
-}
-
 func (o *Object) object() *Object {
 	return o
 }
@@ -100,7 +107,7 @@ func (o *Object) Type() string {
 }
 
 func (o Object) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawObject)(&o))
+	return MarshalObject(&o)
 }
 
 // Represents an object at the top level of an ActivityStreams document,

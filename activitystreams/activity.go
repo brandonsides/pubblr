@@ -8,7 +8,7 @@ import (
 )
 
 type IntransitiveActivity struct {
-	Object
+	Object     `json:"-"`
 	Actor      *util.Either[ObjectIface, LinkIface] `json:"actor"`
 	Target     *util.Either[ObjectIface, LinkIface] `json:"target"`
 	Result     *util.Either[ObjectIface, LinkIface] `json:"result"`
