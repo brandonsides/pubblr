@@ -6,11 +6,11 @@ import (
 
 type IntransitiveActivity struct {
 	Object
-	Actor      *util.Either[ObjectIface, LinkIface] `json:"actor"`
-	Target     *util.Either[ObjectIface, LinkIface] `json:"target"`
-	Result     *util.Either[ObjectIface, LinkIface] `json:"result"`
-	Origin     *util.Either[ObjectIface, LinkIface] `json:"origin"`
-	Instrument *util.Either[ObjectIface, LinkIface] `json:"instrument"`
+	Actor      *util.Either[ObjectIface, LinkIface] `json:"actor,omitempty"`
+	Target     *util.Either[ObjectIface, LinkIface] `json:"target,omitempty"`
+	Result     *util.Either[ObjectIface, LinkIface] `json:"result,omitempty"`
+	Origin     *util.Either[ObjectIface, LinkIface] `json:"origin,omitempty"`
+	Instrument *util.Either[ObjectIface, LinkIface] `json:"instrument,omitempty"`
 }
 
 func (a *IntransitiveActivity) MarshalJSON() ([]byte, error) {
@@ -21,23 +21,13 @@ func (a *IntransitiveActivity) Type() string {
 	return "IntransitiveActivity"
 }
 
-func (a *IntransitiveActivity) intransitiveActivity() *IntransitiveActivity {
-	return a
-}
-
 type Activity struct {
 	IntransitiveActivity
 	Object *util.Either[ObjectIface, LinkIface] `json:"object,omitempty"`
 }
 
-type rawActivity Activity
-
 func (a Activity) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawActivity)(&a))
-}
-
-func (a *rawActivity) Type() string {
-	return "Activity"
+	return MarshalObject(&a)
 }
 
 func (a *Activity) Type() string {
