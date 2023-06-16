@@ -82,6 +82,22 @@ type TopLevelObject struct {
 	Context string `json:"@context,omitempty"`
 }
 
+func (t *TopLevelObject) MarshalJSON() ([]byte, error) {
+	j, err := MarshalObject(t.ObjectIface)
+	if err != nil {
+		return nil, err
+	}
+
+	jMap := make(map[string]interface{})
+	err = json.Unmarshal(j, &jMap)
+	if err != nil {
+		return nil, err
+	}
+
+	jMap["@context"] = t.Context
+	return json.Marshal(jMap)
+}
+
 func (o *Object) object() *Object {
 	return o
 }
