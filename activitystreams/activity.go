@@ -1,14 +1,11 @@
 package activitystreams
 
 import (
-	"encoding/json"
-	"reflect"
-
 	"github.com/brandonsides/pubblr/util"
 )
 
 type IntransitiveActivity struct {
-	Object     `json:"-"`
+	Object
 	Actor      *util.Either[ObjectIface, LinkIface] `json:"actor"`
 	Target     *util.Either[ObjectIface, LinkIface] `json:"target"`
 	Result     *util.Either[ObjectIface, LinkIface] `json:"result"`
@@ -17,31 +14,7 @@ type IntransitiveActivity struct {
 }
 
 func (a *IntransitiveActivity) MarshalJSON() ([]byte, error) {
-	objJson, err := ToObject(a).MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-
-	var objMap map[string]interface{}
-	err = json.Unmarshal(objJson, &objMap)
-	if err != nil {
-		return nil, err
-	}
-
-	IntransitiveActivityReflectType := reflect.TypeOf((*IntransitiveActivity)(nil)).Elem()
-	for fieldIndex := 0; fieldIndex < IntransitiveActivityReflectType.NumField(); fieldIndex++ {
-		field := IntransitiveActivityReflectType.Field(fieldIndex)
-		tag := field.Tag.Get("json")
-		if tag == "" {
-			continue
-		}
-
-		objMap[tag] = reflect.ValueOf(a).Elem().Field(fieldIndex).Interface()
-	}
-
-	objMap["type"] = a.Type()
-
-	return json.Marshal(objMap)
+	return MarshalObject(a)
 }
 
 func (a *IntransitiveActivity) Type() string {

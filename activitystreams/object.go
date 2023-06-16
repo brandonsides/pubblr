@@ -3,6 +3,7 @@ package activitystreams
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/brandonsides/pubblr/util"
@@ -44,10 +45,16 @@ func MarshalObject(o ObjectIface) ([]byte, error) {
 		return nil, err
 	}
 
-	IntransitiveActivityReflectType := reflect.TypeOf(o).Elem()
-	for fieldIndex := 0; fieldIndex < IntransitiveActivityReflectType.NumField(); fieldIndex++ {
-		field := IntransitiveActivityReflectType.Field(fieldIndex)
+	objectType := reflect.TypeOf(o).Elem()
+	for fieldIndex := 0; fieldIndex < objectType.NumField(); fieldIndex++ {
+		field := objectType.Field(fieldIndex)
+		if field.Anonymous && field.Type == reflect.TypeOf(Object{}) {
+			continue
+		}
 		tag := util.FromString(field.Tag.Get("json"))
+		if tag.Name == "" {
+			tag.Name = strings.ToLower(field.Name[:1]) + field.Name[1:]
+		}
 		if tag.Name == "-" || tag.OmitEmpty && reflect.ValueOf(o).Elem().Field(fieldIndex).IsZero() {
 			continue
 		}
