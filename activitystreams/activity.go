@@ -36,6 +36,10 @@ func (a Activity) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawActivity)(&a))
 }
 
+func (a *rawActivity) Type() string {
+	return "Activity"
+}
+
 func (a *Activity) Type() string {
 	return "Activity"
 }

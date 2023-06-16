@@ -130,9 +130,17 @@ func (r Relationship) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawRelationship)(&r))
 }
 
-type Article Object
+type Article struct {
+	Object
+}
+
+type rawArticle Article
 
 func (a *Article) Type() string {
+	return "Article"
+}
+
+func (p *rawArticle) Type() string {
 	return "Article"
 }
 
@@ -143,6 +151,10 @@ type Document struct {
 type rawDocument Document
 
 func (d *Document) Type() string {
+	return "Document"
+}
+
+func (p *rawDocument) Type() string {
 	return "Document"
 }
 
@@ -160,6 +172,10 @@ func (a *Audio) Type() string {
 	return "Audio"
 }
 
+func (p *rawAudio) Type() string {
+	return "Audio"
+}
+
 func (a Audio) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawAudio)(&a))
 }
@@ -171,6 +187,10 @@ type Image struct {
 type rawImage Image
 
 func (i *Image) Type() string {
+	return "Image"
+}
+
+func (p *rawImage) Type() string {
 	return "Image"
 }
 
@@ -188,6 +208,10 @@ func (v *Video) Type() string {
 	return "Video"
 }
 
+func (p *rawVideo) Type() string {
+	return "Video"
+}
+
 func (v Video) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawVideo)(&v))
 }
@@ -199,6 +223,10 @@ type Note struct {
 type rawNote Note
 
 func (n *Note) Type() string {
+	return "Note"
+}
+
+func (p *rawNote) Type() string {
 	return "Note"
 }
 
@@ -216,6 +244,10 @@ func (p *Page) Type() string {
 	return "Page"
 }
 
+func (p *rawPage) Type() string {
+	return "Page"
+}
+
 func (p Page) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawPage)(&p))
 }
@@ -225,6 +257,10 @@ type Event struct {
 }
 
 type rawEvent Event
+
+func (p *rawEvent) Type() string {
+	return "Event"
+}
 
 func (e *Event) Type() string {
 	return "Event"
@@ -246,6 +282,10 @@ type Place struct {
 
 type rawPlace Place
 
+func (p *rawPlace) Type() string {
+	return "Place"
+}
+
 func (p *Place) Type() string {
 	return "Place"
 }
@@ -260,6 +300,10 @@ type Profile struct {
 }
 
 type rawProfile Profile
+
+func (p *rawProfile) Type() string {
+	return "Profile"
+}
 
 func (p *Profile) Type() string {
 	return "Profile"
@@ -276,6 +320,10 @@ type Tombstone struct {
 }
 
 type rawTombstone Tombstone
+
+func (p *rawTombstone) Type() string {
+	return "Tombstone"
+}
 
 func (t *Tombstone) Type() string {
 	return "Tombstone"
