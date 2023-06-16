@@ -21,6 +21,10 @@ func (a *IntransitiveActivity) Type() string {
 	return "IntransitiveActivity"
 }
 
+func (a *rawIntransitiveActivity) Type() string {
+	return "IntransitiveActivity"
+}
+
 func (a *IntransitiveActivity) intransitiveActivity() *IntransitiveActivity {
 	return a
 }

@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	LinkTypeLink    = "Link"
 	LinkTypeMention = "Mention"
 )
 
@@ -47,18 +48,42 @@ type Link struct {
 	Width        *uint64                     `json:"width,omitempty"`
 }
 
+type rawLink Link
+
 func (l *Link) link() *Link {
 	return l
 }
 
+func (l *rawLink) link() *Link {
+	return (*Link)(l)
+}
+
 func (l *Link) Type() string {
-	return ""
+	return LinkTypeLink
+}
+
+func (l *rawLink) Type() string {
+	return LinkTypeLink
+}
+
+func (l Link) MarshalJSON() ([]byte, error) {
+	return MarshalLink((*rawLink)(&l))
 }
 
 type Mention struct {
 	Link
 }
 
+type rawMention Mention
+
 func (m *Mention) Type() string {
 	return LinkTypeMention
+}
+
+func (m *rawMention) Type() string {
+	return LinkTypeMention
+}
+
+func (l Mention) MarshalJSON() ([]byte, error) {
+	return MarshalLink((*rawMention)(&l))
 }

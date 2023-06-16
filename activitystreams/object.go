@@ -28,6 +28,9 @@ func ToObject(o ObjectIface) *Object {
 	return o.object()
 }
 
+// Marhsal an ObjectIface to JSON
+// Marshals the implementing type to JSON and adds a "type" field to the JSON
+// representation with the value returned by the Type() method.
 func MarshalObject(o ObjectIface) ([]byte, error) {
 	var mapped map[string]interface{}
 	j, err := json.Marshal(o)
@@ -47,6 +50,7 @@ func MarshalObject(o ObjectIface) ([]byte, error) {
 	return json.Marshal(mapped)
 }
 
+// Concrete type representing an ActivityStreams Object
 type Object struct {
 	Id           string                                `json:"id,omitempty"`
 	Attachment   []util.Either[ObjectIface, LinkIface] `json:"attachment,omitempty"`
@@ -77,6 +81,30 @@ type Object struct {
 	Updated      *time.Time                            `json:"updated,omitempty"`
 }
 
+type rawObject Object
+
+func (o *rawObject) object() *Object {
+	return (*Object)(o)
+}
+
+func (o *rawObject) Type() string {
+	return "Object"
+}
+
+func (o *Object) object() *Object {
+	return o
+}
+
+func (o *Object) Type() string {
+	return "Object"
+}
+
+func (o Object) MarshalJSON() ([]byte, error) {
+	return MarshalObject((*rawObject)(&o))
+}
+
+// Represents an object at the top level of an ActivityStreams document,
+// including the @context field.
 type TopLevelObject struct {
 	ObjectIface
 	Context string
@@ -101,14 +129,7 @@ func (t TopLevelObject) MarshalJSON() ([]byte, error) {
 	return json.Marshal(jMap)
 }
 
-func (o *Object) object() *Object {
-	return o
-}
-
-func (o *Object) Type() string {
-	return ""
-}
-
+// Represents an ActivityStreams Relationship object
 type Relationship struct {
 	Object
 	Subject      *util.Either[ObjectIface, Link] `json:"subject,omitempty"`
@@ -130,6 +151,7 @@ func (r Relationship) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawRelationship)(&r))
 }
 
+// Represents an ActivityStreams Article object
 type Article struct {
 	Object
 }
@@ -144,6 +166,7 @@ func (p *rawArticle) Type() string {
 	return "Article"
 }
 
+// Represents an ActivityStreams Document object
 type Document struct {
 	Object
 }
@@ -162,6 +185,7 @@ func (d Document) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawDocument)(&d))
 }
 
+// Represents an ActivityStreams Audio object
 type Audio struct {
 	Object
 }
@@ -180,6 +204,7 @@ func (a Audio) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawAudio)(&a))
 }
 
+// Represents an ActivityStreams Image object
 type Image struct {
 	Object
 }
@@ -198,6 +223,7 @@ func (i Image) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawImage)(&i))
 }
 
+// Represents an ActivityStreams Video object
 type Video struct {
 	Object
 }
@@ -216,6 +242,7 @@ func (v Video) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawVideo)(&v))
 }
 
+// Represents an ActivityStreams Note object
 type Note struct {
 	Object
 }
@@ -234,6 +261,7 @@ func (n Note) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawNote)(&n))
 }
 
+// Represents an ActivityStreams Page object
 type Page struct {
 	Object
 }
@@ -252,6 +280,7 @@ func (p Page) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawPage)(&p))
 }
 
+// Represents an ActivityStreams Event object
 type Event struct {
 	Object
 }
@@ -270,6 +299,7 @@ func (e Event) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawEvent)(&e))
 }
 
+// Represents an ActivityStreams Place object
 type Place struct {
 	Object
 	Accuracy  float64 `json:"accuracy,omitempty"`
@@ -294,6 +324,7 @@ func (p Place) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawPlace)(&p))
 }
 
+// Represents an ActivityStreams Profile object
 type Profile struct {
 	Object
 	Describes ObjectIface `json:"describes,omitempty"`
@@ -313,6 +344,7 @@ func (p Profile) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawProfile)(&p))
 }
 
+// Represents an ActivityStreams Tombstone object
 type Tombstone struct {
 	Object
 	FormerType ObjectIface `json:"formerType,omitempty"`

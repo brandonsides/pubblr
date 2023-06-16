@@ -28,6 +28,10 @@ func (p *Person) Type() string {
 	return "Person"
 }
 
+func (p *rawPerson) Type() string {
+	return "Person"
+}
+
 func (p Person) MarshalJSON() ([]byte, error) {
 	return MarshalObject((*rawPerson)(&p))
 }

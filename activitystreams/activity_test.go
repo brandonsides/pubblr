@@ -1,6 +1,8 @@
 package activitystreams_test
 
 import (
+	"encoding/json"
+
 	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/util"
 	. "github.com/onsi/ginkgo/v2"
@@ -32,11 +34,67 @@ var _ = Describe("Activity", func() {
 							Id: "http://example.org/john",
 						},
 					}),
+					Target: util.Right[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Link{
+						Id:   "http://example.org/john/objects/1",
+						Href: "http://example.org/john/objects/1",
+					}),
+					Result: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
+						Id: "http://example.org/john/activities/1/result",
+					}),
+					Origin: util.Right[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Link{
+						Id:   "http://example.org/john/activities/1/origin",
+						Href: "http://example.org/john/activities/1/origin",
+					}),
+					Instrument: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
+						Id: "http://example.org/john/activities/1/instrument",
+					}),
+				}
+
+				expected := map[string]interface{}{
+					"type": "IntransitiveActivity",
+					"actor": map[string]interface{}{
+						"type": "Person",
+						"id":   "http://example.org/john",
+					},
+					"attachment": []interface{}{
+						map[string]interface{}{
+							"type": "Image",
+							"id":   "http://example.org/john/images/1",
+							"url":  "http://example.org/john/images/1.jpg",
+						},
+						map[string]interface{}{
+							"type": "Link",
+							"id":   "http://example.org/john/images/2",
+							"href": "http://example.org/john/images/2.jpg",
+						},
+					},
+					"id": "http://example.org/john/activities/1",
+					"instrument": map[string]interface{}{
+						"id":   "http://example.org/john/activities/1/instrument",
+						"type": "Object",
+					},
+					"origin": map[string]interface{}{
+						"href": "http://example.org/john/activities/1/origin",
+						"id":   "http://example.org/john/activities/1/origin",
+						"type": "Link",
+					},
+					"result": map[string]interface{}{
+						"id":   "http://example.org/john/activities/1/result",
+						"type": "Object",
+					},
+					"target": map[string]interface{}{
+						"href": "http://example.org/john/objects/1",
+						"id":   "http://example.org/john/objects/1",
+						"type": "Link",
+					},
 				}
 
 				jsonActivity, err := activity.MarshalJSON()
 				Expect(err).ToNot(HaveOccurred())
-				Expect(string(jsonActivity)).To(Equal(`{"actor":{"id":"http://example.org/john","type":"Person"},"attachment":[{"type":"Image","id":"http://example.org/john/images/1","url":"http://example.org/john/images/1.jpg"},{"@type":"Link","id":"http://example.org/john/images/2","href":"http://example.org/john/images/2.jpg"}],"id":"http://example.org/john/activities/1"}`))
+				var actual map[string]interface{}
+				err = json.Unmarshal(jsonActivity, &actual)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(actual).To(Equal(expected))
 			})
 		})
 	})
