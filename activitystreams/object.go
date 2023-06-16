@@ -34,21 +34,31 @@ func ToObject(o ObjectIface) *Object {
 // Marshals the implementing type to JSON and adds a "type" field to the JSON
 // representation with the value returned by the Type() method.
 func MarshalObject(o ObjectIface) ([]byte, error) {
-	objJson, err := json.Marshal((*rawObject)(ToObject(o)))
-	if err != nil {
-		return nil, err
-	}
+	objMap := make(map[string]interface{})
 
-	var objMap map[string]interface{}
-	err = json.Unmarshal(objJson, &objMap)
-	if err != nil {
-		return nil, err
-	}
+	ObjectIfaceType := reflect.TypeOf((*ObjectIface)(nil)).Elem()
 
 	objectType := reflect.TypeOf(o).Elem()
 	for fieldIndex := 0; fieldIndex < objectType.NumField(); fieldIndex++ {
 		field := objectType.Field(fieldIndex)
-		if field.Anonymous && field.Type == reflect.TypeOf(Object{}) {
+		if field.Anonymous && reflect.PointerTo(field.Type).Implements(ObjectIfaceType) {
+			fieldInterface := reflect.ValueOf(o).Elem().Field(fieldIndex).Interface()
+			if obj, ok := fieldInterface.(Object); ok {
+				fieldInterface = (rawObject)(obj)
+			}
+			var nestedMap map[string]interface{}
+			nestedJson, err := json.Marshal(fieldInterface)
+			if err != nil {
+				return nil, err
+			}
+			err = json.Unmarshal(nestedJson, &nestedMap)
+			if err != nil {
+				return nil, err
+			}
+
+			for k, v := range nestedMap {
+				objMap[k] = v
+			}
 			continue
 		}
 		tag := util.FromString(field.Tag.Get("json"))
