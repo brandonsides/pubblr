@@ -13,6 +13,7 @@ import (
 // It is used to allow for polymorphism for types that embed Object.
 // All types must embed Object implement this interface.
 type ObjectIface interface {
+	json.Marshaler
 	// unexported method implemented only by Object
 	// Forces all types to embed Object in order to implement this interface
 	object() *Object

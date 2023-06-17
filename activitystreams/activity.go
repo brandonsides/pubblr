@@ -26,90 +26,168 @@ type Activity struct {
 	Object *util.Either[ObjectIface, LinkIface] `json:"object,omitempty"`
 }
 
-func (a Activity) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&a)
+func (a *Activity) MarshalJSON() ([]byte, error) {
+	return MarshalObject(a)
 }
 
 func (a *Activity) Type() string {
 	return "Activity"
 }
 
-type Accept Activity
+type Accept struct {
+	Activity
+}
+
+func (a *Accept) MarshalJSON() ([]byte, error) {
+	return MarshalObject(a)
+}
 
 func (a *Accept) Type() string {
 	return "Accept"
 }
 
-type TentativeAccept Accept
+type TentativeAccept struct {
+	Accept
+}
+
+func (a *TentativeAccept) MarshalJSON() ([]byte, error) {
+	return MarshalObject(a)
+}
 
 func (a *TentativeAccept) Type() string {
 	return "TentativeAccept"
 }
 
-type Add Activity
+type Add struct {
+	Activity
+}
 
 func (a *Add) Type() string {
 	return "Add"
 }
 
-type Arrive IntransitiveActivity
+func (a *Add) MarshalJSON() ([]byte, error) {
+	return MarshalObject(a)
+}
+
+type Arrive struct {
+	IntransitiveActivity
+}
 
 func (a *Arrive) Type() string {
 	return "Arrive"
 }
 
-type Create Activity
+func (a *Arrive) MarshalJSON() ([]byte, error) {
+	return MarshalObject(a)
+}
+
+type Create struct {
+	Activity
+}
 
 func (c *Create) Type() string {
 	return "Create"
 }
 
-type Delete Activity
+func (c *Create) MarshalJSON() ([]byte, error) {
+	return MarshalObject(c)
+}
+
+type Delete struct {
+	Activity
+}
+
+func (d *Delete) MarshalJSON() ([]byte, error) {
+	return MarshalObject(d)
+}
 
 func (d *Delete) Type() string {
 	return "Delete"
 }
 
-type Follow Activity
+type Follow struct {
+	Activity
+}
 
 func (f *Follow) Type() string {
 	return "Follow"
 }
 
-type Ignore Activity
+func (f *Follow) MarshalJSON() ([]byte, error) {
+	return MarshalObject(f)
+}
+
+type Ignore struct {
+	Activity
+}
 
 func (i *Ignore) Type() string {
 	return "Ignore"
 }
 
-type Join Activity
+func (i *Ignore) MarshalJSON() ([]byte, error) {
+	return MarshalObject(i)
+}
+
+type Join struct {
+	Activity
+}
 
 func (j *Join) Type() string {
 	return "Join"
 }
 
-type Leave Activity
+func (j *Join) MarshalJSON() ([]byte, error) {
+	return MarshalObject(j)
+}
+
+type Leave struct {
+	Activity
+}
 
 func (l *Leave) Type() string {
 	return "Leave"
 }
 
-type Like Activity
+func (l *Leave) MarshalJSON() ([]byte, error) {
+	return MarshalObject(l)
+}
+
+type Like struct {
+	Activity
+}
 
 func (l *Like) Type() string {
 	return "Like"
 }
 
-type Offer Activity
+func (l *Like) MarshalJSON() ([]byte, error) {
+	return MarshalObject(l)
+}
+
+type Offer struct {
+	Activity
+}
 
 func (o *Offer) Type() string {
 	return "Offer"
 }
 
-type Invite Offer
+func (o *Offer) MarshalJSON() ([]byte, error) {
+	return MarshalObject(o)
+}
+
+type Invite struct {
+	Offer
+}
 
 func (i *Invite) Type() string {
 	return "Invite"
+}
+
+func (i *Invite) MarshalJSON() ([]byte, error) {
+	return MarshalObject(i)
 }
 
 type Reject struct {
@@ -120,10 +198,20 @@ func (r *Reject) Type() string {
 	return "Reject"
 }
 
-type TentativeReject Reject
+func (r *Reject) MarshalJSON() ([]byte, error) {
+	return MarshalObject(r)
+}
+
+type TentativeReject struct {
+	Reject
+}
 
 func (t *TentativeReject) Type() string {
 	return "TentativeReject"
+}
+
+func (t *TentativeReject) MarshalJSON() ([]byte, error) {
+	return MarshalObject(t)
 }
 
 type Remove struct {
@@ -134,12 +222,20 @@ func (r *Remove) Type() string {
 	return "Remove"
 }
 
+func (r *Remove) MarshalJSON() ([]byte, error) {
+	return MarshalObject(r)
+}
+
 type Undo struct {
 	Activity
 }
 
 func (u *Undo) Type() string {
 	return "Undo"
+}
+
+func (u *Undo) MarshalJSON() ([]byte, error) {
+	return MarshalObject(u)
 }
 
 type Update struct {
@@ -150,8 +246,16 @@ func (u *Update) Type() string {
 	return "Update"
 }
 
+func (u *Update) MarshalJSON() ([]byte, error) {
+	return MarshalObject(u)
+}
+
 type View struct {
 	Activity
+}
+
+func (v *View) MarshalJSON() ([]byte, error) {
+	return MarshalObject(v)
 }
 
 func (v *View) Type() string {
@@ -166,12 +270,20 @@ func (l *Listen) Type() string {
 	return "Listen"
 }
 
+func (l *Listen) MarshalJSON() ([]byte, error) {
+	return MarshalObject(l)
+}
+
 type Read struct {
 	IntransitiveActivity
 }
 
 func (r *Read) Type() string {
 	return "Read"
+}
+
+func (r *Read) MarshalJSON() ([]byte, error) {
+	return MarshalObject(r)
 }
 
 type Move struct {
@@ -182,12 +294,20 @@ func (m *Move) Type() string {
 	return "Move"
 }
 
+func (m *Move) MarshalJSON() ([]byte, error) {
+	return MarshalObject(m)
+}
+
 type Travel struct {
 	IntransitiveActivity
 }
 
 func (t *Travel) Type() string {
 	return "Travel"
+}
+
+func (t *Travel) MarshalJSON() ([]byte, error) {
+	return MarshalObject(t)
 }
 
 type Announce struct {
@@ -198,12 +318,20 @@ func (a *Announce) Type() string {
 	return "Announce"
 }
 
+func (a *Announce) MarshalJSON() ([]byte, error) {
+	return MarshalObject(a)
+}
+
 type Block struct {
 	Ignore
 }
 
 func (b *Block) Type() string {
 	return "Block"
+}
+
+func (b *Block) MarshalJSON() ([]byte, error) {
+	return MarshalObject(b)
 }
 
 type Flag struct {
@@ -214,12 +342,20 @@ func (f *Flag) Type() string {
 	return "Flag"
 }
 
+func (f *Flag) MarshalJSON() ([]byte, error) {
+	return MarshalObject(f)
+}
+
 type Dislike struct {
 	Activity
 }
 
 func (d *Dislike) Type() string {
 	return "Dislike"
+}
+
+func (d *Dislike) MarshalJSON() ([]byte, error) {
+	return MarshalObject(d)
 }
 
 type Question struct {
@@ -230,9 +366,13 @@ func (i *Question) Type() string {
 	return "Question"
 }
 
+func (i *Question) MarshalJSON() ([]byte, error) {
+	return MarshalObject(i)
+}
+
 type SingleAnswerQuestion struct {
 	Question
-	OneOf []util.Either[Object, Link] `json:"oneOf,omitempty"`
+	OneOf []util.Either[ObjectIface, LinkIface] `json:"oneOf,omitempty"`
 }
 
 type rawSingleAnswerQuestion SingleAnswerQuestion
@@ -243,7 +383,7 @@ func (q SingleAnswerQuestion) MarshalJSON() ([]byte, error) {
 
 type MultiAnswerQuestion struct {
 	Question
-	AnyOf []util.Either[Object, Link] `json:"anyOf,omitempty"`
+	AnyOf []util.Either[ObjectIface, LinkIface] `json:"anyOf,omitempty"`
 }
 
 type rawMultiAnswerQuestion MultiAnswerQuestion
@@ -254,7 +394,7 @@ func (q MultiAnswerQuestion) MarshalJSON() ([]byte, error) {
 
 type ClosedQuestion struct {
 	Question
-	Closed *util.Either[Object, Link] `json:"closed,omitempty"`
+	Closed *util.Either[ObjectIface, LinkIface] `json:"closed,omitempty"`
 }
 
 type rawClosedQuestion ClosedQuestion
