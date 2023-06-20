@@ -20,6 +20,7 @@ func ToCollection(c CollectionIface) *Collection {
 	return c.collection()
 }
 
+/*
 func MarshalCollection(c CollectionIface) ([]byte, error) {
 	var mapped map[string]interface{}
 	j, err := MarshalObject(c)
@@ -38,29 +39,38 @@ func MarshalCollection(c CollectionIface) ([]byte, error) {
 
 	return json.Marshal(mapped)
 }
+*/
 
 type Collection struct {
 	Object
-	Ordered    bool                               `json:"-"`
-	TotalItems uint64                             `json:"totalItems,omitempty"`
-	Current    *util.Either[CollectionPage, Link] `json:"current,omitempty"`
-	First      *util.Either[CollectionPage, Link] `json:"first,omitempty"`
-	Last       *util.Either[CollectionPage, Link] `json:"last,omitempty"`
-	Items      []util.Either[Object, Link]        `json:"items,omitempty"`
-}
-
-type rawCollection struct {
-	*Collection
+	Ordered    bool                                     `json:"-"`
+	TotalItems uint64                                   `json:"totalItems,omitempty"`
+	Current    *util.Either[*CollectionPage, LinkIface] `json:"current,omitempty"`
+	First      *util.Either[*CollectionPage, LinkIface] `json:"first,omitempty"`
+	Last       *util.Either[*CollectionPage, LinkIface] `json:"last,omitempty"`
+	Items      []util.Either[ObjectIface, LinkIface]    `json:"items,omitempty"`
 }
 
 func (c *Collection) collection() *Collection {
 	return c
 }
 
-func (c Collection) MarshalJSON() ([]byte, error) {
-	return MarshalCollection(rawCollection{
-		&c,
-	})
+func (c *Collection) MarshalJSON() ([]byte, error) {
+	retJson, err := MarshalObject(c)
+	if err != nil {
+		return nil, err
+	}
+	if c.Type() == CollectionTypeOrdered {
+		var mapped map[string]interface{}
+		err := json.Unmarshal(retJson, &mapped)
+		if err != nil {
+			return nil, err
+		}
+		mapped["orderedItems"] = mapped["items"]
+		delete(mapped, "items")
+		return json.Marshal(mapped)
+	}
+	return retJson, nil
 }
 
 func (c *Collection) Type() string {
@@ -75,4 +85,15 @@ type CollectionPage struct {
 	PartOf *util.Either[Collection, Link]     `json:"partOf,omitempty"`
 	Next   *util.Either[CollectionPage, Link] `json:"next,omitempty"`
 	Prev   *util.Either[CollectionPage, Link] `json:"prev,omitempty"`
+}
+
+func (c *CollectionPage) Type() string {
+	if c.Ordered {
+		return "OrderedCollectionPage"
+	}
+	return "CollectionPage"
+}
+
+func (c *CollectionPage) MarshalJSON() ([]byte, error) {
+	return MarshalObject(c)
 }

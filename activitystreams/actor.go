@@ -1,43 +1,61 @@
 package activitystreams
 
-type Application Object
+type Application struct {
+	Object
+}
 
 func (a *Application) Type() string {
 	return "Application"
 }
 
-type Group Object
+func (a Application) MarshalJSON() ([]byte, error) {
+	return MarshalObject(&a)
+}
+
+type Group struct {
+	Object
+}
 
 func (g *Group) Type() string {
 	return "Group"
 }
 
-type Organization Object
+func (g Group) MarshalJSON() ([]byte, error) {
+	return MarshalObject(&g)
+}
+
+type Organization struct {
+	Object
+}
 
 func (o *Organization) Type() string {
 	return "Organization"
+}
+
+func (o Organization) MarshalJSON() ([]byte, error) {
+	return MarshalObject(&o)
 }
 
 type Person struct {
 	Object
 }
 
-type rawPerson Person
-
 func (p *Person) Type() string {
 	return "Person"
 }
 
-func (p *rawPerson) Type() string {
-	return "Person"
-}
-
 func (p Person) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawPerson)(&p))
+	return MarshalObject(&p)
 }
 
-type Service Object
+type Service struct {
+	Object
+}
 
 func (s *Service) Type() string {
 	return "Service"
+}
+
+func (s Service) MarshalJSON() ([]byte, error) {
+	return MarshalObject(&s)
 }

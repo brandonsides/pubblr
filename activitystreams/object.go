@@ -132,7 +132,7 @@ func (o Object) MarshalJSON() ([]byte, error) {
 // including the @context field.
 type TopLevelObject struct {
 	ObjectIface
-	Context string
+	Context string `json:"@context,omitempty"`
 }
 
 func (t TopLevelObject) MarshalJSON() ([]byte, error) {
@@ -147,9 +147,7 @@ func (t TopLevelObject) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	if t.Context != "" {
-		jMap["@context"] = t.Context
-	}
+	jMap["@context"] = "https://www.w3.org/ns/activitystreams"
 
 	return json.Marshal(jMap)
 }
