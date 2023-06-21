@@ -1,0 +1,54 @@
+package activitystreams_test
+
+import (
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+
+	"github.com/brandonsides/pubblr/activitystreams"
+	"github.com/brandonsides/pubblr/util"
+)
+
+var _ = Describe("Link", func() {
+	height := uint64(100)
+	width := uint64(200)
+	actualLink := activitystreams.Link{
+		Id:       "http://example.com/abc",
+		Href:     "http://example.com/abc",
+		HrefLang: "en",
+		AttributedTo: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
+			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
+				Id: "http://example.com/~john",
+			}),
+		},
+		Preview: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
+			Id: "http://example.com/abc/preview",
+		}),
+		Name:   "A Link",
+		Height: &height,
+		Width:  &width,
+		Rel:    []string{"me"},
+	}
+	expectedLinkMap := map[string]interface{}{
+		"id":           "http://example.com/abc",
+		"attributedTo": []interface{}{map[string]interface{}{"id": "http://example.com/~john", "type": "Person"}},
+		"preview":      map[string]interface{}{"id": "http://example.com/abc/preview", "type": "Object"},
+		"name":         "A Link",
+		"height":       uint64(100),
+		"width":        uint64(200),
+		"href":         "http://example.com/abc",
+		"hreflang":     "en",
+		"rel":          []interface{}{"me"},
+	}
+
+	Describe("Link", func() {
+		BeforeEach(func() {
+			expectedLinkMap["type"] = "Link"
+		})
+
+		AfterEach(func() {
+			delete(expectedLinkMap, "type")
+		})
+
+		CheckActivityStreamsObject()
+	})
+})

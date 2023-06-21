@@ -4,58 +4,58 @@ type Application struct {
 	Object
 }
 
-func (a *Application) Type() string {
-	return "Application"
+func (a *Application) Type() (string, error) {
+	return "Application", nil
 }
 
-func (a Application) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&a)
+func (a *Application) MarshalJSON() ([]byte, error) {
+	return MarshalEntity(a)
 }
 
 type Group struct {
 	Object
 }
 
-func (g *Group) Type() string {
-	return "Group"
+func (g *Group) Type() (string, error) {
+	return "Group", nil
 }
 
-func (g Group) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&g)
+func (g *Group) MarshalJSON() ([]byte, error) {
+	return MarshalEntity(g)
 }
 
 type Organization struct {
 	Object
 }
 
-func (o *Organization) Type() string {
-	return "Organization"
+func (o *Organization) Type() (string, error) {
+	return "Organization", nil
 }
 
-func (o Organization) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&o)
+func (o *Organization) MarshalJSON() ([]byte, error) {
+	return MarshalEntity(o)
 }
 
 type Person struct {
 	Object
 }
 
-func (p *Person) Type() string {
-	return "Person"
+func (p *Person) Type() (string, error) {
+	return "Person", nil
 }
 
-func (p Person) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&p)
+func (p *Person) MarshalJSON() ([]byte, error) {
+	return MarshalEntity(p)
 }
 
 type Service struct {
 	Object
 }
 
-func (s *Service) Type() string {
-	return "Service"
+func (s *Service) Type() (string, error) {
+	return "Service", nil
 }
 
-func (s Service) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&s)
+func (s *Service) MarshalJSON() ([]byte, error) {
+	return MarshalEntity(s)
 }

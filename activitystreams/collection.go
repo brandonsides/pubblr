@@ -56,11 +56,15 @@ func (c *Collection) collection() *Collection {
 }
 
 func (c *Collection) MarshalJSON() ([]byte, error) {
-	retJson, err := MarshalObject(c)
+	retJson, err := MarshalEntity(c)
 	if err != nil {
 		return nil, err
 	}
-	if c.Type() == CollectionTypeOrdered {
+	typ, err := c.Type()
+	if err != nil {
+		return nil, err
+	}
+	if typ == CollectionTypeOrdered {
 		var mapped map[string]interface{}
 		err := json.Unmarshal(retJson, &mapped)
 		if err != nil {
@@ -73,11 +77,11 @@ func (c *Collection) MarshalJSON() ([]byte, error) {
 	return retJson, nil
 }
 
-func (c *Collection) Type() string {
+func (c *Collection) Type() (string, error) {
 	if c.Ordered {
-		return CollectionTypeOrdered
+		return CollectionTypeOrdered, nil
 	}
-	return CollectionTypeUnordered
+	return CollectionTypeUnordered, nil
 }
 
 type CollectionPage struct {
@@ -87,13 +91,13 @@ type CollectionPage struct {
 	Prev   *util.Either[CollectionPage, Link] `json:"prev,omitempty"`
 }
 
-func (c *CollectionPage) Type() string {
+func (c *CollectionPage) Type() (string, error) {
 	if c.Ordered {
-		return "OrderedCollectionPage"
+		return "OrderedCollectionPage", nil
 	}
-	return "CollectionPage"
+	return "CollectionPage", nil
 }
 
 func (c *CollectionPage) MarshalJSON() ([]byte, error) {
-	return MarshalObject(c)
+	return MarshalEntity(c)
 }
