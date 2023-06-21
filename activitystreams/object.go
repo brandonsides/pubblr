@@ -42,7 +42,7 @@ func MarshalObject(o ObjectIface) ([]byte, error) {
 	objectType := reflect.TypeOf(o).Elem()
 	for fieldIndex := 0; fieldIndex < objectType.NumField(); fieldIndex++ {
 		field := objectType.Field(fieldIndex)
-		if field.Anonymous && reflect.PointerTo(field.Type).Implements(ObjectIfaceType) {
+		if field.Anonymous && (field.Type == ObjectIfaceType || reflect.PointerTo(field.Type).Implements(ObjectIfaceType)) {
 			fieldInterface := reflect.ValueOf(o).Elem().Field(fieldIndex).Interface()
 			if obj, ok := fieldInterface.(Object); ok {
 				fieldInterface = (rawObject)(obj)
@@ -78,7 +78,11 @@ func MarshalObject(o ObjectIface) ([]byte, error) {
 		}
 	}
 
-	objMap["type"] = o.Type()
+	if o != nil {
+		objMap["type"] = o.Type()
+	} else {
+		objMap["type"] = "Object"
+	}
 
 	return json.Marshal(objMap)
 }
@@ -124,8 +128,8 @@ func (o *Object) Type() string {
 	return "Object"
 }
 
-func (o Object) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&o)
+func (o *Object) MarshalJSON() ([]byte, error) {
+	return MarshalObject(o)
 }
 
 // Represents an object at the top level of an ActivityStreams document,
@@ -135,21 +139,15 @@ type TopLevelObject struct {
 	Context string `json:"@context,omitempty"`
 }
 
-func (t TopLevelObject) MarshalJSON() ([]byte, error) {
-	j, err := MarshalObject(t.ObjectIface)
-	if err != nil {
-		return nil, err
+func (t *TopLevelObject) MarshalJSON() ([]byte, error) {
+	return MarshalObject(t)
+}
+
+func (t *TopLevelObject) Type() string {
+	if t.ObjectIface != nil {
+		return t.ObjectIface.Type()
 	}
-
-	jMap := make(map[string]interface{})
-	err = json.Unmarshal(j, &jMap)
-	if err != nil {
-		return nil, err
-	}
-
-	jMap["@context"] = "https://www.w3.org/ns/activitystreams"
-
-	return json.Marshal(jMap)
+	return "Object"
 }
 
 // Represents an ActivityStreams Relationship object
@@ -164,8 +162,8 @@ func (r *Relationship) Type() string {
 	return "Relationship"
 }
 
-func (r Relationship) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&r)
+func (r *Relationship) MarshalJSON() ([]byte, error) {
+	return MarshalObject(r)
 }
 
 // Represents an ActivityStreams Article object
@@ -177,8 +175,8 @@ func (a *Article) Type() string {
 	return "Article"
 }
 
-func (a Article) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&a)
+func (a *Article) MarshalJSON() ([]byte, error) {
+	return MarshalObject(a)
 }
 
 // Represents an ActivityStreams Document object
@@ -190,8 +188,8 @@ func (d *Document) Type() string {
 	return "Document"
 }
 
-func (d Document) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&d)
+func (d *Document) MarshalJSON() ([]byte, error) {
+	return MarshalObject(d)
 }
 
 // Represents an ActivityStreams Audio object
@@ -203,8 +201,8 @@ func (a *Audio) Type() string {
 	return "Audio"
 }
 
-func (a Audio) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&a)
+func (a *Audio) MarshalJSON() ([]byte, error) {
+	return MarshalObject(a)
 }
 
 // Represents an ActivityStreams Image object
@@ -216,8 +214,8 @@ func (i *Image) Type() string {
 	return "Image"
 }
 
-func (i Image) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&i)
+func (i *Image) MarshalJSON() ([]byte, error) {
+	return MarshalObject(i)
 }
 
 // Represents an ActivityStreams Video object
@@ -229,8 +227,8 @@ func (v *Video) Type() string {
 	return "Video"
 }
 
-func (v Video) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&v)
+func (v *Video) MarshalJSON() ([]byte, error) {
+	return MarshalObject(v)
 }
 
 // Represents an ActivityStreams Note object
@@ -242,8 +240,8 @@ func (n *Note) Type() string {
 	return "Note"
 }
 
-func (n Note) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&n)
+func (n *Note) MarshalJSON() ([]byte, error) {
+	return MarshalObject(n)
 }
 
 // Represents an ActivityStreams Page object
@@ -255,8 +253,8 @@ func (p *Page) Type() string {
 	return "Page"
 }
 
-func (p Page) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&p)
+func (p *Page) MarshalJSON() ([]byte, error) {
+	return MarshalObject(p)
 }
 
 // Represents an ActivityStreams Event object
@@ -268,8 +266,8 @@ func (e *Event) Type() string {
 	return "Event"
 }
 
-func (e Event) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&e)
+func (e *Event) MarshalJSON() ([]byte, error) {
+	return MarshalObject(e)
 }
 
 // Represents an ActivityStreams Place object
@@ -287,8 +285,8 @@ func (p *Place) Type() string {
 	return "Place"
 }
 
-func (p Place) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&p)
+func (p *Place) MarshalJSON() ([]byte, error) {
+	return MarshalObject(p)
 }
 
 // Represents an ActivityStreams Profile object
@@ -301,8 +299,8 @@ func (p *Profile) Type() string {
 	return "Profile"
 }
 
-func (p Profile) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&p)
+func (p *Profile) MarshalJSON() ([]byte, error) {
+	return MarshalObject(p)
 }
 
 // Represents an ActivityStreams Tombstone object
@@ -316,6 +314,6 @@ func (t *Tombstone) Type() string {
 	return "Tombstone"
 }
 
-func (t Tombstone) MarshalJSON() ([]byte, error) {
-	return MarshalObject(&t)
+func (t *Tombstone) MarshalJSON() ([]byte, error) {
+	return MarshalObject(t)
 }

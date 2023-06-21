@@ -218,13 +218,18 @@ var _ = Describe("Object", func() {
 	Describe("TopLevelObject", func() {
 		BeforeEach(func() {
 			expectedObjectMap["@context"] = "https://www.w3.org/ns/activitystreams"
+			expectedObjectMap["type"] = "Object"
 		})
 
 		AfterEach(func() {
 			delete(expectedObjectMap, "@context")
+			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("TopLevelObject", &actualObject, expectedObjectMap)
+		CheckActivityStreamsObject("Object", &activitystreams.TopLevelObject{
+			ObjectIface: &actualObject,
+			Context:     "https://www.w3.org/ns/activitystreams",
+		}, expectedObjectMap)
 	})
 
 	Describe("Object", func() {
@@ -233,9 +238,177 @@ var _ = Describe("Object", func() {
 		})
 
 		AfterEach(func() {
-			expectedObjectMap["type"] = "Object"
+			delete(expectedObjectMap, "type")
 		})
 
 		CheckActivityStreamsObject("Object", &actualObject, expectedObjectMap)
+	})
+
+	Describe("Relationship", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Relationship"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Relationship", &activitystreams.Relationship{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Article", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Article"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Article", &activitystreams.Article{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Document", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Document"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Document", &activitystreams.Document{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Audio", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Audio"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Audio", &activitystreams.Audio{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Image", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Image"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Image", &activitystreams.Image{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Video", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Video"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Video", &activitystreams.Video{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Note", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Note"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Note", &activitystreams.Note{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Page", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Page"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Page", &activitystreams.Page{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Event", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Event"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Event", &activitystreams.Event{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Place", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Place"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Place", &activitystreams.Place{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Profile", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Profile"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Profile", &activitystreams.Profile{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Tombstone", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Tombstone"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		CheckActivityStreamsObject("Tombstone", &activitystreams.Tombstone{
+			Object: actualObject,
+		}, expectedObjectMap)
 	})
 })
