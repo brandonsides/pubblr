@@ -10,6 +10,7 @@ import (
 )
 
 type EntityIface interface {
+	json.Marshaler
 	entity() *Entity
 	Type() (string, error)
 }
@@ -69,6 +70,12 @@ func MarshalEntity(e EntityIface) ([]byte, error) {
 		} else {
 			entMap[tag.Name] = v.Interface()
 		}
+	}
+
+	if eType, err := e.Type(); err == nil {
+		entMap["type"] = eType
+	} else {
+		return nil, err
 	}
 
 	return json.Marshal(entMap)

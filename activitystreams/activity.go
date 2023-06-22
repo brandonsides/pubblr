@@ -1,37 +1,33 @@
 package activitystreams
 
-import (
-	"github.com/brandonsides/pubblr/util"
-)
-
 type IntransitiveActivity struct {
 	Object
-	Actor      *util.Either[ObjectIface, LinkIface] `json:"actor,omitempty"`
-	Target     *util.Either[ObjectIface, LinkIface] `json:"target,omitempty"`
-	Result     *util.Either[ObjectIface, LinkIface] `json:"result,omitempty"`
-	Origin     *util.Either[ObjectIface, LinkIface] `json:"origin,omitempty"`
-	Instrument *util.Either[ObjectIface, LinkIface] `json:"instrument,omitempty"`
+	Actor      EntityIface `json:"actor,omitempty"`
+	Target     EntityIface `json:"target,omitempty"`
+	Result     EntityIface `json:"result,omitempty"`
+	Origin     EntityIface `json:"origin,omitempty"`
+	Instrument EntityIface `json:"instrument,omitempty"`
 }
 
 func (a *IntransitiveActivity) MarshalJSON() ([]byte, error) {
-	return MarshalObject(a)
+	return MarshalEntity(a)
 }
 
-func (a *IntransitiveActivity) Type() string {
-	return "IntransitiveActivity"
+func (a *IntransitiveActivity) Type() (string, error) {
+	return "IntransitiveActivity", nil
 }
 
 type Activity struct {
 	IntransitiveActivity
-	Object *util.Either[ObjectIface, LinkIface] `json:"object,omitempty"`
+	Object EntityIface `json:"object,omitempty"`
 }
 
 func (a *Activity) MarshalJSON() ([]byte, error) {
-	return MarshalObject(a)
+	return MarshalEntity(a)
 }
 
-func (a *Activity) Type() string {
-	return "Activity"
+func (a *Activity) Type() (string, error) {
+	return "Activity", nil
 }
 
 type Accept struct {
@@ -39,11 +35,11 @@ type Accept struct {
 }
 
 func (a *Accept) MarshalJSON() ([]byte, error) {
-	return MarshalObject(a)
+	return MarshalEntity(a)
 }
 
-func (a *Accept) Type() string {
-	return "Accept"
+func (a *Accept) Type() (string, error) {
+	return "Accept", nil
 }
 
 type TentativeAccept struct {
@@ -51,47 +47,47 @@ type TentativeAccept struct {
 }
 
 func (a *TentativeAccept) MarshalJSON() ([]byte, error) {
-	return MarshalObject(a)
+	return MarshalEntity(a)
 }
 
-func (a *TentativeAccept) Type() string {
-	return "TentativeAccept"
+func (a *TentativeAccept) Type() (string, error) {
+	return "TentativeAccept", nil
 }
 
 type Add struct {
 	Activity
 }
 
-func (a *Add) Type() string {
-	return "Add"
+func (a *Add) Type() (string, error) {
+	return "Add", nil
 }
 
 func (a *Add) MarshalJSON() ([]byte, error) {
-	return MarshalObject(a)
+	return MarshalEntity(a)
 }
 
 type Arrive struct {
 	IntransitiveActivity
 }
 
-func (a *Arrive) Type() string {
-	return "Arrive"
+func (a *Arrive) Type() (string, error) {
+	return "Arrive", nil
 }
 
 func (a *Arrive) MarshalJSON() ([]byte, error) {
-	return MarshalObject(a)
+	return MarshalEntity(a)
 }
 
 type Create struct {
 	Activity
 }
 
-func (c *Create) Type() string {
-	return "Create"
+func (c *Create) Type() (string, error) {
+	return "Create", nil
 }
 
 func (c *Create) MarshalJSON() ([]byte, error) {
-	return MarshalObject(c)
+	return MarshalEntity(c)
 }
 
 type Delete struct {
@@ -99,155 +95,155 @@ type Delete struct {
 }
 
 func (d *Delete) MarshalJSON() ([]byte, error) {
-	return MarshalObject(d)
+	return MarshalEntity(d)
 }
 
-func (d *Delete) Type() string {
-	return "Delete"
+func (d *Delete) Type() (string, error) {
+	return "Delete", nil
 }
 
 type Follow struct {
 	Activity
 }
 
-func (f *Follow) Type() string {
-	return "Follow"
+func (f *Follow) Type() (string, error) {
+	return "Follow", nil
 }
 
 func (f *Follow) MarshalJSON() ([]byte, error) {
-	return MarshalObject(f)
+	return MarshalEntity(f)
 }
 
 type Ignore struct {
 	Activity
 }
 
-func (i *Ignore) Type() string {
-	return "Ignore"
+func (i *Ignore) Type() (string, error) {
+	return "Ignore", nil
 }
 
 func (i *Ignore) MarshalJSON() ([]byte, error) {
-	return MarshalObject(i)
+	return MarshalEntity(i)
 }
 
 type Join struct {
 	Activity
 }
 
-func (j *Join) Type() string {
-	return "Join"
+func (j *Join) Type() (string, error) {
+	return "Join", nil
 }
 
 func (j *Join) MarshalJSON() ([]byte, error) {
-	return MarshalObject(j)
+	return MarshalEntity(j)
 }
 
 type Leave struct {
 	Activity
 }
 
-func (l *Leave) Type() string {
-	return "Leave"
+func (l *Leave) Type() (string, error) {
+	return "Leave", nil
 }
 
 func (l *Leave) MarshalJSON() ([]byte, error) {
-	return MarshalObject(l)
+	return MarshalEntity(l)
 }
 
 type Like struct {
 	Activity
 }
 
-func (l *Like) Type() string {
-	return "Like"
+func (l *Like) Type() (string, error) {
+	return "Like", nil
 }
 
 func (l *Like) MarshalJSON() ([]byte, error) {
-	return MarshalObject(l)
+	return MarshalEntity(l)
 }
 
 type Offer struct {
 	Activity
 }
 
-func (o *Offer) Type() string {
-	return "Offer"
+func (o *Offer) Type() (string, error) {
+	return "Offer", nil
 }
 
 func (o *Offer) MarshalJSON() ([]byte, error) {
-	return MarshalObject(o)
+	return MarshalEntity(o)
 }
 
 type Invite struct {
 	Offer
 }
 
-func (i *Invite) Type() string {
-	return "Invite"
+func (i *Invite) Type() (string, error) {
+	return "Invite", nil
 }
 
 func (i *Invite) MarshalJSON() ([]byte, error) {
-	return MarshalObject(i)
+	return MarshalEntity(i)
 }
 
 type Reject struct {
 	Activity
 }
 
-func (r *Reject) Type() string {
-	return "Reject"
+func (r *Reject) Type() (string, error) {
+	return "Reject", nil
 }
 
 func (r *Reject) MarshalJSON() ([]byte, error) {
-	return MarshalObject(r)
+	return MarshalEntity(r)
 }
 
 type TentativeReject struct {
 	Reject
 }
 
-func (t *TentativeReject) Type() string {
-	return "TentativeReject"
+func (t *TentativeReject) Type() (string, error) {
+	return "TentativeReject", nil
 }
 
 func (t *TentativeReject) MarshalJSON() ([]byte, error) {
-	return MarshalObject(t)
+	return MarshalEntity(t)
 }
 
 type Remove struct {
 	Activity
 }
 
-func (r *Remove) Type() string {
-	return "Remove"
+func (r *Remove) Type() (string, error) {
+	return "Remove", nil
 }
 
 func (r *Remove) MarshalJSON() ([]byte, error) {
-	return MarshalObject(r)
+	return MarshalEntity(r)
 }
 
 type Undo struct {
 	Activity
 }
 
-func (u *Undo) Type() string {
-	return "Undo"
+func (u *Undo) Type() (string, error) {
+	return "Undo", nil
 }
 
 func (u *Undo) MarshalJSON() ([]byte, error) {
-	return MarshalObject(u)
+	return MarshalEntity(u)
 }
 
 type Update struct {
 	Activity
 }
 
-func (u *Update) Type() string {
-	return "Update"
+func (u *Update) Type() (string, error) {
+	return "Update", nil
 }
 
 func (u *Update) MarshalJSON() ([]byte, error) {
-	return MarshalObject(u)
+	return MarshalEntity(u)
 }
 
 type View struct {
@@ -255,150 +251,144 @@ type View struct {
 }
 
 func (v *View) MarshalJSON() ([]byte, error) {
-	return MarshalObject(v)
+	return MarshalEntity(v)
 }
 
-func (v *View) Type() string {
-	return "View"
+func (v *View) Type() (string, error) {
+	return "View", nil
 }
 
 type Listen struct {
 	IntransitiveActivity
 }
 
-func (l *Listen) Type() string {
-	return "Listen"
+func (l *Listen) Type() (string, error) {
+	return "Listen", nil
 }
 
 func (l *Listen) MarshalJSON() ([]byte, error) {
-	return MarshalObject(l)
+	return MarshalEntity(l)
 }
 
 type Read struct {
 	IntransitiveActivity
 }
 
-func (r *Read) Type() string {
-	return "Read"
+func (r *Read) Type() (string, error) {
+	return "Read", nil
 }
 
 func (r *Read) MarshalJSON() ([]byte, error) {
-	return MarshalObject(r)
+	return MarshalEntity(r)
 }
 
 type Move struct {
 	Activity
 }
 
-func (m *Move) Type() string {
-	return "Move"
+func (m *Move) Type() (string, error) {
+	return "Move", nil
 }
 
 func (m *Move) MarshalJSON() ([]byte, error) {
-	return MarshalObject(m)
+	return MarshalEntity(m)
 }
 
 type Travel struct {
 	IntransitiveActivity
 }
 
-func (t *Travel) Type() string {
-	return "Travel"
+func (t *Travel) Type() (string, error) {
+	return "Travel", nil
 }
 
 func (t *Travel) MarshalJSON() ([]byte, error) {
-	return MarshalObject(t)
+	return MarshalEntity(t)
 }
 
 type Announce struct {
 	Activity
 }
 
-func (a *Announce) Type() string {
-	return "Announce"
+func (a *Announce) Type() (string, error) {
+	return "Announce", nil
 }
 
 func (a *Announce) MarshalJSON() ([]byte, error) {
-	return MarshalObject(a)
+	return MarshalEntity(a)
 }
 
 type Block struct {
 	Ignore
 }
 
-func (b *Block) Type() string {
-	return "Block"
+func (b *Block) Type() (string, error) {
+	return "Block", nil
 }
 
 func (b *Block) MarshalJSON() ([]byte, error) {
-	return MarshalObject(b)
+	return MarshalEntity(b)
 }
 
 type Flag struct {
 	Activity
 }
 
-func (f *Flag) Type() string {
-	return "Flag"
+func (f *Flag) Type() (string, error) {
+	return "Flag", nil
 }
 
 func (f *Flag) MarshalJSON() ([]byte, error) {
-	return MarshalObject(f)
+	return MarshalEntity(f)
 }
 
 type Dislike struct {
 	Activity
 }
 
-func (d *Dislike) Type() string {
-	return "Dislike"
+func (d *Dislike) Type() (string, error) {
+	return "Dislike", nil
 }
 
 func (d *Dislike) MarshalJSON() ([]byte, error) {
-	return MarshalObject(d)
+	return MarshalEntity(d)
 }
 
 type Question struct {
 	IntransitiveActivity
 }
 
-func (i *Question) Type() string {
-	return "Question"
+func (q *Question) Type() (string, error) {
+	return "Question", nil
 }
 
-func (i *Question) MarshalJSON() ([]byte, error) {
-	return MarshalObject(i)
+func (q *Question) MarshalJSON() ([]byte, error) {
+	return MarshalEntity(q)
 }
 
 type SingleAnswerQuestion struct {
 	Question
-	OneOf []util.Either[ObjectIface, LinkIface] `json:"oneOf,omitempty"`
+	OneOf []EntityIface `json:"oneOf,omitempty"`
 }
 
-type rawSingleAnswerQuestion SingleAnswerQuestion
-
-func (q SingleAnswerQuestion) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawSingleAnswerQuestion)(&q))
+func (q *SingleAnswerQuestion) MarshalJSON() ([]byte, error) {
+	return MarshalEntity(q)
 }
 
 type MultiAnswerQuestion struct {
 	Question
-	AnyOf []util.Either[ObjectIface, LinkIface] `json:"anyOf,omitempty"`
+	AnyOf []EntityIface `json:"anyOf,omitempty"`
 }
 
-type rawMultiAnswerQuestion MultiAnswerQuestion
-
-func (q MultiAnswerQuestion) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawMultiAnswerQuestion)(&q))
+func (q *MultiAnswerQuestion) MarshalJSON() ([]byte, error) {
+	return MarshalEntity(q)
 }
 
 type ClosedQuestion struct {
 	Question
-	Closed *util.Either[ObjectIface, LinkIface] `json:"closed,omitempty"`
+	Closed EntityIface `json:"closed,omitempty"`
 }
 
-type rawClosedQuestion ClosedQuestion
-
-func (q ClosedQuestion) MarshalJSON() ([]byte, error) {
-	return MarshalObject((*rawClosedQuestion)(&q))
+func (q *ClosedQuestion) MarshalJSON() ([]byte, error) {
+	return MarshalEntity(q)
 }

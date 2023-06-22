@@ -17,99 +17,134 @@ var _ = Describe("Actor", func() {
 	published := time.Date(2023, 6, 18, 9, 46, 0, 0, time.UTC)
 	updated := time.Date(2023, 6, 18, 9, 46, 30, 0, time.UTC)
 	actualActor := activitystreams.Object{
-		Id: "http://example.org/~john",
-		Attachment: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Image{
-				Object: activitystreams.Object{
-					Id:        "http://example.org/~john/picture",
-					MediaType: "image/jpeg",
+		Entity: activitystreams.Entity{
+			Id: "http://example.org/~john",
+			AttributedTo: []activitystreams.EntityIface{
+				&activitystreams.Person{
+					Object: activitystreams.Object{
+						Entity: activitystreams.Entity{
+							Id: "http://example.org/~john",
+						},
+					},
 				},
-			}),
-			*util.Right[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Link{
+			},
+			Name: "A Simple Note",
+		},
+		Attachment: []activitystreams.EntityIface{
+			&activitystreams.Image{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id:        "http://example.org/~john/picture",
+						MediaType: "image/jpeg",
+					},
+				},
+			},
+			&activitystreams.Link{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/~john/profile",
+				},
 				Href: "http://example.org/~john/profile",
-			}),
-		},
-		AttributedTo: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Person{
-				Object: activitystreams.Object{
-					Id: "http://example.org/~john",
-				},
-			}),
-		},
-		Bcc: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Person{
-				Object: activitystreams.Object{
-					Id: "http://example.org/~alice",
-				},
-			}),
-		},
-		Bto: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Person{
-				Object: activitystreams.Object{
-					Id: "http://example.org/~bob",
-				},
-			}),
-		},
-		Cc: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Person{
-				Object: activitystreams.Object{
-					Id: "http://example.org/~eve",
-				},
-			}),
-		},
-		Context: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-			Id: "http://example.org/contexts/1",
-		}),
-		Generator: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-			Id: "http://example.org/generator",
-		}),
-		Icon: util.Left[activitystreams.Image, activitystreams.LinkIface](activitystreams.Image{
-			Object: activitystreams.Object{
-				Name: "John's Avatar",
-				URL:  util.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
 			},
-		}),
-		Image: util.Left[activitystreams.Image, activitystreams.LinkIface](activitystreams.Image{
-			Object: activitystreams.Object{
-				Name: "John's Header",
-				URL:  util.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
-			},
-		}),
-		InReplyTo: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-				Id: "http://example.org/posts/1",
-			}),
 		},
-		Location: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Place{
+		Bcc: []activitystreams.EntityIface{
+			&activitystreams.Person{
 				Object: activitystreams.Object{
-					Name: "Work",
+					Entity: activitystreams.Entity{
+						Id: "http://example.org/~alice",
+					},
 				},
-			}),
+			},
 		},
-		Preview: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-			Id: "http://example.org/~john/preview",
-		}),
+		Bto: []activitystreams.EntityIface{
+			&activitystreams.Person{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: "http://example.org/~bob",
+					},
+				},
+			},
+		},
+		Cc: []activitystreams.EntityIface{
+			&activitystreams.Person{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: "http://example.org/~eve",
+					},
+				},
+			},
+		},
+		Context: &activitystreams.Object{
+			Entity: activitystreams.Entity{
+				Id: "http://example.org/contexts/1",
+			},
+		},
+		Generator: &activitystreams.Object{
+			Entity: activitystreams.Entity{
+				Id: "http://example.org/generator",
+			},
+		},
+		Icon: &activitystreams.Image{
+			Object: activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Name: "John's Avatar",
+				},
+				URL: util.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
+			},
+		},
+		Image: &activitystreams.Image{
+			Object: activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Name: "John's Header",
+				},
+				URL: util.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
+			},
+		},
+		InReplyTo: []activitystreams.EntityIface{
+			&activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/posts/1",
+				},
+			},
+		},
+		Location: []activitystreams.EntityIface{
+			&activitystreams.Place{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Name: "Work",
+					},
+				},
+			},
+		},
+		Preview: &activitystreams.Object{
+			Entity: activitystreams.Entity{
+				Id: "http://example.org/~john/preview",
+			},
+		},
 		Replies: &activitystreams.Collection{
 			Object: activitystreams.Object{
-				Id: "http://example.org/~john/replies",
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/~john/replies",
+				},
 			},
 		},
-		Tag: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-				Id: "http://example.org/tags/1",
-			}),
-		},
-		To: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Person{
-				Object: activitystreams.Object{
-					Id: "http://example.org/~alice",
+		Tag: []activitystreams.EntityIface{
+			&activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/tags/1",
 				},
-			}),
+			},
+		},
+		To: []activitystreams.EntityIface{
+			&activitystreams.Person{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: "http://example.org/~alice",
+					},
+				},
+			},
 		},
 		URL:       util.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
 		Content:   "This is a simple note",
-		Name:      "A Simple Note",
 		Duration:  &duration,
 		EndTime:   &endTime,
 		Published: &published,

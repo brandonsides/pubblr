@@ -14,39 +14,55 @@ var _ = Describe("Activity", func() {
 	Describe("IntransitiveActivity", func() {
 		actualIntransitiveActivity := activitystreams.IntransitiveActivity{
 			Object: activitystreams.Object{
-				Id: "http://example.org/john/activities/1",
-				Attachment: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-					*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Image{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/john/activities/1",
+				},
+				Attachment: []activitystreams.EntityIface{
+					&activitystreams.Image{
 						Object: activitystreams.Object{
-							Id:  "http://example.org/john/images/1",
+							Entity: activitystreams.Entity{
+								Id: "http://example.org/john/images/1",
+							},
 							URL: util.Left[string, activitystreams.LinkIface]("http://example.org/john/images/1.jpg"),
 						},
-					}),
-					*util.Right[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Link{
-						Id:   "http://example.org/john/images/2",
+					},
+					&activitystreams.Link{
+						Entity: activitystreams.Entity{
+							Id: "http://example.org/john/images/2",
+						},
 						Href: "http://example.org/john/images/2.jpg",
-					}),
+					},
 				},
 			},
-			Actor: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Person{
+			Actor: &activitystreams.Person{
 				Object: activitystreams.Object{
-					Id: "http://example.org/john",
+					Entity: activitystreams.Entity{
+						Id: "http://example.org/john",
+					},
 				},
-			}),
-			Target: util.Right[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Link{
-				Id:   "http://example.org/john/objects/1",
+			},
+			Target: &activitystreams.Link{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/john/objects/1",
+				},
 				Href: "http://example.org/john/objects/1",
-			}),
-			Result: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-				Id: "http://example.org/john/activities/1/result",
-			}),
-			Origin: util.Right[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Link{
-				Id:   "http://example.org/john/activities/1/origin",
+			},
+			Result: &activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/john/activities/1/result",
+				},
+			},
+			Origin: &activitystreams.Link{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/john/activities/1/origin",
+				},
 				Href: "http://example.org/john/activities/1/origin",
-			}),
-			Instrument: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-				Id: "http://example.org/john/activities/1/instrument",
-			}),
+			},
+			Instrument: &activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/john/activities/1/instrument",
+				},
+			},
 		}
 		expectedIntransitiveActivityMap := map[string]interface{}{
 			"type": "IntransitiveActivity",
@@ -166,15 +182,19 @@ var _ = Describe("Activity", func() {
 			Describe("SingleAnswerQuestion", func() {
 				actualSingleAnswerQuestion := activitystreams.SingleAnswerQuestion{
 					Question: actualQuestion,
-					OneOf: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-						*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-							Id:      "http://example.org/john/objects/2",
+					OneOf: []activitystreams.EntityIface{
+						&activitystreams.Object{
+							Entity: activitystreams.Entity{
+								Id: "http://example.org/john/objects/2",
+							},
 							Content: "Hello world!",
-						}),
-						*util.Right[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Link{
-							Id:   "http://example.org/john/objects/3",
+						},
+						&activitystreams.Link{
+							Entity: activitystreams.Entity{
+								Id: "http://example.org/john/objects/3",
+							},
 							Href: "http://example.org/john/objects/3",
-						}),
+						},
 					},
 				}
 				expectedSingleAnswerQuestionMap := expectedQuestionMap
@@ -205,15 +225,19 @@ var _ = Describe("Activity", func() {
 			Describe("MultiAnswerQuestion", func() {
 				actualMultiAnswerQuestion := activitystreams.MultiAnswerQuestion{
 					Question: actualQuestion,
-					AnyOf: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-						*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-							Id:      "http://example.org/john/objects/2",
+					AnyOf: []activitystreams.EntityIface{
+						&activitystreams.Object{
+							Entity: activitystreams.Entity{
+								Id: "http://example.org/john/objects/2",
+							},
 							Content: "Hello world!",
-						}),
-						*util.Right[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Link{
-							Id:   "http://example.org/john/objects/3",
+						},
+						&activitystreams.Link{
+							Entity: activitystreams.Entity{
+								Id: "http://example.org/john/objects/3",
+							},
 							Href: "http://example.org/john/objects/3",
-						}),
+						},
 					},
 				}
 				expectedMultiAnswerQuestionMap := expectedQuestionMap
@@ -244,10 +268,12 @@ var _ = Describe("Activity", func() {
 			Describe("ClosedQuestion", func() {
 				actualClosedQuestion := activitystreams.ClosedQuestion{
 					Question: actualQuestion,
-					Closed: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-						Id:      "http://example.org/john/objects/2",
+					Closed: &activitystreams.Object{
+						Entity: activitystreams.Entity{
+							Id: "http://example.org/john/objects/2",
+						},
 						Content: "Hello world!",
-					}),
+					},
 				}
 				expectedClosedQuestionMap := expectedQuestionMap
 
@@ -271,10 +297,12 @@ var _ = Describe("Activity", func() {
 		Describe("Activity", func() {
 			actualActivity := activitystreams.Activity{
 				IntransitiveActivity: actualIntransitiveActivity,
-				Object: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-					Id:      "http://example.org/john/objects/2",
+				Object: &activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: "http://example.org/john/objects/2",
+					},
 					Content: "Hello world!",
-				}),
+				},
 			}
 			expectedActivityMap := map[string]interface{}{
 				"type": "Activity",
