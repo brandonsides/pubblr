@@ -2,28 +2,35 @@ package activitystreams_test
 
 import (
 	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/util"
 )
 
 var _ = Describe("Link", func() {
 	height := uint64(100)
 	width := uint64(200)
 	actualLink := activitystreams.Link{
-		Id:       "http://example.com/abc",
+		Entity: activitystreams.Entity{
+			Id: "http://example.com/abc",
+			AttributedTo: []activitystreams.EntityIface{
+				activitystreams.ObjectIface(&activitystreams.Person{
+					Object: activitystreams.Object{
+						Entity: activitystreams.Entity{
+							Id: "http://example.com/~john",
+						},
+					},
+				}),
+			},
+			Name:      "A Link",
+			MediaType: "text/html",
+		},
 		Href:     "http://example.com/abc",
 		HrefLang: "en",
-		AttributedTo: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-				Id: "http://example.com/~john",
-			}),
+		Preview: &activitystreams.Object{
+			Entity: activitystreams.Entity{
+				Id: "http://example.com/abc/preview",
+			},
 		},
-		Preview: util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Object{
-			Id: "http://example.com/abc/preview",
-		}),
-		Name:   "A Link",
 		Height: &height,
 		Width:  &width,
 		Rel:    []string{"me"},
@@ -33,9 +40,10 @@ var _ = Describe("Link", func() {
 		"attributedTo": []interface{}{map[string]interface{}{"id": "http://example.com/~john", "type": "Person"}},
 		"preview":      map[string]interface{}{"id": "http://example.com/abc/preview", "type": "Object"},
 		"name":         "A Link",
-		"height":       uint64(100),
-		"width":        uint64(200),
+		"height":       float64(100),
+		"width":        float64(200),
 		"href":         "http://example.com/abc",
+		"mediaType":    "text/html",
 		"hreflang":     "en",
 		"rel":          []interface{}{"me"},
 	}
@@ -49,6 +57,22 @@ var _ = Describe("Link", func() {
 			delete(expectedLinkMap, "type")
 		})
 
-		CheckActivityStreamsObject()
+		CheckActivityStreamsEntity("Link", &actualLink, expectedLinkMap)
+	})
+
+	Describe("Mention", func() {
+		actualMention := activitystreams.Mention{
+			Link: actualLink,
+		}
+
+		BeforeEach(func() {
+			expectedLinkMap["type"] = "Mention"
+		})
+
+		AfterEach(func() {
+			delete(expectedLinkMap, "type")
+		})
+
+		CheckActivityStreamsEntity("Mention", &actualMention, expectedLinkMap)
 	})
 })

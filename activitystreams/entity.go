@@ -11,8 +11,8 @@ import (
 
 type EntityIface interface {
 	json.Marshaler
-	entity() *Entity
 	Type() (string, error)
+	entity() *Entity
 }
 
 // Get a reference to the Entity struct embedded in the given EntityIface
@@ -84,6 +84,47 @@ func MarshalEntity(e EntityIface) ([]byte, error) {
 	}
 
 	return json.Marshal(entMap)
+}
+
+// Unmarshal an EntityIface from JSON
+func UnmarshalEntity(data []byte, e EntityIface) error {
+	var entMap map[string]interface{}
+	err := json.Unmarshal(data, &entMap)
+	if err != nil {
+		return err
+	}
+
+	eElemType := reflect.TypeOf(e).Elem()
+	for fieldIndex := 0; fieldIndex < eElemType.NumField(); fieldIndex++ {
+		field := eElemType.Field(fieldIndex)
+		if isEmbeddedEntityField(&field) {
+			fieldInterface := reflect.New(field.Type.Elem()).Interface()
+			err = json.Unmarshal(data, fieldInterface)
+			if err != nil {
+				return err
+			}
+			reflect.ValueOf(e).Elem().Field(fieldIndex).Set(reflect.ValueOf(fieldInterface).Elem())
+			continue
+		}
+		tag := util.FromString(field.Tag.Get("json"))
+		if tag.Name == "" {
+			tag.Name = strings.ToLower(field.Name[:1]) + field.Name[1:]
+		}
+		if tag.Name == "-" {
+			continue
+		}
+
+		v := reflect.ValueOf(e).Elem().Field(fieldIndex)
+		if v.CanSet() {
+			if tag.String {
+				v.SetString(entMap[tag.Name].(string))
+			} else {
+				v.Set(reflect.ValueOf(entMap[tag.Name]))
+			}
+		}
+	}
+
+	return nil
 }
 
 type Entity struct {

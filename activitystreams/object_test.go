@@ -260,7 +260,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Object", &actualObject, expectedObjectMap)
+		CheckActivityStreamsEntity("Object", &actualObject, expectedObjectMap)
 	})
 
 	Describe("Relationship", func() {
@@ -272,7 +272,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Relationship", &activitystreams.Relationship{
+		CheckActivityStreamsEntity("Relationship", &activitystreams.Relationship{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -286,7 +286,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Article", &activitystreams.Article{
+		CheckActivityStreamsEntity("Article", &activitystreams.Article{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -300,7 +300,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Document", &activitystreams.Document{
+		CheckActivityStreamsEntity("Document", &activitystreams.Document{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -314,7 +314,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Audio", &activitystreams.Audio{
+		CheckActivityStreamsEntity("Audio", &activitystreams.Audio{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -328,7 +328,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Image", &activitystreams.Image{
+		CheckActivityStreamsEntity("Image", &activitystreams.Image{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -342,7 +342,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Video", &activitystreams.Video{
+		CheckActivityStreamsEntity("Video", &activitystreams.Video{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -356,7 +356,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Note", &activitystreams.Note{
+		CheckActivityStreamsEntity("Note", &activitystreams.Note{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -370,7 +370,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Page", &activitystreams.Page{
+		CheckActivityStreamsEntity("Page", &activitystreams.Page{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -384,7 +384,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Event", &activitystreams.Event{
+		CheckActivityStreamsEntity("Event", &activitystreams.Event{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -398,7 +398,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Place", &activitystreams.Place{
+		CheckActivityStreamsEntity("Place", &activitystreams.Place{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -412,7 +412,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Profile", &activitystreams.Profile{
+		CheckActivityStreamsEntity("Profile", &activitystreams.Profile{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})
@@ -426,7 +426,7 @@ var _ = Describe("Object", func() {
 			delete(expectedObjectMap, "type")
 		})
 
-		CheckActivityStreamsObject("Tombstone", &activitystreams.Tombstone{
+		CheckActivityStreamsEntity("Tombstone", &activitystreams.Tombstone{
 			Object: actualObject,
 		}, expectedObjectMap)
 	})

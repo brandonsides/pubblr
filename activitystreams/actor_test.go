@@ -263,7 +263,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedApplicationMap, "type")
 		})
 
-		CheckActivityStreamsObject("Application", &actualApplication, expectedApplicationMap)
+		CheckActivityStreamsEntity("Application", &actualApplication, expectedApplicationMap)
 	})
 
 	Describe("Group", func() {
@@ -278,7 +278,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedGroupMap, "type")
 		})
 
-		CheckActivityStreamsObject("Group", &actualGroup, expectedGroupMap)
+		CheckActivityStreamsEntity("Group", &actualGroup, expectedGroupMap)
 	})
 
 	Describe("Organization", func() {
@@ -293,7 +293,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedOrganizationMap, "type")
 		})
 
-		CheckActivityStreamsObject("Organization", &actualOrganization, expectedOrganizationMap)
+		CheckActivityStreamsEntity("Organization", &actualOrganization, expectedOrganizationMap)
 	})
 
 	Describe("Person", func() {
@@ -308,7 +308,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedPersonMap, "type")
 		})
 
-		CheckActivityStreamsObject("Person", &actualPerson, expectedPersonMap)
+		CheckActivityStreamsEntity("Person", &actualPerson, expectedPersonMap)
 	})
 
 	Describe("Service", func() {
@@ -323,6 +323,6 @@ var _ = Describe("Actor", func() {
 			delete(expectedServiceMap, "type")
 		})
 
-		CheckActivityStreamsObject("Service", &actualService, expectedServiceMap)
+		CheckActivityStreamsEntity("Service", &actualService, expectedServiceMap)
 	})
 })

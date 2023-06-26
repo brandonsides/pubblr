@@ -1,13 +1,9 @@
 package activitystreams_test
 
 import (
-	"encoding/json"
-	"reflect"
-
 	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/util"
 	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Activity", func() {
@@ -103,7 +99,7 @@ var _ = Describe("Activity", func() {
 			},
 		}
 
-		CheckActivityStreamsObject("IntransitiveActivity", &actualIntransitiveActivity, expectedIntransitiveActivityMap)
+		CheckActivityStreamsEntity("IntransitiveActivity", &actualIntransitiveActivity, expectedIntransitiveActivityMap)
 
 		Describe("Arrive", func() {
 			actualArrive := activitystreams.Arrive{actualIntransitiveActivity}
@@ -117,7 +113,7 @@ var _ = Describe("Activity", func() {
 				expectedArriveMap["type"] = "IntransitiveActivity"
 			})
 
-			CheckActivityStreamsObject("Arrive", &actualArrive, expectedArriveMap)
+			CheckActivityStreamsEntity("Arrive", &actualArrive, expectedArriveMap)
 		})
 
 		Describe("Listen", func() {
@@ -132,7 +128,7 @@ var _ = Describe("Activity", func() {
 				expectedListenMap["type"] = "IntransitiveActivity"
 			})
 
-			CheckActivityStreamsObject("Listen", &actualListen, expectedListenMap)
+			CheckActivityStreamsEntity("Listen", &actualListen, expectedListenMap)
 		})
 
 		Describe("Read", func() {
@@ -147,7 +143,7 @@ var _ = Describe("Activity", func() {
 				expectedReadMap["type"] = "IntransitiveActivity"
 			})
 
-			CheckActivityStreamsObject("Read", &actualRead, expectedReadMap)
+			CheckActivityStreamsEntity("Read", &actualRead, expectedReadMap)
 		})
 
 		Describe("Travel", func() {
@@ -162,7 +158,7 @@ var _ = Describe("Activity", func() {
 				expectedTravelMap["type"] = "IntransitiveActivity"
 			})
 
-			CheckActivityStreamsObject("Travel", &actualTravel, expectedTravelMap)
+			CheckActivityStreamsEntity("Travel", &actualTravel, expectedTravelMap)
 		})
 
 		Describe("Question", func() {
@@ -177,7 +173,7 @@ var _ = Describe("Activity", func() {
 				expectedQuestionMap["type"] = "IntransitiveActivity"
 			})
 
-			CheckActivityStreamsObject("Question", &actualQuestion, expectedQuestionMap)
+			CheckActivityStreamsEntity("Question", &actualQuestion, expectedQuestionMap)
 
 			Describe("SingleAnswerQuestion", func() {
 				actualSingleAnswerQuestion := activitystreams.SingleAnswerQuestion{
@@ -218,7 +214,7 @@ var _ = Describe("Activity", func() {
 					delete(expectedSingleAnswerQuestionMap, "oneOf")
 				})
 
-				CheckActivityStreamsObject("Question", &actualSingleAnswerQuestion,
+				CheckActivityStreamsEntity("Question", &actualSingleAnswerQuestion,
 					expectedSingleAnswerQuestionMap)
 			})
 
@@ -261,7 +257,7 @@ var _ = Describe("Activity", func() {
 					delete(expectedMultiAnswerQuestionMap, "anyOf")
 				})
 
-				CheckActivityStreamsObject("Question", &actualMultiAnswerQuestion,
+				CheckActivityStreamsEntity("Question", &actualMultiAnswerQuestion,
 					expectedMultiAnswerQuestionMap)
 			})
 
@@ -289,7 +285,7 @@ var _ = Describe("Activity", func() {
 					delete(expectedClosedQuestionMap, "closed")
 				})
 
-				CheckActivityStreamsObject("Question", &actualClosedQuestion,
+				CheckActivityStreamsEntity("Question", &actualClosedQuestion,
 					expectedClosedQuestionMap)
 			})
 		})
@@ -348,7 +344,7 @@ var _ = Describe("Activity", func() {
 				},
 			}
 
-			CheckActivityStreamsObject("Activity", &actualActivity, expectedActivityMap)
+			CheckActivityStreamsEntity("Activity", &actualActivity, expectedActivityMap)
 
 			Describe("Accept", func() {
 				actualAccept := activitystreams.Accept{actualActivity}
@@ -362,7 +358,7 @@ var _ = Describe("Activity", func() {
 					expectedAcceptMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Accept", &actualAccept, expectedAcceptMap)
+				CheckActivityStreamsEntity("Accept", &actualAccept, expectedAcceptMap)
 
 				Describe("TentativeAccept", func() {
 					actualTentativeAccept := activitystreams.TentativeAccept{actualAccept}
@@ -376,7 +372,7 @@ var _ = Describe("Activity", func() {
 						expectedTentativeAcceptMap["type"] = "Accept"
 					})
 
-					CheckActivityStreamsObject("TentativeAccept", &actualTentativeAccept, expectedTentativeAcceptMap)
+					CheckActivityStreamsEntity("TentativeAccept", &actualTentativeAccept, expectedTentativeAcceptMap)
 				})
 			})
 
@@ -392,7 +388,7 @@ var _ = Describe("Activity", func() {
 					expectedAddMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Add", &actualAdd, expectedAddMap)
+				CheckActivityStreamsEntity("Add", &actualAdd, expectedAddMap)
 			})
 
 			Describe("Create", func() {
@@ -407,7 +403,7 @@ var _ = Describe("Activity", func() {
 					expectedCreateMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Create", &actualCreate, expectedCreateMap)
+				CheckActivityStreamsEntity("Create", &actualCreate, expectedCreateMap)
 			})
 
 			Describe("Delete", func() {
@@ -422,7 +418,7 @@ var _ = Describe("Activity", func() {
 					expectedDeleteMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Delete", &actualDelete, expectedDeleteMap)
+				CheckActivityStreamsEntity("Delete", &actualDelete, expectedDeleteMap)
 			})
 
 			Describe("Follow", func() {
@@ -437,7 +433,7 @@ var _ = Describe("Activity", func() {
 					expectedFollowMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Follow", &actualFollow, expectedFollowMap)
+				CheckActivityStreamsEntity("Follow", &actualFollow, expectedFollowMap)
 			})
 
 			Describe("Ignore", func() {
@@ -452,7 +448,7 @@ var _ = Describe("Activity", func() {
 					expectedIgnoreMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Ignore", &actualIgnore, expectedIgnoreMap)
+				CheckActivityStreamsEntity("Ignore", &actualIgnore, expectedIgnoreMap)
 
 				Describe("Block", func() {
 					actualBlock := activitystreams.Block{actualIgnore}
@@ -466,7 +462,7 @@ var _ = Describe("Activity", func() {
 						expectedBlockMap["type"] = "Ignore"
 					})
 
-					CheckActivityStreamsObject("Block", &actualBlock, expectedBlockMap)
+					CheckActivityStreamsEntity("Block", &actualBlock, expectedBlockMap)
 				})
 			})
 
@@ -482,7 +478,7 @@ var _ = Describe("Activity", func() {
 					expectedJoinMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Join", &actualJoin, expectedJoinMap)
+				CheckActivityStreamsEntity("Join", &actualJoin, expectedJoinMap)
 			})
 
 			Describe("Leave", func() {
@@ -497,7 +493,7 @@ var _ = Describe("Activity", func() {
 					expectedLeaveMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Leave", &actualLeave, expectedLeaveMap)
+				CheckActivityStreamsEntity("Leave", &actualLeave, expectedLeaveMap)
 			})
 
 			Describe("Like", func() {
@@ -512,7 +508,7 @@ var _ = Describe("Activity", func() {
 					expectedLikeMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Like", &actualLike, expectedLikeMap)
+				CheckActivityStreamsEntity("Like", &actualLike, expectedLikeMap)
 			})
 
 			Describe("Offer", func() {
@@ -527,7 +523,7 @@ var _ = Describe("Activity", func() {
 					expectedOfferMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Offer", &actualOffer, expectedOfferMap)
+				CheckActivityStreamsEntity("Offer", &actualOffer, expectedOfferMap)
 
 				Describe("Invite", func() {
 					actualInvite := activitystreams.Invite{actualOffer}
@@ -541,7 +537,7 @@ var _ = Describe("Activity", func() {
 						expectedInviteMap["type"] = "Offer"
 					})
 
-					CheckActivityStreamsObject("Invite", &actualInvite, expectedInviteMap)
+					CheckActivityStreamsEntity("Invite", &actualInvite, expectedInviteMap)
 				})
 			})
 
@@ -557,7 +553,7 @@ var _ = Describe("Activity", func() {
 					expectedRejectMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Reject", &actualReject, expectedRejectMap)
+				CheckActivityStreamsEntity("Reject", &actualReject, expectedRejectMap)
 
 				Describe("TentativeReject", func() {
 					actualTentativeReject := activitystreams.TentativeReject{actualReject}
@@ -571,7 +567,7 @@ var _ = Describe("Activity", func() {
 						expectedTentativeRejectMap["type"] = "Reject"
 					})
 
-					CheckActivityStreamsObject("TentativeReject", &actualTentativeReject, expectedTentativeRejectMap)
+					CheckActivityStreamsEntity("TentativeReject", &actualTentativeReject, expectedTentativeRejectMap)
 				})
 			})
 
@@ -587,7 +583,7 @@ var _ = Describe("Activity", func() {
 					expectedRemoveMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Remove", &actualRemove, expectedRemoveMap)
+				CheckActivityStreamsEntity("Remove", &actualRemove, expectedRemoveMap)
 			})
 
 			Describe("Undo", func() {
@@ -602,7 +598,7 @@ var _ = Describe("Activity", func() {
 					expectedUndoMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Undo", &actualUndo, expectedUndoMap)
+				CheckActivityStreamsEntity("Undo", &actualUndo, expectedUndoMap)
 			})
 
 			Describe("Update", func() {
@@ -617,7 +613,7 @@ var _ = Describe("Activity", func() {
 					expectedUpdateMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Update", &actualUpdate, expectedUpdateMap)
+				CheckActivityStreamsEntity("Update", &actualUpdate, expectedUpdateMap)
 			})
 
 			Describe("View", func() {
@@ -632,7 +628,7 @@ var _ = Describe("Activity", func() {
 					expectedViewMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("View", &actualView, expectedViewMap)
+				CheckActivityStreamsEntity("View", &actualView, expectedViewMap)
 			})
 
 			Describe("Move", func() {
@@ -647,7 +643,7 @@ var _ = Describe("Activity", func() {
 					expectedMoveMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Move", &actualMove, expectedMoveMap)
+				CheckActivityStreamsEntity("Move", &actualMove, expectedMoveMap)
 			})
 
 			Describe("Announce", func() {
@@ -662,7 +658,7 @@ var _ = Describe("Activity", func() {
 					expectedAnnounceMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Announce", &actualAnnounce, expectedAnnounceMap)
+				CheckActivityStreamsEntity("Announce", &actualAnnounce, expectedAnnounceMap)
 			})
 
 			Describe("Flag", func() {
@@ -677,7 +673,7 @@ var _ = Describe("Activity", func() {
 					expectedFlagMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Flag", &actualFlag, expectedFlagMap)
+				CheckActivityStreamsEntity("Flag", &actualFlag, expectedFlagMap)
 			})
 
 			Describe("Dislike", func() {
@@ -692,45 +688,8 @@ var _ = Describe("Activity", func() {
 					expectedDislikeMap["type"] = "Activity"
 				})
 
-				CheckActivityStreamsObject("Dislike", &actualDislike, expectedDislikeMap)
+				CheckActivityStreamsEntity("Dislike", &actualDislike, expectedDislikeMap)
 			})
 		})
 	})
 })
-
-func CheckActivityStreamsObject(objectType string, actual activitystreams.ObjectIface, expected map[string]interface{}) {
-	Describe("MarshalJSON", func() {
-		It("should correctly marshal fully populated type", func() {
-			jsonObject, err := actual.MarshalJSON()
-			Expect(err).ToNot(HaveOccurred())
-			var actual map[string]interface{}
-			err = json.Unmarshal(jsonObject, &actual)
-			Expect(err).ToNot(HaveOccurred())
-			for key, value := range expected {
-				Expect(actual[key]).To(Equal(value))
-			}
-			Expect(actual).To(Equal(expected))
-		})
-
-		It("should correctly marshal zero value", func() {
-			actual := reflect.New(reflect.TypeOf(actual).Elem()).Interface().(activitystreams.ObjectIface)
-
-			expected := map[string]interface{}{
-				"type": objectType,
-			}
-
-			jsonObject, err := actual.MarshalJSON()
-			Expect(err).ToNot(HaveOccurred())
-			var actualMap map[string]interface{}
-			err = json.Unmarshal(jsonObject, &actualMap)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(actualMap).To(Equal(expected))
-		})
-	})
-
-	Describe("Type", func() {
-		It("should return correct type", func() {
-			Expect(actual.Type()).To(Equal(objectType))
-		})
-	})
-}

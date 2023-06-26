@@ -101,7 +101,7 @@ var _ = Describe("Collection", func() {
 			expectedCollectionMap["last"].(map[string]interface{})["type"] = "CollectionPage"
 		})
 
-		CheckActivityStreamsObject("Collection", &actualCollection, expectedCollectionMap)
+		CheckActivityStreamsEntity("Collection", &actualCollection, expectedCollectionMap)
 	})
 
 	Context("Ordered", func() {
