@@ -162,6 +162,7 @@ var _ = Describe("Object", func() {
 			},
 			map[string]interface{}{
 				"type": "Link",
+				"id":   "http://example.org/~john/profile",
 				"href": "http://example.org/~john/profile",
 			},
 		},

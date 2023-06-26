@@ -20,9 +20,14 @@ func ToEntity(e EntityIface) *Entity {
 	return e.entity()
 }
 
-func IsEmbeddedEntityField(f *reflect.StructField) bool {
+func isEntityType(t reflect.Type) bool {
 	EntityIfaceType := reflect.TypeOf((*EntityIface)(nil)).Elem()
-	return f.Anonymous && (f.Type == EntityIfaceType || reflect.PointerTo(f.Type).Implements(EntityIfaceType))
+	EntityType := reflect.TypeOf(&Entity{})
+	return t.Implements(EntityIfaceType) || t == EntityType
+}
+
+func isEmbeddedEntityField(f *reflect.StructField) bool {
+	return f.Anonymous && (isEntityType(f.Type) || isEntityType(reflect.PointerTo(f.Type)))
 }
 
 // Marhsal an EntityIface to JSON
@@ -36,7 +41,7 @@ func MarshalEntity(e EntityIface) ([]byte, error) {
 	eElemType := reflect.TypeOf(e).Elem()
 	for fieldIndex := 0; fieldIndex < eElemType.NumField(); fieldIndex++ {
 		field := eElemType.Field(fieldIndex)
-		if IsEmbeddedEntityField(&field) {
+		if isEmbeddedEntityField(&field) {
 			fieldInterface := reflect.ValueOf(e).Elem().Field(fieldIndex).Interface()
 			if entity, ok := fieldInterface.(Entity); ok {
 				fieldInterface = (aliasedEntity)(entity)

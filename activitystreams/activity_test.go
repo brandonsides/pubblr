@@ -706,6 +706,9 @@ func CheckActivityStreamsObject(objectType string, actual activitystreams.Object
 			var actual map[string]interface{}
 			err = json.Unmarshal(jsonObject, &actual)
 			Expect(err).ToNot(HaveOccurred())
+			for key, value := range expected {
+				Expect(actual[key]).To(Equal(value))
+			}
 			Expect(actual).To(Equal(expected))
 		})
 
