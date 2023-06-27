@@ -41,11 +41,8 @@ func MarshalEntity(e EntityIface) ([]byte, error) {
 	eElemType := reflect.TypeOf(e).Elem()
 	for fieldIndex := 0; fieldIndex < eElemType.NumField(); fieldIndex++ {
 		field := eElemType.Field(fieldIndex)
-		if isEmbeddedEntityField(&field) {
+		if field.Anonymous {
 			fieldInterface := reflect.ValueOf(e).Elem().Field(fieldIndex).Interface()
-			if entity, ok := fieldInterface.(Entity); ok {
-				fieldInterface = (aliasedEntity)(entity)
-			}
 			var nestedMap map[string]interface{}
 			nestedJson, err := json.Marshal(fieldInterface)
 			if err != nil {
@@ -57,13 +54,16 @@ func MarshalEntity(e EntityIface) ([]byte, error) {
 			}
 
 			for k, v := range nestedMap {
-				entMap[k] = v
+				// Don't overwrite existing values
+				if _, ok := entMap[k]; !ok {
+					entMap[k] = v
+				}
 			}
 			continue
 		}
 		tag := util.FromString(field.Tag.Get("json"))
 		if tag.Name == "" {
-			tag.Name = strings.ToLower(field.Name[:1]) + field.Name[1:]
+			tag.Name = field.Name
 		}
 		if tag.Name == "-" || tag.OmitEmpty && reflect.ValueOf(e).Elem().Field(fieldIndex).IsZero() {
 			continue
@@ -133,8 +133,6 @@ type Entity struct {
 	Name         string        `json:"name,omitempty"`
 	MediaType    string        `json:"mediaType,omitempty"`
 }
-
-type aliasedEntity Entity
 
 func (e *Entity) entity() *Entity {
 	return e
