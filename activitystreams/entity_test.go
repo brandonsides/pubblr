@@ -136,6 +136,17 @@ func CheckActivityStreamsEntity(objectType string, actual activitystreams.Entity
 		})
 	})
 
+	Describe("EntityUnmarshaler", func() {
+		It("should correctly unmarshal fully populated type", func() {
+			jsonObject, err := json.Marshal(expected)
+			Expect(err).ToNot(HaveOccurred())
+
+			unmarshalled, err := activitystreams.DefaultEntityUnmarshaler.Unmarshal(jsonObject)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(unmarshalled).To(Equal(actual))
+		})
+	})
+
 	Describe("Type", func() {
 		It("should return correct type", func() {
 			Expect(actual.Type()).To(Equal(objectType))
