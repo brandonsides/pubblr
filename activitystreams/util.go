@@ -57,6 +57,7 @@ func init() {
 			"Remove":          defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Remove{}),
 			"TentativeAccept": defaultUnmarshalFn(&DefaultEntityUnmarshaler, &TentativeAccept{}),
 			"TentativeReject": defaultUnmarshalFn(&DefaultEntityUnmarshaler, &TentativeReject{}),
+			"Travel":          defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Travel{}),
 			"Undo":            defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Undo{}),
 			"Update":          defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Update{}),
 			"View":            defaultUnmarshalFn(&DefaultEntityUnmarshaler, &View{}),
