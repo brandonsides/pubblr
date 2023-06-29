@@ -3,6 +3,7 @@ package activitystreams
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/brandonsides/pubblr/util"
@@ -13,24 +14,26 @@ var DefaultEntityUnmarshaler EntityUnmarshaler
 func init() {
 	DefaultEntityUnmarshaler = EntityUnmarshaler{
 		unmarshalFnByType: map[string]unmarshalFn{
-			"Activity": defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Activity{}),
-			"Accept":   defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Accept{}),
-			"Add":      defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Add{}),
-			"Arrive":   defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Arrive{}),
-			"Block":    defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Block{}),
-			"Create":   defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Create{}),
-			"Delete":   defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Delete{}),
-			"Dislike":  defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Dislike{}),
-			"Flag":     defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Flag{}),
-			"Follow":   defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Follow{}),
-			"Ignore":   defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Ignore{}),
-			"Invite":   defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Invite{}),
-			"Join":     defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Join{}),
-			"Leave":    defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Leave{}),
-			"Like":     defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Like{}),
-			"Listen":   defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Listen{}),
-			"Move":     defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Move{}),
-			"Offer":    defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Offer{}),
+			"IntransitiveActivity": defaultUnmarshalFn(&DefaultEntityUnmarshaler, &IntransitiveActivity{}),
+			"Activity":             defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Activity{}),
+			"Accept":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Accept{}),
+			"Announce":             defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Announce{}),
+			"Add":                  defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Add{}),
+			"Arrive":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Arrive{}),
+			"Block":                defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Block{}),
+			"Create":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Create{}),
+			"Delete":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Delete{}),
+			"Dislike":              defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Dislike{}),
+			"Flag":                 defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Flag{}),
+			"Follow":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Follow{}),
+			"Ignore":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Ignore{}),
+			"Invite":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Invite{}),
+			"Join":                 defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Join{}),
+			"Leave":                defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Leave{}),
+			"Like":                 defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Like{}),
+			"Listen":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Listen{}),
+			"Move":                 defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Move{}),
+			"Offer":                defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Offer{}),
 			"Question": func(b []byte) (EntityIface, error) {
 				var qMap map[string]interface{}
 				json.Unmarshal(b, &qMap)
@@ -93,7 +96,7 @@ func isEmbeddedEntityField(f *reflect.StructField) bool {
 	return f.Anonymous && (isEntityType(f.Type) || isEntityType(reflect.PointerTo(f.Type)))
 }
 
-// Marhsal an EntityIface to JSON
+// Marshal an EntityIface to JSON
 // Marshals the implementing type to JSON and adds a "type" field to the JSON
 // representation with the value returned by the Type() method.
 func MarshalEntity(e EntityIface) ([]byte, error) {
@@ -153,64 +156,148 @@ type unmarshalFn func([]byte) (EntityIface, error)
 var entityIface reflect.Type = reflect.TypeOf((*EntityIface)(nil)).Elem()
 
 func defaultUnmarshalFn(u *EntityUnmarshaler, e EntityIface) unmarshalFn {
-	targetType := reflect.TypeOf(e).Elem()
+	targetType := reflect.TypeOf(e)
 	return func(b []byte) (EntityIface, error) {
-		mapped := make(map[string]json.RawMessage)
-		err := json.Unmarshal(b, &mapped)
+		ret, err := unmarshal(u, targetType, b)
 		if err != nil {
 			return nil, err
 		}
 
-		reflRet := reflect.New(targetType)
-		retType := reflRet.Type()
-		for i := 0; i < retType.NumField(); i++ {
-			field := retType.Field(i)
-			jsonTag := util.FromStructField(field)
-			if jsonTag.Omit {
-				continue
-			}
-
-			if field.Type.Kind() == reflect.Interface && field.Type.Implements(entityIface) {
-				if val, ok := mapped[jsonTag.Name]; ok {
-					unmarshalledVal, err := u.Unmarshal(val)
-					if err != nil {
-						return nil, err
-					}
-					reflRet.Elem().Field(i).Set(reflect.ValueOf(unmarshalledVal))
-				} else {
-					return nil, errors.New("Missing field: " + jsonTag.Name)
-				}
-			} else {
-				if val, ok := mapped[jsonTag.Name]; ok {
-					err := json.Unmarshal(val, reflRet.Elem().Field(i).Addr().Interface())
-					if err != nil {
-						return nil, err
-					}
-				}
-			}
+		entRet, ok := ret.(EntityIface)
+		if !ok {
+			return nil, fmt.Errorf("unmarshal: expected EntityIface, got %T", ret)
 		}
 
-		return reflRet.Interface().(EntityIface), nil
+		return entRet, nil
 	}
 }
 
-func (e *EntityUnmarshaler) Unmarshal(b []byte) (EntityIface, error) {
-	var raw map[string]interface{}
+func unmarshal(u *EntityUnmarshaler, targetType reflect.Type, b []byte) (interface{}, error) {
+	jsonUnmarshalerType := reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
+	bad := map[reflect.Kind]bool{
+		reflect.Chan:      true,
+		reflect.Func:      true,
+		reflect.Interface: true,
+	}
+	var ret interface{}
+	var err error
+	if targetType == entityIface {
+		ret, err = u.Unmarshal(b)
+	} else if targetType.Implements(jsonUnmarshalerType) {
+		err = json.Unmarshal(b, &ret)
+	} else if targetType.Kind() == reflect.Struct {
+		ret, err = unmarshalStruct(u, targetType, b)
+	} else if targetType.Kind() == reflect.Ptr {
+		unmarshalledVal, err := unmarshal(u, targetType.Elem(), b)
+		if err != nil {
+			return nil, err
+		}
+		ptr := reflect.New(targetType.Elem())
+		ptr.Elem().Set(reflect.ValueOf(unmarshalledVal))
+		ret = ptr.Interface()
+	} else if targetType.Kind() == reflect.Slice || targetType.Kind() == reflect.Array {
+		var unmarshalledSlc []json.RawMessage
+		err := json.Unmarshal(b, &unmarshalledSlc)
+		if err != nil {
+			return nil, err
+		}
+		slc := reflect.MakeSlice(targetType, 0, len(unmarshalledSlc))
+		for _, val := range unmarshalledSlc {
+			unmarshalledVal, err := unmarshal(u, targetType.Elem(), val)
+			if err != nil {
+				return nil, err
+			}
+			slc = reflect.Append(slc, reflect.ValueOf(unmarshalledVal))
+		}
+		ret = slc.Interface()
+	} else if targetType.Kind() == reflect.Map && targetType.Key() == reflect.TypeOf("") {
+		var unmarshalledMap map[string]json.RawMessage
+		err := json.Unmarshal(b, &unmarshalledMap)
+		if err != nil {
+			return nil, err
+		}
+		m := reflect.MakeMap(targetType)
+		for k, v := range unmarshalledMap {
+			unmarshalledVal, err := unmarshal(u, targetType.Elem(), v)
+			if err != nil {
+				return nil, err
+			}
+			m.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(unmarshalledVal))
+		}
+		ret = m.Interface()
+	} else if !bad[targetType.Kind()] {
+		err = json.Unmarshal(b, &ret)
+	} else {
+		return nil, errors.New("Unsupported type: " + targetType.String())
+	}
+	return ret, err
+}
+
+func unmarshalStruct(u *EntityUnmarshaler, targetType reflect.Type, b []byte) (interface{}, error) {
+	if targetType.Kind() != reflect.Struct {
+		return nil, errors.New("targetType is not a struct")
+	}
+
+	var raw map[string]json.RawMessage
 	err := json.Unmarshal(b, &raw)
 	if err != nil {
 		return nil, err
 	}
-	t, ok := raw["type"]
+
+	ret := reflect.New(targetType).Elem()
+	for i := 0; i < targetType.NumField(); i++ {
+		field := targetType.Field(i)
+		var fieldBytes json.RawMessage
+		if field.Anonymous {
+			fieldBytes = b
+		} else {
+			jsonTag := util.FromStructField(field)
+			var ok bool
+			fieldBytes, ok = raw[jsonTag.Name]
+			if !ok {
+				if jsonTag.OmitEmpty {
+					continue
+				} else {
+					return nil, errors.New("JSON does not include required field: " + jsonTag.Name)
+				}
+			}
+		}
+		val, err := unmarshal(u, field.Type, fieldBytes)
+		if err != nil {
+			return nil, err
+		}
+		ret.Field(i).Set(reflect.ValueOf(val))
+	}
+
+	return ret.Interface(), nil
+}
+
+func (e *EntityUnmarshaler) Unmarshal(b []byte) (EntityIface, error) {
+	var raw map[string]json.RawMessage
+	err := json.Unmarshal(b, &raw)
+	if err != nil {
+		return nil, err
+	}
+	var t string
+	tRaw, ok := raw["type"]
 	if !ok {
 		return nil, errors.New("no type field")
 	}
-	tStr := t.(string)
-	if !ok {
-		return nil, errors.New("type is not a string")
+	err = json.Unmarshal(tRaw, &t)
+	if err != nil {
+		return nil, err
 	}
-	fn, ok := e.unmarshalFnByType[tStr]
+	fn, ok := e.unmarshalFnByType[t]
 	if !ok {
-		return nil, errors.New("no unmarshal function for type " + tStr)
+		return nil, errors.New("no unmarshal function for type: " + t)
+	}
+	return fn(b)
+}
+
+func (e *EntityUnmarshaler) UnmarshalAs(t string, b []byte) (EntityIface, error) {
+	fn, ok := e.unmarshalFnByType[t]
+	if !ok {
+		return nil, errors.New("no unmarshal function for type: " + t)
 	}
 	return fn(b)
 }
