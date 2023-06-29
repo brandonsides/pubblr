@@ -157,13 +157,13 @@ var entityIface reflect.Type = reflect.TypeOf((*EntityIface)(nil)).Elem()
 func defaultUnmarshalFn(u *EntityUnmarshaler, e EntityIface) unmarshalFn {
 	targetType := reflect.TypeOf(e)
 	return func(b []byte) (EntityIface, error) {
-		ret := reflect.Zero(targetType).Interface()
-		err := u.Unmarshal(b, &ret)
+		ret := reflect.New(targetType)
+		err := u.Unmarshal(b, ret.Interface())
 		if err != nil {
 			return nil, err
 		}
 
-		entRet, ok := ret.(EntityIface)
+		entRet, ok := ret.Elem().Interface().(EntityIface)
 		if !ok {
 			return nil, fmt.Errorf("unmarshal: expected EntityIface, got %T", ret)
 		}
@@ -202,12 +202,14 @@ func (u *EntityUnmarshaler) Unmarshal(b []byte, dest interface{}) error {
 	} else if targetType.Implements(jsonUnmarshalerType) {
 		err = json.Unmarshal(b, dest)
 	} else if targetType.Kind() == reflect.Struct {
-		val := reflect.New(targetType).Interface()
-		err = u.unmarshalStruct(b, val)
+		err = u.unmarshalStruct(b, dest)
 		if err != nil {
 			return err
 		}
-		reflect.ValueOf(dest).Elem().Set(reflect.ValueOf(val).Elem())
+	} else if targetType.Kind() == reflect.Ptr {
+		subDest := reflect.ValueOf(dest).Elem()
+		subDest.Set(reflect.New(targetType.Elem()))
+		err = u.Unmarshal(b, subDest.Interface())
 	} else if targetType.Kind() == reflect.Slice || targetType.Kind() == reflect.Array {
 		var unmarshalledSlc []json.RawMessage
 		err := json.Unmarshal(b, &unmarshalledSlc)
@@ -216,12 +218,12 @@ func (u *EntityUnmarshaler) Unmarshal(b []byte, dest interface{}) error {
 		}
 		slc := reflect.MakeSlice(targetType, 0, len(unmarshalledSlc))
 		for _, val := range unmarshalledSlc {
-			unmarshalledVal := reflect.Zero(targetType.Elem()).Interface()
-			err := u.Unmarshal(val, &unmarshalledVal)
+			unmarshalledVal := reflect.New(targetType.Elem()).Interface()
+			err := u.Unmarshal(val, unmarshalledVal)
 			if err != nil {
 				return err
 			}
-			slc = reflect.Append(slc, reflect.ValueOf(unmarshalledVal))
+			slc = reflect.Append(slc, reflect.ValueOf(unmarshalledVal).Elem())
 		}
 		reflect.ValueOf(dest).Elem().Set(slc)
 	} else if targetType.Kind() == reflect.Map && targetType.Key() == reflect.TypeOf("") {
@@ -232,12 +234,12 @@ func (u *EntityUnmarshaler) Unmarshal(b []byte, dest interface{}) error {
 		}
 		m := reflect.MakeMap(targetType)
 		for k, v := range unmarshalledMap {
-			unmarshalledVal := reflect.Zero(targetType.Elem()).Interface()
-			err := u.Unmarshal(v, &unmarshalledVal)
+			unmarshalledVal := reflect.New(targetType.Elem()).Interface()
+			err := u.Unmarshal(v, unmarshalledVal)
 			if err != nil {
 				return err
 			}
-			m.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(unmarshalledVal))
+			m.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(unmarshalledVal).Elem())
 		}
 		reflect.ValueOf(dest).Elem().Set(m)
 	} else if !bad[targetType.Kind()] {
@@ -281,12 +283,11 @@ func (u *EntityUnmarshaler) unmarshalStruct(b []byte, dest interface{}) error {
 				}
 			}
 		}
-		val := reflect.Zero(field.Type).Interface()
-		err := u.Unmarshal(fieldBytes, &val)
+		fieldDest := reflect.ValueOf(dest).Elem().Field(i).Addr().Interface()
+		err := u.Unmarshal(fieldBytes, fieldDest)
 		if err != nil {
 			return err
 		}
-		reflect.ValueOf(dest).Elem().Field(i).Set(reflect.ValueOf(val))
 	}
 
 	return nil
