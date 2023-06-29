@@ -173,7 +173,7 @@ func defaultUnmarshalFn(u *EntityUnmarshaler, e EntityIface) unmarshalFn {
 }
 
 type CustomUnmarshaler interface {
-	CustomUnmarshalJSON(*EntityUnmarshaler, []byte)
+	CustomUnmarshalJSON(*EntityUnmarshaler, []byte) error
 }
 
 func (u *EntityUnmarshaler) Unmarshal(b []byte, dest interface{}) error {
@@ -197,7 +197,7 @@ func (u *EntityUnmarshaler) Unmarshal(b []byte, dest interface{}) error {
 			return err
 		}
 		reflect.ValueOf(dest).Elem().Set(reflect.ValueOf(val))
-	} else if targetType.Implements(customUnmarshalerType) {
+	} else if reflect.TypeOf(dest).Implements(customUnmarshalerType) {
 		dest.(CustomUnmarshaler).CustomUnmarshalJSON(u, b)
 	} else if targetType.Implements(jsonUnmarshalerType) {
 		err = json.Unmarshal(b, dest)

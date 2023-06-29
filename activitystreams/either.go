@@ -3,40 +3,34 @@ package activitystreams
 import (
 	"encoding/json"
 	"fmt"
-	"unsafe"
 )
 
 type Either[A, B any] struct {
 	isLeft bool
-	data   unsafe.Pointer
+	a      *A
+	b      *B
 }
 
 func Left[A, B any](a A) *Either[A, B] {
 	return &Either[A, B]{
 		isLeft: true,
-		data:   unsafe.Pointer(&a),
+		a:      &a,
 	}
 }
 
 func Right[A, B any](b B) *Either[A, B] {
 	return &Either[A, B]{
 		isLeft: false,
-		data:   unsafe.Pointer(&b),
+		b:      &b,
 	}
 }
 
 func (e Either[A, B]) Left() *A {
-	if !e.isLeft {
-		return nil
-	}
-	return (*A)(e.data)
+	return e.a
 }
 
 func (e Either[A, B]) Right() *B {
-	if e.isLeft {
-		return nil
-	}
-	return (*B)(e.data)
+	return e.b
 }
 
 func (e Either[A, B]) MarshalJSON() ([]byte, error) {
@@ -50,13 +44,11 @@ func (e *Either[A, B]) CustomUnmarshalJSON(u *EntityUnmarshaler, data []byte) er
 	var a A
 	var b B
 
-	var aIface interface{} = a
-	if err := u.Unmarshal(data, &aIface); err == nil {
+	if err := u.Unmarshal(data, &a); err == nil {
 		*e = *Left[A, B](a)
 		return nil
 	}
-	var bIface interface{} = b
-	if err := json.Unmarshal(data, &bIface); err == nil {
+	if err := json.Unmarshal(data, &b); err == nil {
 		*e = *Right[A](b)
 		return nil
 	}

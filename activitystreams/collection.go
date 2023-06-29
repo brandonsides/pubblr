@@ -46,7 +46,7 @@ type Collection struct {
 	Current    *Either[*CollectionPage, LinkIface] `json:"current,omitempty"`
 	First      *Either[*CollectionPage, LinkIface] `json:"first,omitempty"`
 	Last       *Either[*CollectionPage, LinkIface] `json:"last,omitempty"`
-	Items      []Either[ObjectIface, LinkIface]    `json:"items,omitempty"`
+	Items      []*Either[ObjectIface, LinkIface]   `json:"items,omitempty"`
 }
 
 func (c *Collection) collection() *Collection {

@@ -18,15 +18,15 @@ var _ = Describe("Collection", func() {
 		},
 		TotalItems: 2,
 		Ordered:    false,
-		Items: []activitystreams.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*activitystreams.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Note{
+		Items: []*activitystreams.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
+			activitystreams.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Note{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/note/1",
 					},
 				},
 			}),
-			*activitystreams.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Image{
+			activitystreams.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Image{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/image/1",

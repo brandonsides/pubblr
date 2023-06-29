@@ -2,12 +2,14 @@ package activitystreams_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
+	"github.com/go-test/deep"
 )
 
 var _ = Describe("Entity", func() {
@@ -143,6 +145,10 @@ func CheckActivityStreamsEntity(objectType string, actual activitystreams.Entity
 
 			unmarshalled, err := activitystreams.DefaultEntityUnmarshaler.UnmarshalEntity(jsonObject)
 			Expect(err).ToNot(HaveOccurred())
+			diff := deep.Equal(unmarshalled, actual)
+			if diff != nil {
+				fmt.Println(diff)
+			}
 			Expect(unmarshalled).To(Equal(actual))
 		})
 	})
