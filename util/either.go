@@ -2,6 +2,7 @@ package util
 
 import (
 	"encoding/json"
+	"fmt"
 	"unsafe"
 )
 
@@ -43,4 +44,18 @@ func (e Either[A, B]) MarshalJSON() ([]byte, error) {
 		return json.Marshal(e.Left())
 	}
 	return json.Marshal(e.Right())
+}
+
+func (e *Either[A, B]) UnmarshalJSON(data []byte) error {
+	var a A
+	var b B
+	if err := json.Unmarshal(data, &a); err == nil {
+		*e = *Left[A, B](a)
+		return nil
+	}
+	if err := json.Unmarshal(data, &b); err == nil {
+		*e = *Right[A](b)
+		return nil
+	}
+	return fmt.Errorf("Could not unmarshal Either[%T, %T]", a, b)
 }
