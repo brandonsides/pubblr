@@ -7,7 +7,6 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/util"
 )
 
 var _ = Describe("Collection", func() {
@@ -19,15 +18,15 @@ var _ = Describe("Collection", func() {
 		},
 		TotalItems: 2,
 		Ordered:    false,
-		Items: []util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Note{
+		Items: []activitystreams.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
+			*activitystreams.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Note{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/note/1",
 					},
 				},
 			}),
-			*util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Image{
+			*activitystreams.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Image{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/image/1",
@@ -35,7 +34,7 @@ var _ = Describe("Collection", func() {
 				},
 			}),
 		},
-		Current: util.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
+		Current: activitystreams.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
 			Collection: activitystreams.Collection{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
@@ -44,7 +43,7 @@ var _ = Describe("Collection", func() {
 				},
 			},
 		}),
-		First: util.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
+		First: activitystreams.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
 			Collection: activitystreams.Collection{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
@@ -53,7 +52,7 @@ var _ = Describe("Collection", func() {
 				},
 			},
 		}),
-		Last: util.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
+		Last: activitystreams.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
 			Collection: activitystreams.Collection{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{

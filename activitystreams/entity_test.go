@@ -141,7 +141,7 @@ func CheckActivityStreamsEntity(objectType string, actual activitystreams.Entity
 			jsonObject, err := json.Marshal(expected)
 			Expect(err).ToNot(HaveOccurred())
 
-			unmarshalled, err := activitystreams.DefaultEntityUnmarshaler.Unmarshal(jsonObject)
+			unmarshalled, err := activitystreams.DefaultEntityUnmarshaler.UnmarshalEntity(jsonObject)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(unmarshalled).To(Equal(actual))
 		})

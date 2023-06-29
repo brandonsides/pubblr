@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-
-	"github.com/brandonsides/pubblr/util"
 )
 
 var DefaultEntityUnmarshaler EntityUnmarshaler
@@ -126,7 +124,7 @@ func MarshalEntity(e EntityIface) ([]byte, error) {
 			}
 			continue
 		}
-		tag := util.FromStructField(field)
+		tag := FromStructField(field)
 		if tag.Omit || tag.OmitEmpty && reflect.ValueOf(e).Elem().Field(fieldIndex).IsZero() {
 			continue
 		}
@@ -159,7 +157,8 @@ var entityIface reflect.Type = reflect.TypeOf((*EntityIface)(nil)).Elem()
 func defaultUnmarshalFn(u *EntityUnmarshaler, e EntityIface) unmarshalFn {
 	targetType := reflect.TypeOf(e)
 	return func(b []byte) (EntityIface, error) {
-		ret, err := unmarshal(u, targetType, b)
+		ret := reflect.Zero(targetType).Interface()
+		err := u.Unmarshal(b, &ret)
 		if err != nil {
 			return nil, err
 		}
@@ -173,107 +172,127 @@ func defaultUnmarshalFn(u *EntityUnmarshaler, e EntityIface) unmarshalFn {
 	}
 }
 
-func unmarshal(u *EntityUnmarshaler, targetType reflect.Type, b []byte) (interface{}, error) {
+type CustomUnmarshaler interface {
+	CustomUnmarshalJSON(*EntityUnmarshaler, []byte)
+}
+
+func (u *EntityUnmarshaler) Unmarshal(b []byte, dest interface{}) error {
+	targetType := reflect.TypeOf(dest)
+	if targetType.Kind() != reflect.Ptr {
+		return errors.New("dest must be a pointer")
+	}
+	targetType = targetType.Elem()
+
 	jsonUnmarshalerType := reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
+	customUnmarshalerType := reflect.TypeOf((*CustomUnmarshaler)(nil)).Elem()
 	bad := map[reflect.Kind]bool{
 		reflect.Chan:      true,
 		reflect.Func:      true,
 		reflect.Interface: true,
 	}
-	var ret interface{}
 	var err error
 	if targetType == entityIface {
-		ret, err = u.Unmarshal(b)
-	} else if targetType.Implements(jsonUnmarshalerType) {
-		err = json.Unmarshal(b, &ret)
-	} else if targetType.Kind() == reflect.Struct {
-		ret, err = unmarshalStruct(u, targetType, b)
-	} else if targetType.Kind() == reflect.Ptr {
-		unmarshalledVal, err := unmarshal(u, targetType.Elem(), b)
+		val, err := u.UnmarshalEntity(b)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		ptr := reflect.New(targetType.Elem())
-		ptr.Elem().Set(reflect.ValueOf(unmarshalledVal))
-		ret = ptr.Interface()
+		reflect.ValueOf(dest).Elem().Set(reflect.ValueOf(val))
+	} else if targetType.Implements(customUnmarshalerType) {
+		dest.(CustomUnmarshaler).CustomUnmarshalJSON(u, b)
+	} else if targetType.Implements(jsonUnmarshalerType) {
+		err = json.Unmarshal(b, dest)
+	} else if targetType.Kind() == reflect.Struct {
+		val := reflect.New(targetType).Interface()
+		err = u.unmarshalStruct(b, val)
+		if err != nil {
+			return err
+		}
+		reflect.ValueOf(dest).Elem().Set(reflect.ValueOf(val).Elem())
 	} else if targetType.Kind() == reflect.Slice || targetType.Kind() == reflect.Array {
 		var unmarshalledSlc []json.RawMessage
 		err := json.Unmarshal(b, &unmarshalledSlc)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		slc := reflect.MakeSlice(targetType, 0, len(unmarshalledSlc))
 		for _, val := range unmarshalledSlc {
-			unmarshalledVal, err := unmarshal(u, targetType.Elem(), val)
+			unmarshalledVal := reflect.Zero(targetType.Elem()).Interface()
+			err := u.Unmarshal(val, &unmarshalledVal)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			slc = reflect.Append(slc, reflect.ValueOf(unmarshalledVal))
 		}
-		ret = slc.Interface()
+		reflect.ValueOf(dest).Elem().Set(slc)
 	} else if targetType.Kind() == reflect.Map && targetType.Key() == reflect.TypeOf("") {
 		var unmarshalledMap map[string]json.RawMessage
 		err := json.Unmarshal(b, &unmarshalledMap)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		m := reflect.MakeMap(targetType)
 		for k, v := range unmarshalledMap {
-			unmarshalledVal, err := unmarshal(u, targetType.Elem(), v)
+			unmarshalledVal := reflect.Zero(targetType.Elem()).Interface()
+			err := u.Unmarshal(v, &unmarshalledVal)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			m.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(unmarshalledVal))
 		}
-		ret = m.Interface()
+		reflect.ValueOf(dest).Elem().Set(m)
 	} else if !bad[targetType.Kind()] {
-		err = json.Unmarshal(b, &ret)
+		err = json.Unmarshal(b, dest)
 	} else {
-		return nil, errors.New("Unsupported type: " + targetType.String())
+		return errors.New("Unsupported type: " + targetType.String())
 	}
-	return ret, err
+	return err
 }
 
-func unmarshalStruct(u *EntityUnmarshaler, targetType reflect.Type, b []byte) (interface{}, error) {
+func (u *EntityUnmarshaler) unmarshalStruct(b []byte, dest interface{}) error {
+	targetType := reflect.TypeOf(dest)
+	if targetType.Kind() != reflect.Ptr {
+		return errors.New("dest must be a pointer")
+	}
+	targetType = targetType.Elem()
 	if targetType.Kind() != reflect.Struct {
-		return nil, errors.New("targetType is not a struct")
+		return errors.New("dest must be a pointer to a struct")
 	}
 
 	var raw map[string]json.RawMessage
 	err := json.Unmarshal(b, &raw)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	ret := reflect.New(targetType).Elem()
 	for i := 0; i < targetType.NumField(); i++ {
 		field := targetType.Field(i)
 		var fieldBytes json.RawMessage
 		if field.Anonymous {
 			fieldBytes = b
 		} else {
-			jsonTag := util.FromStructField(field)
+			jsonTag := FromStructField(field)
 			var ok bool
 			fieldBytes, ok = raw[jsonTag.Name]
 			if !ok {
 				if jsonTag.OmitEmpty {
 					continue
 				} else {
-					return nil, errors.New("JSON does not include required field: " + jsonTag.Name)
+					return errors.New("JSON does not include required field: " + jsonTag.Name)
 				}
 			}
 		}
-		val, err := unmarshal(u, field.Type, fieldBytes)
+		val := reflect.Zero(field.Type).Interface()
+		err := u.Unmarshal(fieldBytes, &val)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		ret.Field(i).Set(reflect.ValueOf(val))
+		reflect.ValueOf(dest).Elem().Field(i).Set(reflect.ValueOf(val))
 	}
 
-	return ret.Interface(), nil
+	return nil
 }
 
-func (e *EntityUnmarshaler) Unmarshal(b []byte) (EntityIface, error) {
+func (e *EntityUnmarshaler) UnmarshalEntity(b []byte) (EntityIface, error) {
 	var raw map[string]json.RawMessage
 	err := json.Unmarshal(b, &raw)
 	if err != nil {

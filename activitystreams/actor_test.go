@@ -7,7 +7,6 @@ import (
 	//	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/util"
 )
 
 var _ = Describe("Actor", func() {
@@ -88,7 +87,7 @@ var _ = Describe("Actor", func() {
 				Entity: activitystreams.Entity{
 					Name: "John's Avatar",
 				},
-				URL: util.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
+				URL: activitystreams.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
 			},
 		},
 		Image: &activitystreams.Image{
@@ -96,7 +95,7 @@ var _ = Describe("Actor", func() {
 				Entity: activitystreams.Entity{
 					Name: "John's Header",
 				},
-				URL: util.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
+				URL: activitystreams.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
 			},
 		},
 		InReplyTo: []activitystreams.EntityIface{
@@ -143,7 +142,7 @@ var _ = Describe("Actor", func() {
 				},
 			},
 		},
-		URL:       util.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
+		URL:       activitystreams.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
 		Content:   "This is a simple note",
 		Duration:  &duration,
 		EndTime:   &endTime,

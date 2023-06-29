@@ -2,7 +2,6 @@ package activitystreams_test
 
 import (
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/util"
 	. "github.com/onsi/ginkgo/v2"
 )
 
@@ -19,7 +18,7 @@ var _ = Describe("Activity", func() {
 							Entity: activitystreams.Entity{
 								Id: "http://example.org/john/images/1",
 							},
-							URL: util.Left[string, activitystreams.LinkIface]("http://example.org/john/images/1.jpg"),
+							URL: activitystreams.Left[string, activitystreams.LinkIface]("http://example.org/john/images/1.jpg"),
 						},
 					},
 					&activitystreams.Link{
