@@ -12,75 +12,79 @@ var DefaultEntityUnmarshaler EntityUnmarshaler
 func init() {
 	DefaultEntityUnmarshaler = EntityUnmarshaler{
 		unmarshalFnByType: map[string]unmarshalFn{
-			"IntransitiveActivity": defaultUnmarshalFn(&DefaultEntityUnmarshaler, &IntransitiveActivity{}),
-			"Activity":             defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Activity{}),
-			"Accept":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Accept{}),
-			"Announce":             defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Announce{}),
-			"Add":                  defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Add{}),
-			"Arrive":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Arrive{}),
-			"Block":                defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Block{}),
-			"Create":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Create{}),
-			"Delete":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Delete{}),
-			"Dislike":              defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Dislike{}),
-			"Flag":                 defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Flag{}),
-			"Follow":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Follow{}),
-			"Ignore":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Ignore{}),
-			"Invite":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Invite{}),
-			"Join":                 defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Join{}),
-			"Leave":                defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Leave{}),
-			"Like":                 defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Like{}),
-			"Listen":               defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Listen{}),
-			"Move":                 defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Move{}),
-			"Offer":                defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Offer{}),
-			"Question": func(b []byte) (EntityIface, error) {
+			"IntransitiveActivity": defaultUnmarshalFn(&IntransitiveActivity{}),
+			"Activity":             defaultUnmarshalFn(&Activity{}),
+			"Accept":               defaultUnmarshalFn(&Accept{}),
+			"Announce":             defaultUnmarshalFn(&Announce{}),
+			"Add":                  defaultUnmarshalFn(&Add{}),
+			"Arrive":               defaultUnmarshalFn(&Arrive{}),
+			"Block":                defaultUnmarshalFn(&Block{}),
+			"Create":               defaultUnmarshalFn(&Create{}),
+			"Delete":               defaultUnmarshalFn(&Delete{}),
+			"Dislike":              defaultUnmarshalFn(&Dislike{}),
+			"Flag":                 defaultUnmarshalFn(&Flag{}),
+			"Follow":               defaultUnmarshalFn(&Follow{}),
+			"Ignore":               defaultUnmarshalFn(&Ignore{}),
+			"Invite":               defaultUnmarshalFn(&Invite{}),
+			"Join":                 defaultUnmarshalFn(&Join{}),
+			"Leave":                defaultUnmarshalFn(&Leave{}),
+			"Like":                 defaultUnmarshalFn(&Like{}),
+			"Listen":               defaultUnmarshalFn(&Listen{}),
+			"Move":                 defaultUnmarshalFn(&Move{}),
+			"Offer":                defaultUnmarshalFn(&Offer{}),
+			"Question": func(u *EntityUnmarshaler, b []byte) (EntityIface, error) {
 				var qMap map[string]interface{}
 				json.Unmarshal(b, &qMap)
 				if _, ok := qMap["oneOf"]; ok {
 					ret := SingleAnswerQuestion{}
-					err := json.Unmarshal(b, &ret)
+					err := u.Unmarshal(b, &ret)
 					return &ret, err
 				} else if _, ok := qMap["anyOf"]; ok {
 					ret := MultiAnswerQuestion{}
-					err := json.Unmarshal(b, &ret)
+					err := u.Unmarshal(b, &ret)
 					return &ret, err
 				} else if _, ok := qMap["closed"]; ok {
 					ret := ClosedQuestion{}
-					err := json.Unmarshal(b, &ret)
+					err := u.Unmarshal(b, &ret)
 					return &ret, err
 				}
-				return nil, errors.New("Unknown question type")
+				ret := Question{}
+				err := u.Unmarshal(b, &ret)
+				return &ret, err
 			},
-			"Reject":          defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Reject{}),
-			"Read":            defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Read{}),
-			"Remove":          defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Remove{}),
-			"TentativeAccept": defaultUnmarshalFn(&DefaultEntityUnmarshaler, &TentativeAccept{}),
-			"TentativeReject": defaultUnmarshalFn(&DefaultEntityUnmarshaler, &TentativeReject{}),
-			"Travel":          defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Travel{}),
-			"Undo":            defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Undo{}),
-			"Update":          defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Update{}),
-			"View":            defaultUnmarshalFn(&DefaultEntityUnmarshaler, &View{}),
-			"Application":     defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Application{}),
-			"Group":           defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Group{}),
-			"Organization":    defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Organization{}),
-			"Person":          defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Person{}),
-			"Service":         defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Service{}),
-			"Article":         defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Article{}),
-			"Audio":           defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Audio{}),
-			"Document":        defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Document{}),
-			"Event":           defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Event{}),
-			"Image":           defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Image{}),
-			"Note":            defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Note{}),
-			"Object":          defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Object{}),
-			"Page":            defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Page{}),
-			"Place":           defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Place{}),
-			"Profile":         defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Profile{}),
-			"Relationship":    defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Relationship{}),
-			"Tombstone":       defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Tombstone{}),
-			"Video":           defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Video{}),
-			"Collection":      defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Collection{}),
-			"CollectionPage":  defaultUnmarshalFn(&DefaultEntityUnmarshaler, &CollectionPage{}),
-			"Link":            defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Link{}),
-			"Mention":         defaultUnmarshalFn(&DefaultEntityUnmarshaler, &Mention{}),
+			"Reject":                defaultUnmarshalFn(&Reject{}),
+			"Read":                  defaultUnmarshalFn(&Read{}),
+			"Remove":                defaultUnmarshalFn(&Remove{}),
+			"TentativeAccept":       defaultUnmarshalFn(&TentativeAccept{}),
+			"TentativeReject":       defaultUnmarshalFn(&TentativeReject{}),
+			"Travel":                defaultUnmarshalFn(&Travel{}),
+			"Undo":                  defaultUnmarshalFn(&Undo{}),
+			"Update":                defaultUnmarshalFn(&Update{}),
+			"View":                  defaultUnmarshalFn(&View{}),
+			"Application":           defaultUnmarshalFn(&Application{}),
+			"Group":                 defaultUnmarshalFn(&Group{}),
+			"Organization":          defaultUnmarshalFn(&Organization{}),
+			"Person":                defaultUnmarshalFn(&Person{}),
+			"Service":               defaultUnmarshalFn(&Service{}),
+			"Article":               defaultUnmarshalFn(&Article{}),
+			"Audio":                 defaultUnmarshalFn(&Audio{}),
+			"Document":              defaultUnmarshalFn(&Document{}),
+			"Event":                 defaultUnmarshalFn(&Event{}),
+			"Image":                 defaultUnmarshalFn(&Image{}),
+			"Note":                  defaultUnmarshalFn(&Note{}),
+			"Object":                defaultUnmarshalFn(&Object{}),
+			"Page":                  defaultUnmarshalFn(&Page{}),
+			"Place":                 defaultUnmarshalFn(&Place{}),
+			"Profile":               defaultUnmarshalFn(&Profile{}),
+			"Relationship":          defaultUnmarshalFn(&Relationship{}),
+			"Tombstone":             defaultUnmarshalFn(&Tombstone{}),
+			"Video":                 defaultUnmarshalFn(&Video{}),
+			"Collection":            defaultUnmarshalFn(&Collection{}),
+			"CollectionPage":        defaultUnmarshalFn(&CollectionPage{}),
+			"OrderedCollection":     defaultUnmarshalFn(&Collection{}),
+			"OrderedCollectionPage": defaultUnmarshalFn(&CollectionPage{}),
+			"Link":                  defaultUnmarshalFn(&Link{}),
+			"Mention":               defaultUnmarshalFn(&Mention{}),
 		},
 	}
 }
@@ -150,15 +154,22 @@ type EntityUnmarshaler struct {
 	unmarshalFnByType map[string]unmarshalFn
 }
 
-type unmarshalFn func([]byte) (EntityIface, error)
+type unmarshalFn func(*EntityUnmarshaler, []byte) (EntityIface, error)
 
 var entityIface reflect.Type = reflect.TypeOf((*EntityIface)(nil)).Elem()
 
-func defaultUnmarshalFn(u *EntityUnmarshaler, e EntityIface) unmarshalFn {
+func defaultUnmarshalFn(e EntityIface) unmarshalFn {
 	targetType := reflect.TypeOf(e)
-	return func(b []byte) (EntityIface, error) {
+	return func(u *EntityUnmarshaler, b []byte) (EntityIface, error) {
 		ret := reflect.New(targetType)
-		err := u.Unmarshal(b, ret.Interface())
+		jsonUnmarshalerType := reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
+
+		var err error
+		if targetType.Implements(jsonUnmarshalerType) {
+			err = ret.Interface().(json.Unmarshaler).UnmarshalJSON(b)
+		} else {
+			err = u.Unmarshal(b, ret.Interface())
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -191,7 +202,7 @@ func (u *EntityUnmarshaler) Unmarshal(b []byte, dest interface{}) error {
 		reflect.Interface: true,
 	}
 	var err error
-	if targetType == entityIface {
+	if targetType.Kind() == reflect.Interface && targetType.Implements(entityIface) {
 		val, err := u.UnmarshalEntity(b)
 		if err != nil {
 			return err
@@ -273,6 +284,9 @@ func (u *EntityUnmarshaler) unmarshalStruct(b []byte, dest interface{}) error {
 			fieldBytes = b
 		} else {
 			jsonTag := FromStructField(field)
+			if jsonTag.Omit {
+				continue
+			}
 			var ok bool
 			fieldBytes, ok = raw[jsonTag.Name]
 			if !ok {
@@ -293,7 +307,7 @@ func (u *EntityUnmarshaler) unmarshalStruct(b []byte, dest interface{}) error {
 	return nil
 }
 
-func (e *EntityUnmarshaler) UnmarshalEntity(b []byte) (EntityIface, error) {
+func (u *EntityUnmarshaler) UnmarshalEntity(b []byte) (EntityIface, error) {
 	var raw map[string]json.RawMessage
 	err := json.Unmarshal(b, &raw)
 	if err != nil {
@@ -308,19 +322,19 @@ func (e *EntityUnmarshaler) UnmarshalEntity(b []byte) (EntityIface, error) {
 	if err != nil {
 		return nil, err
 	}
-	fn, ok := e.unmarshalFnByType[t]
+	fn, ok := u.unmarshalFnByType[t]
 	if !ok {
 		return nil, errors.New("no unmarshal function for type: " + t)
 	}
-	return fn(b)
+	return fn(u, b)
 }
 
-func (e *EntityUnmarshaler) UnmarshalAs(t string, b []byte) (EntityIface, error) {
-	fn, ok := e.unmarshalFnByType[t]
+func (u *EntityUnmarshaler) UnmarshalAs(t string, b []byte) (EntityIface, error) {
+	fn, ok := u.unmarshalFnByType[t]
 	if !ok {
 		return nil, errors.New("no unmarshal function for type: " + t)
 	}
-	return fn(b)
+	return fn(u, b)
 }
 
 func (e *EntityUnmarshaler) RegisterUnmarshalFn(t string, fn unmarshalFn) {
@@ -328,5 +342,5 @@ func (e *EntityUnmarshaler) RegisterUnmarshalFn(t string, fn unmarshalFn) {
 }
 
 func (u *EntityUnmarshaler) RegisterType(e EntityIface, t string) {
-	u.RegisterUnmarshalFn(t, defaultUnmarshalFn(u, e))
+	u.RegisterUnmarshalFn(t, defaultUnmarshalFn(e))
 }
