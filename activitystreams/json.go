@@ -8,6 +8,84 @@ import (
 	"strings"
 )
 
+var DefaultEntityUnmarshaler = EntityUnmarshaler{
+	unmarshalFnByType: map[string]unmarshalFn{
+		"IntransitiveActivity": defaultUnmarshalFn(&IntransitiveActivity{}),
+		"Activity":             defaultUnmarshalFn(&Activity{}),
+		"Accept":               defaultUnmarshalFn(&Accept{}),
+		"Announce":             defaultUnmarshalFn(&Announce{}),
+		"Add":                  defaultUnmarshalFn(&Add{}),
+		"Arrive":               defaultUnmarshalFn(&Arrive{}),
+		"Block":                defaultUnmarshalFn(&Block{}),
+		"Create":               defaultUnmarshalFn(&Create{}),
+		"Delete":               defaultUnmarshalFn(&Delete{}),
+		"Dislike":              defaultUnmarshalFn(&Dislike{}),
+		"Flag":                 defaultUnmarshalFn(&Flag{}),
+		"Follow":               defaultUnmarshalFn(&Follow{}),
+		"Ignore":               defaultUnmarshalFn(&Ignore{}),
+		"Invite":               defaultUnmarshalFn(&Invite{}),
+		"Join":                 defaultUnmarshalFn(&Join{}),
+		"Leave":                defaultUnmarshalFn(&Leave{}),
+		"Like":                 defaultUnmarshalFn(&Like{}),
+		"Listen":               defaultUnmarshalFn(&Listen{}),
+		"Move":                 defaultUnmarshalFn(&Move{}),
+		"Offer":                defaultUnmarshalFn(&Offer{}),
+		"Question": func(u *EntityUnmarshaler, b []byte) (EntityIface, error) {
+			var qMap map[string]interface{}
+			json.Unmarshal(b, &qMap)
+			if _, ok := qMap["oneOf"]; ok {
+				ret := SingleAnswerQuestion{}
+				err := u.Unmarshal(b, &ret)
+				return &ret, err
+			} else if _, ok := qMap["anyOf"]; ok {
+				ret := MultiAnswerQuestion{}
+				err := u.Unmarshal(b, &ret)
+				return &ret, err
+			} else if _, ok := qMap["closed"]; ok {
+				ret := ClosedQuestion{}
+				err := u.Unmarshal(b, &ret)
+				return &ret, err
+			}
+			ret := Question{}
+			err := u.Unmarshal(b, &ret)
+			return &ret, err
+		},
+		"Reject":                defaultUnmarshalFn(&Reject{}),
+		"Read":                  defaultUnmarshalFn(&Read{}),
+		"Remove":                defaultUnmarshalFn(&Remove{}),
+		"TentativeAccept":       defaultUnmarshalFn(&TentativeAccept{}),
+		"TentativeReject":       defaultUnmarshalFn(&TentativeReject{}),
+		"Travel":                defaultUnmarshalFn(&Travel{}),
+		"Undo":                  defaultUnmarshalFn(&Undo{}),
+		"Update":                defaultUnmarshalFn(&Update{}),
+		"View":                  defaultUnmarshalFn(&View{}),
+		"Application":           defaultUnmarshalFn(&Application{}),
+		"Group":                 defaultUnmarshalFn(&Group{}),
+		"Organization":          defaultUnmarshalFn(&Organization{}),
+		"Person":                defaultUnmarshalFn(&Person{}),
+		"Service":               defaultUnmarshalFn(&Service{}),
+		"Article":               defaultUnmarshalFn(&Article{}),
+		"Audio":                 defaultUnmarshalFn(&Audio{}),
+		"Document":              defaultUnmarshalFn(&Document{}),
+		"Event":                 defaultUnmarshalFn(&Event{}),
+		"Image":                 defaultUnmarshalFn(&Image{}),
+		"Note":                  defaultUnmarshalFn(&Note{}),
+		"Object":                defaultUnmarshalFn(&Object{}),
+		"Page":                  defaultUnmarshalFn(&Page{}),
+		"Place":                 defaultUnmarshalFn(&Place{}),
+		"Profile":               defaultUnmarshalFn(&Profile{}),
+		"Relationship":          defaultUnmarshalFn(&Relationship{}),
+		"Tombstone":             defaultUnmarshalFn(&Tombstone{}),
+		"Video":                 defaultUnmarshalFn(&Video{}),
+		"Collection":            defaultUnmarshalFn(&Collection{}),
+		"CollectionPage":        defaultUnmarshalFn(&CollectionPage{}),
+		"OrderedCollection":     defaultUnmarshalFn(&Collection{}),
+		"OrderedCollectionPage": defaultUnmarshalFn(&CollectionPage{}),
+		"Link":                  defaultUnmarshalFn(&Link{}),
+		"Mention":               defaultUnmarshalFn(&Mention{}),
+	},
+}
+
 type JSONStructTag struct {
 	Name      string
 	OmitEmpty bool
