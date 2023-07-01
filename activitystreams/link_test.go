@@ -4,18 +4,20 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 
 	"github.com/brandonsides/pubblr/activitystreams"
+	"github.com/brandonsides/pubblr/activitystreams/entity"
+	"github.com/brandonsides/pubblr/activitystreams/testutil"
 )
 
 var _ = Describe("Link", func() {
 	height := uint64(100)
 	width := uint64(200)
 	actualLink := activitystreams.Link{
-		Entity: activitystreams.Entity{
+		Entity: entity.Entity{
 			Id: "http://example.com/abc",
-			AttributedTo: []activitystreams.EntityIface{
+			AttributedTo: []entity.EntityIface{
 				activitystreams.ObjectIface(&activitystreams.Person{
 					Object: activitystreams.Object{
-						Entity: activitystreams.Entity{
+						Entity: entity.Entity{
 							Id: "http://example.com/~john",
 						},
 					},
@@ -27,7 +29,7 @@ var _ = Describe("Link", func() {
 		Href:     "http://example.com/abc",
 		HrefLang: "en",
 		Preview: &activitystreams.Object{
-			Entity: activitystreams.Entity{
+			Entity: entity.Entity{
 				Id: "http://example.com/abc/preview",
 			},
 		},
@@ -57,7 +59,7 @@ var _ = Describe("Link", func() {
 			delete(expectedLinkMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Link", &actualLink, expectedLinkMap)
+		testutil.CheckActivityStreamsEntity("Link", &actualLink, expectedLinkMap)
 	})
 
 	Describe("Mention", func() {
@@ -73,6 +75,6 @@ var _ = Describe("Link", func() {
 			delete(expectedLinkMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Mention", &actualMention, expectedLinkMap)
+		testutil.CheckActivityStreamsEntity("Mention", &actualMention, expectedLinkMap)
 	})
 })

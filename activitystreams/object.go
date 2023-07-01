@@ -2,13 +2,17 @@ package activitystreams
 
 import (
 	"time"
+
+	"github.com/brandonsides/pubblr/activitystreams/entity"
+	"github.com/brandonsides/pubblr/activitystreams/json"
+	"github.com/brandonsides/pubblr/activitystreams/util"
 )
 
 // ObjectIface is an interface representing any ActivityStreams object.
 // It is used to allow for polymorphism for types that embed Object.
 // All types must embed Object implement this interface.
 type ObjectIface interface {
-	EntityIface
+	entity.EntityIface
 	// unexported method implemented only by Object
 	// Forces all types to embed Object in order to implement this interface
 	object() *Object
@@ -21,30 +25,30 @@ func ToObject[O ObjectIface](o O) *Object {
 
 // Concrete type representing an ActivityStreams Object
 type Object struct {
-	Entity
-	Attachment []EntityIface              `json:"attachment,omitempty"`
-	Audience   []EntityIface              `json:"audience,omitempty"`
-	Bcc        []EntityIface              `json:"bcc,omitempty"`
-	Bto        []EntityIface              `json:"bto,omitempty"`
-	Cc         []EntityIface              `json:"cc,omitempty"`
-	Context    EntityIface                `json:"context,omitempty"`
-	Generator  EntityIface                `json:"generator,omitempty"`
-	Icon       EntityIface                `json:"icon,omitempty"`
-	Image      EntityIface                `json:"image,omitempty"`
-	InReplyTo  []EntityIface              `json:"inReplyTo,omitempty"`
-	Location   []EntityIface              `json:"location,omitempty"`
-	Preview    EntityIface                `json:"preview,omitempty"`
-	Replies    CollectionIface            `json:"replies,omitempty"`
-	Tag        []EntityIface              `json:"tag,omitempty"`
-	To         []EntityIface              `json:"to,omitempty"`
-	URL        *Either[string, LinkIface] `json:"url,omitempty"`
-	Content    string                     `json:"content,omitempty"`
-	Duration   *time.Duration             `json:"duration,omitempty"`
-	EndTime    *time.Time                 `json:"endTime,omitempty"`
-	Published  *time.Time                 `json:"published,omitempty"`
-	StartTime  *time.Time                 `json:"startTime,omitempty"`
-	Summary    string                     `json:"summary,omitempty"`
-	Updated    *time.Time                 `json:"updated,omitempty"`
+	entity.Entity
+	Attachment []entity.EntityIface            `json:"attachment,omitempty"`
+	Audience   []entity.EntityIface            `json:"audience,omitempty"`
+	Bcc        []entity.EntityIface            `json:"bcc,omitempty"`
+	Bto        []entity.EntityIface            `json:"bto,omitempty"`
+	Cc         []entity.EntityIface            `json:"cc,omitempty"`
+	Context    entity.EntityIface              `json:"context,omitempty"`
+	Generator  entity.EntityIface              `json:"generator,omitempty"`
+	Icon       entity.EntityIface              `json:"icon,omitempty"`
+	Image      entity.EntityIface              `json:"image,omitempty"`
+	InReplyTo  []entity.EntityIface            `json:"inReplyTo,omitempty"`
+	Location   []entity.EntityIface            `json:"location,omitempty"`
+	Preview    entity.EntityIface              `json:"preview,omitempty"`
+	Replies    CollectionIface                 `json:"replies,omitempty"`
+	Tag        []entity.EntityIface            `json:"tag,omitempty"`
+	To         []entity.EntityIface            `json:"to,omitempty"`
+	URL        *util.Either[string, LinkIface] `json:"url,omitempty"`
+	Content    string                          `json:"content,omitempty"`
+	Duration   *time.Duration                  `json:"duration,omitempty"`
+	EndTime    *time.Time                      `json:"endTime,omitempty"`
+	Published  *time.Time                      `json:"published,omitempty"`
+	StartTime  *time.Time                      `json:"startTime,omitempty"`
+	Summary    string                          `json:"summary,omitempty"`
+	Updated    *time.Time                      `json:"updated,omitempty"`
 }
 
 func (o *Object) object() *Object {
@@ -56,15 +60,15 @@ func (o *Object) Type() (string, error) {
 }
 
 func (o *Object) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(o)
+	return json.MarshalEntity(o)
 }
 
 // Represents an ActivityStreams Relationship object
 type Relationship struct {
 	Object
-	Subject      *Either[ObjectIface, Link] `json:"subject,omitempty"`
-	Obj          *Either[ObjectIface, Link] `json:"object,omitempty"`
-	Relationship ObjectIface                `json:"relationship,omitempty"`
+	Subject      *util.Either[ObjectIface, Link] `json:"subject,omitempty"`
+	Obj          *util.Either[ObjectIface, Link] `json:"object,omitempty"`
+	Relationship ObjectIface                     `json:"relationship,omitempty"`
 }
 
 func (r *Relationship) Type() (string, error) {
@@ -72,7 +76,7 @@ func (r *Relationship) Type() (string, error) {
 }
 
 func (r *Relationship) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(r)
+	return json.MarshalEntity(r)
 }
 
 // Represents an ActivityStreams Article object
@@ -85,7 +89,7 @@ func (a *Article) Type() (string, error) {
 }
 
 func (a *Article) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(a)
+	return json.MarshalEntity(a)
 }
 
 // Represents an ActivityStreams Document object
@@ -98,7 +102,7 @@ func (d *Document) Type() (string, error) {
 }
 
 func (d *Document) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(d)
+	return json.MarshalEntity(d)
 }
 
 // Represents an ActivityStreams Audio object
@@ -111,7 +115,7 @@ func (a *Audio) Type() (string, error) {
 }
 
 func (a *Audio) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(a)
+	return json.MarshalEntity(a)
 }
 
 // Represents an ActivityStreams Image object
@@ -124,7 +128,7 @@ func (i *Image) Type() (string, error) {
 }
 
 func (i *Image) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(i)
+	return json.MarshalEntity(i)
 }
 
 // Represents an ActivityStreams Video object
@@ -137,7 +141,7 @@ func (v *Video) Type() (string, error) {
 }
 
 func (v *Video) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(v)
+	return json.MarshalEntity(v)
 }
 
 // Represents an ActivityStreams Note object
@@ -150,7 +154,7 @@ func (n *Note) Type() (string, error) {
 }
 
 func (n *Note) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(n)
+	return json.MarshalEntity(n)
 }
 
 // Represents an ActivityStreams Page object
@@ -163,7 +167,7 @@ func (p *Page) Type() (string, error) {
 }
 
 func (p *Page) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(p)
+	return json.MarshalEntity(p)
 }
 
 // Represents an ActivityStreams Event object
@@ -176,7 +180,7 @@ func (e *Event) Type() (string, error) {
 }
 
 func (e *Event) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(e)
+	return json.MarshalEntity(e)
 }
 
 // Represents an ActivityStreams Place object
@@ -195,7 +199,7 @@ func (p *Place) Type() (string, error) {
 }
 
 func (p *Place) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(p)
+	return json.MarshalEntity(p)
 }
 
 // Represents an ActivityStreams Profile object
@@ -209,7 +213,7 @@ func (p *Profile) Type() (string, error) {
 }
 
 func (p *Profile) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(p)
+	return json.MarshalEntity(p)
 }
 
 // Represents an ActivityStreams Tombstone object
@@ -224,5 +228,5 @@ func (t *Tombstone) Type() (string, error) {
 }
 
 func (t *Tombstone) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(t)
+	return json.MarshalEntity(t)
 }

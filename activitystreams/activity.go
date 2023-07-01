@@ -1,16 +1,21 @@
 package activitystreams
 
+import (
+	"github.com/brandonsides/pubblr/activitystreams/entity"
+	"github.com/brandonsides/pubblr/activitystreams/json"
+)
+
 type IntransitiveActivity struct {
 	Object
-	Actor      EntityIface `json:"actor,omitempty"`
-	Target     EntityIface `json:"target,omitempty"`
-	Result     EntityIface `json:"result,omitempty"`
-	Origin     EntityIface `json:"origin,omitempty"`
-	Instrument EntityIface `json:"instrument,omitempty"`
+	Actor      entity.EntityIface `json:"actor,omitempty"`
+	Target     entity.EntityIface `json:"target,omitempty"`
+	Result     entity.EntityIface `json:"result,omitempty"`
+	Origin     entity.EntityIface `json:"origin,omitempty"`
+	Instrument entity.EntityIface `json:"instrument,omitempty"`
 }
 
 func (a *IntransitiveActivity) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(a)
+	return json.MarshalEntity(a)
 }
 
 func (a *IntransitiveActivity) Type() (string, error) {
@@ -19,11 +24,11 @@ func (a *IntransitiveActivity) Type() (string, error) {
 
 type Activity struct {
 	IntransitiveActivity
-	Object EntityIface `json:"object,omitempty"`
+	Object entity.EntityIface `json:"object,omitempty"`
 }
 
 func (a *Activity) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(a)
+	return json.MarshalEntity(a)
 }
 
 func (a *Activity) Type() (string, error) {
@@ -35,7 +40,7 @@ type Accept struct {
 }
 
 func (a *Accept) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(a)
+	return json.MarshalEntity(a)
 }
 
 func (a *Accept) Type() (string, error) {
@@ -47,7 +52,7 @@ type TentativeAccept struct {
 }
 
 func (a *TentativeAccept) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(a)
+	return json.MarshalEntity(a)
 }
 
 func (a *TentativeAccept) Type() (string, error) {
@@ -63,7 +68,7 @@ func (a *Add) Type() (string, error) {
 }
 
 func (a *Add) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(a)
+	return json.MarshalEntity(a)
 }
 
 type Arrive struct {
@@ -75,7 +80,7 @@ func (a *Arrive) Type() (string, error) {
 }
 
 func (a *Arrive) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(a)
+	return json.MarshalEntity(a)
 }
 
 type Create struct {
@@ -87,7 +92,7 @@ func (c *Create) Type() (string, error) {
 }
 
 func (c *Create) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(c)
+	return json.MarshalEntity(c)
 }
 
 type Delete struct {
@@ -95,7 +100,7 @@ type Delete struct {
 }
 
 func (d *Delete) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(d)
+	return json.MarshalEntity(d)
 }
 
 func (d *Delete) Type() (string, error) {
@@ -111,7 +116,7 @@ func (f *Follow) Type() (string, error) {
 }
 
 func (f *Follow) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(f)
+	return json.MarshalEntity(f)
 }
 
 type Ignore struct {
@@ -123,7 +128,7 @@ func (i *Ignore) Type() (string, error) {
 }
 
 func (i *Ignore) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(i)
+	return json.MarshalEntity(i)
 }
 
 type Join struct {
@@ -135,7 +140,7 @@ func (j *Join) Type() (string, error) {
 }
 
 func (j *Join) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(j)
+	return json.MarshalEntity(j)
 }
 
 type Leave struct {
@@ -147,7 +152,7 @@ func (l *Leave) Type() (string, error) {
 }
 
 func (l *Leave) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(l)
+	return json.MarshalEntity(l)
 }
 
 type Like struct {
@@ -159,7 +164,7 @@ func (l *Like) Type() (string, error) {
 }
 
 func (l *Like) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(l)
+	return json.MarshalEntity(l)
 }
 
 type Offer struct {
@@ -171,7 +176,7 @@ func (o *Offer) Type() (string, error) {
 }
 
 func (o *Offer) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(o)
+	return json.MarshalEntity(o)
 }
 
 type Invite struct {
@@ -183,7 +188,7 @@ func (i *Invite) Type() (string, error) {
 }
 
 func (i *Invite) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(i)
+	return json.MarshalEntity(i)
 }
 
 type Reject struct {
@@ -195,7 +200,7 @@ func (r *Reject) Type() (string, error) {
 }
 
 func (r *Reject) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(r)
+	return json.MarshalEntity(r)
 }
 
 type TentativeReject struct {
@@ -207,7 +212,7 @@ func (t *TentativeReject) Type() (string, error) {
 }
 
 func (t *TentativeReject) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(t)
+	return json.MarshalEntity(t)
 }
 
 type Remove struct {
@@ -219,7 +224,7 @@ func (r *Remove) Type() (string, error) {
 }
 
 func (r *Remove) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(r)
+	return json.MarshalEntity(r)
 }
 
 type Undo struct {
@@ -231,7 +236,7 @@ func (u *Undo) Type() (string, error) {
 }
 
 func (u *Undo) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(u)
+	return json.MarshalEntity(u)
 }
 
 type Update struct {
@@ -243,7 +248,7 @@ func (u *Update) Type() (string, error) {
 }
 
 func (u *Update) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(u)
+	return json.MarshalEntity(u)
 }
 
 type View struct {
@@ -251,7 +256,7 @@ type View struct {
 }
 
 func (v *View) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(v)
+	return json.MarshalEntity(v)
 }
 
 func (v *View) Type() (string, error) {
@@ -267,7 +272,7 @@ func (l *Listen) Type() (string, error) {
 }
 
 func (l *Listen) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(l)
+	return json.MarshalEntity(l)
 }
 
 type Read struct {
@@ -279,7 +284,7 @@ func (r *Read) Type() (string, error) {
 }
 
 func (r *Read) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(r)
+	return json.MarshalEntity(r)
 }
 
 type Move struct {
@@ -291,7 +296,7 @@ func (m *Move) Type() (string, error) {
 }
 
 func (m *Move) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(m)
+	return json.MarshalEntity(m)
 }
 
 type Travel struct {
@@ -303,7 +308,7 @@ func (t *Travel) Type() (string, error) {
 }
 
 func (t *Travel) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(t)
+	return json.MarshalEntity(t)
 }
 
 type Announce struct {
@@ -315,7 +320,7 @@ func (a *Announce) Type() (string, error) {
 }
 
 func (a *Announce) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(a)
+	return json.MarshalEntity(a)
 }
 
 type Block struct {
@@ -327,7 +332,7 @@ func (b *Block) Type() (string, error) {
 }
 
 func (b *Block) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(b)
+	return json.MarshalEntity(b)
 }
 
 type Flag struct {
@@ -339,7 +344,7 @@ func (f *Flag) Type() (string, error) {
 }
 
 func (f *Flag) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(f)
+	return json.MarshalEntity(f)
 }
 
 type Dislike struct {
@@ -351,7 +356,7 @@ func (d *Dislike) Type() (string, error) {
 }
 
 func (d *Dislike) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(d)
+	return json.MarshalEntity(d)
 }
 
 type Question struct {
@@ -363,32 +368,32 @@ func (q *Question) Type() (string, error) {
 }
 
 func (q *Question) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(q)
+	return json.MarshalEntity(q)
 }
 
 type SingleAnswerQuestion struct {
 	Question
-	OneOf []EntityIface `json:"oneOf,omitempty"`
+	OneOf []entity.EntityIface `json:"oneOf,omitempty"`
 }
 
 func (q *SingleAnswerQuestion) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(q)
+	return json.MarshalEntity(q)
 }
 
 type MultiAnswerQuestion struct {
 	Question
-	AnyOf []EntityIface `json:"anyOf,omitempty"`
+	AnyOf []entity.EntityIface `json:"anyOf,omitempty"`
 }
 
 func (q *MultiAnswerQuestion) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(q)
+	return json.MarshalEntity(q)
 }
 
 type ClosedQuestion struct {
 	Question
-	Closed EntityIface `json:"closed,omitempty"`
+	Closed entity.EntityIface `json:"closed,omitempty"`
 }
 
 func (q *ClosedQuestion) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(q)
+	return json.MarshalEntity(q)
 }

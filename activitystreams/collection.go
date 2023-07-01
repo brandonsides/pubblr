@@ -2,6 +2,9 @@ package activitystreams
 
 import (
 	"encoding/json"
+
+	pkgJson "github.com/brandonsides/pubblr/activitystreams/json"
+	"github.com/brandonsides/pubblr/activitystreams/util"
 )
 
 const (
@@ -41,12 +44,12 @@ func MarshalCollection(c CollectionIface) ([]byte, error) {
 
 type Collection struct {
 	Object
-	Ordered    bool                                `json:"-"`
-	TotalItems uint64                              `json:"totalItems,omitempty"`
-	Current    *Either[*CollectionPage, LinkIface] `json:"current,omitempty"`
-	First      *Either[*CollectionPage, LinkIface] `json:"first,omitempty"`
-	Last       *Either[*CollectionPage, LinkIface] `json:"last,omitempty"`
-	Items      []*Either[ObjectIface, LinkIface]   `json:"items,omitempty"`
+	Ordered    bool                                     `json:"-"`
+	TotalItems uint64                                   `json:"totalItems,omitempty"`
+	Current    *util.Either[*CollectionPage, LinkIface] `json:"current,omitempty"`
+	First      *util.Either[*CollectionPage, LinkIface] `json:"first,omitempty"`
+	Last       *util.Either[*CollectionPage, LinkIface] `json:"last,omitempty"`
+	Items      []*util.Either[ObjectIface, LinkIface]   `json:"items,omitempty"`
 }
 
 func (c *Collection) collection() *Collection {
@@ -54,7 +57,7 @@ func (c *Collection) collection() *Collection {
 }
 
 func (c *Collection) MarshalJSON() ([]byte, error) {
-	retJson, err := MarshalEntity(c)
+	retJson, err := pkgJson.MarshalEntity(c)
 	if err != nil {
 		return nil, err
 	}
@@ -84,9 +87,9 @@ func (c *Collection) Type() (string, error) {
 
 type CollectionPage struct {
 	Collection
-	PartOf *Either[Collection, Link]     `json:"partOf,omitempty"`
-	Next   *Either[CollectionPage, Link] `json:"next,omitempty"`
-	Prev   *Either[CollectionPage, Link] `json:"prev,omitempty"`
+	PartOf *util.Either[Collection, Link]     `json:"partOf,omitempty"`
+	Next   *util.Either[CollectionPage, Link] `json:"next,omitempty"`
+	Prev   *util.Either[CollectionPage, Link] `json:"prev,omitempty"`
 }
 
 func (c *CollectionPage) Type() (string, error) {
@@ -97,5 +100,5 @@ func (c *CollectionPage) Type() (string, error) {
 }
 
 func (c *CollectionPage) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(c)
+	return pkgJson.MarshalEntity(c)
 }

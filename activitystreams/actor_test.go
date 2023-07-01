@@ -7,6 +7,9 @@ import (
 	//	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
+	"github.com/brandonsides/pubblr/activitystreams/entity"
+	"github.com/brandonsides/pubblr/activitystreams/testutil"
+	"github.com/brandonsides/pubblr/activitystreams/util"
 )
 
 var _ = Describe("Actor", func() {
@@ -16,12 +19,12 @@ var _ = Describe("Actor", func() {
 	published := time.Date(2023, 6, 18, 9, 46, 0, 0, time.UTC)
 	updated := time.Date(2023, 6, 18, 9, 46, 30, 0, time.UTC)
 	actualActor := activitystreams.Object{
-		Entity: activitystreams.Entity{
+		Entity: entity.Entity{
 			Id: "http://example.org/~john",
-			AttributedTo: []activitystreams.EntityIface{
+			AttributedTo: []entity.EntityIface{
 				&activitystreams.Person{
 					Object: activitystreams.Object{
-						Entity: activitystreams.Entity{
+						Entity: entity.Entity{
 							Id: "http://example.org/~john",
 						},
 					},
@@ -29,120 +32,120 @@ var _ = Describe("Actor", func() {
 			},
 			Name: "A Simple Note",
 		},
-		Attachment: []activitystreams.EntityIface{
+		Attachment: []entity.EntityIface{
 			&activitystreams.Image{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id:        "http://example.org/~john/picture",
 						MediaType: "image/jpeg",
 					},
 				},
 			},
 			&activitystreams.Link{
-				Entity: activitystreams.Entity{
+				Entity: entity.Entity{
 					Id: "http://example.org/~john/profile",
 				},
 				Href: "http://example.org/~john/profile",
 			},
 		},
-		Bcc: []activitystreams.EntityIface{
+		Bcc: []entity.EntityIface{
 			&activitystreams.Person{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id: "http://example.org/~alice",
 					},
 				},
 			},
 		},
-		Bto: []activitystreams.EntityIface{
+		Bto: []entity.EntityIface{
 			&activitystreams.Person{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id: "http://example.org/~bob",
 					},
 				},
 			},
 		},
-		Cc: []activitystreams.EntityIface{
+		Cc: []entity.EntityIface{
 			&activitystreams.Person{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id: "http://example.org/~eve",
 					},
 				},
 			},
 		},
 		Context: &activitystreams.Object{
-			Entity: activitystreams.Entity{
+			Entity: entity.Entity{
 				Id: "http://example.org/contexts/1",
 			},
 		},
 		Generator: &activitystreams.Object{
-			Entity: activitystreams.Entity{
+			Entity: entity.Entity{
 				Id: "http://example.org/generator",
 			},
 		},
 		Icon: &activitystreams.Image{
 			Object: activitystreams.Object{
-				Entity: activitystreams.Entity{
+				Entity: entity.Entity{
 					Name: "John's Avatar",
 				},
-				URL: activitystreams.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
+				URL: util.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
 			},
 		},
 		Image: &activitystreams.Image{
 			Object: activitystreams.Object{
-				Entity: activitystreams.Entity{
+				Entity: entity.Entity{
 					Name: "John's Header",
 				},
-				URL: activitystreams.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
+				URL: util.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
 			},
 		},
-		InReplyTo: []activitystreams.EntityIface{
+		InReplyTo: []entity.EntityIface{
 			&activitystreams.Object{
-				Entity: activitystreams.Entity{
+				Entity: entity.Entity{
 					Id: "http://example.org/posts/1",
 				},
 			},
 		},
-		Location: []activitystreams.EntityIface{
+		Location: []entity.EntityIface{
 			&activitystreams.Place{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Name: "Work",
 					},
 				},
 			},
 		},
 		Preview: &activitystreams.Object{
-			Entity: activitystreams.Entity{
+			Entity: entity.Entity{
 				Id: "http://example.org/~john/preview",
 			},
 		},
 		Replies: &activitystreams.Collection{
 			Object: activitystreams.Object{
-				Entity: activitystreams.Entity{
+				Entity: entity.Entity{
 					Id: "http://example.org/~john/replies",
 				},
 			},
 		},
-		Tag: []activitystreams.EntityIface{
+		Tag: []entity.EntityIface{
 			&activitystreams.Object{
-				Entity: activitystreams.Entity{
+				Entity: entity.Entity{
 					Id: "http://example.org/tags/1",
 				},
 			},
 		},
-		To: []activitystreams.EntityIface{
+		To: []entity.EntityIface{
 			&activitystreams.Person{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id: "http://example.org/~alice",
 					},
 				},
 			},
 		},
-		URL:       activitystreams.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
+		URL:       util.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
 		Content:   "This is a simple note",
 		Duration:  &duration,
 		EndTime:   &endTime,
@@ -262,7 +265,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedApplicationMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Application", &actualApplication, expectedApplicationMap)
+		testutil.CheckActivityStreamsEntity("Application", &actualApplication, expectedApplicationMap)
 	})
 
 	Describe("Group", func() {
@@ -277,7 +280,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedGroupMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Group", &actualGroup, expectedGroupMap)
+		testutil.CheckActivityStreamsEntity("Group", &actualGroup, expectedGroupMap)
 	})
 
 	Describe("Organization", func() {
@@ -292,7 +295,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedOrganizationMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Organization", &actualOrganization, expectedOrganizationMap)
+		testutil.CheckActivityStreamsEntity("Organization", &actualOrganization, expectedOrganizationMap)
 	})
 
 	Describe("Person", func() {
@@ -307,7 +310,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedPersonMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Person", &actualPerson, expectedPersonMap)
+		testutil.CheckActivityStreamsEntity("Person", &actualPerson, expectedPersonMap)
 	})
 
 	Describe("Service", func() {
@@ -322,6 +325,6 @@ var _ = Describe("Actor", func() {
 			delete(expectedServiceMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Service", &actualService, expectedServiceMap)
+		testutil.CheckActivityStreamsEntity("Service", &actualService, expectedServiceMap)
 	})
 })

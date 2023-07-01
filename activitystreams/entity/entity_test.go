@@ -1,24 +1,23 @@
-package activitystreams_test
+package entity_test
 
 import (
 	"encoding/json"
-	"fmt"
-	"reflect"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/go-test/deep"
+	"github.com/brandonsides/pubblr/activitystreams/entity"
+	pkgJson "github.com/brandonsides/pubblr/activitystreams/json"
 )
 
 var _ = Describe("Entity", func() {
-	actualEntity := activitystreams.Entity{
+	actualEntity := entity.Entity{
 		Id: "http://example.com/thing",
-		AttributedTo: []activitystreams.EntityIface{
+		AttributedTo: []entity.EntityIface{
 			&activitystreams.Person{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id: "http://example.com/actor",
 					},
 				},
@@ -32,7 +31,7 @@ var _ = Describe("Entity", func() {
 	Describe("MarshalEntity", func() {
 		It("should correctly marshal non-entity embedded type", func() {
 			actual := testStruct{
-				Entity: activitystreams.Entity{
+				Entity: entity.Entity{
 					Id: "http://example.com/thing",
 				},
 				TestEmbeddedStruct: TestEmbeddedStruct{
@@ -48,7 +47,7 @@ var _ = Describe("Entity", func() {
 				"type": "testStruct",
 			}
 
-			actualJSON, err := activitystreams.MarshalEntity(&actual)
+			actualJSON, err := pkgJson.MarshalEntity(&actual)
 			Expect(err).ToNot(HaveOccurred())
 			var actualMap map[string]interface{}
 			err = json.Unmarshal(actualJSON, &actualMap)
@@ -108,64 +107,12 @@ var _ = Describe("Entity", func() {
 	})
 })
 
-func CheckActivityStreamsEntity(objectType string, actual activitystreams.EntityIface, expected map[string]interface{}) {
-	Describe("MarshalJSON", func() {
-		It("should correctly marshal fully populated type", func() {
-			jsonObject, err := actual.MarshalJSON()
-			Expect(err).ToNot(HaveOccurred())
-			var actual map[string]interface{}
-			err = json.Unmarshal(jsonObject, &actual)
-			Expect(err).ToNot(HaveOccurred())
-			for key, value := range expected {
-				Expect(actual[key]).To(Equal(value))
-			}
-			Expect(actual).To(Equal(expected))
-		})
-
-		It("should correctly marshal zero value", func() {
-			actual := reflect.New(reflect.TypeOf(actual).Elem()).Interface().(activitystreams.EntityIface)
-
-			expected := map[string]interface{}{
-				"type": objectType,
-			}
-
-			jsonObject, err := actual.MarshalJSON()
-			Expect(err).ToNot(HaveOccurred())
-			var actualMap map[string]interface{}
-			err = json.Unmarshal(jsonObject, &actualMap)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(actualMap).To(Equal(expected))
-		})
-	})
-
-	Describe("EntityUnmarshaler", func() {
-		It("should correctly unmarshal fully populated type", func() {
-			jsonObject, err := json.Marshal(expected)
-			Expect(err).ToNot(HaveOccurred())
-
-			unmarshalled, err := activitystreams.DefaultEntityUnmarshaler.UnmarshalEntity(jsonObject)
-			Expect(err).ToNot(HaveOccurred())
-			diff := deep.Equal(unmarshalled, actual)
-			if diff != nil {
-				fmt.Println(diff)
-			}
-			Expect(unmarshalled).To(Equal(actual))
-		})
-	})
-
-	Describe("Type", func() {
-		It("should return correct type", func() {
-			Expect(actual.Type()).To(Equal(objectType))
-		})
-	})
-}
-
 type TestEmbeddedStruct struct {
 	A string
 	B string
 }
 type testStruct struct {
-	activitystreams.Entity
+	entity.Entity
 	TestEmbeddedStruct
 	B string
 }
@@ -175,5 +122,5 @@ func (t *testStruct) Type() (string, error) {
 }
 
 func (t *testStruct) MarshalJSON() ([]byte, error) {
-	return activitystreams.MarshalEntity(t)
+	return pkgJson.MarshalEntity(t)
 }

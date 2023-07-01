@@ -1,8 +1,10 @@
-package activitystreams
+package util
 
 import (
 	"encoding/json"
 	"fmt"
+
+	pkgJson "github.com/brandonsides/pubblr/activitystreams/json"
 )
 
 type Either[A, B any] struct {
@@ -40,7 +42,22 @@ func (e Either[A, B]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.Right())
 }
 
-func (e *Either[A, B]) CustomUnmarshalJSON(u *EntityUnmarshaler, data []byte) error {
+func (e *Either[A, B]) UnmarshalJSON(data []byte) error {
+	var a A
+	var b B
+
+	if err := json.Unmarshal(data, &a); err == nil {
+		*e = *Left[A, B](a)
+		return nil
+	}
+	if err := json.Unmarshal(data, &b); err == nil {
+		*e = *Right[A](b)
+		return nil
+	}
+	return fmt.Errorf("Could not unmarshal Either[%T, %T]", a, b)
+}
+
+func (e *Either[A, B]) CustomUnmarshalJSON(u pkgJson.CustomUnmarshaler, data []byte) error {
 	var a A
 	var b B
 
@@ -48,7 +65,7 @@ func (e *Either[A, B]) CustomUnmarshalJSON(u *EntityUnmarshaler, data []byte) er
 		*e = *Left[A, B](a)
 		return nil
 	}
-	if err := json.Unmarshal(data, &b); err == nil {
+	if err := u.Unmarshal(data, &b); err == nil {
 		*e = *Right[A](b)
 		return nil
 	}

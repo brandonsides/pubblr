@@ -7,55 +7,58 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
+	"github.com/brandonsides/pubblr/activitystreams/entity"
+	"github.com/brandonsides/pubblr/activitystreams/testutil"
+	"github.com/brandonsides/pubblr/activitystreams/util"
 )
 
 var _ = Describe("Collection", func() {
 	actualCollection := activitystreams.Collection{
 		Object: activitystreams.Object{
-			Entity: activitystreams.Entity{
+			Entity: entity.Entity{
 				Id: "http://example.org/collection",
 			},
 		},
 		TotalItems: 2,
 		Ordered:    false,
-		Items: []*activitystreams.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			activitystreams.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Note{
+		Items: []*util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
+			util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Note{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id: "http://example.org/note/1",
 					},
 				},
 			}),
-			activitystreams.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Image{
+			util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Image{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id: "http://example.org/image/1",
 					},
 				},
 			}),
 		},
-		Current: activitystreams.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
+		Current: util.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
 			Collection: activitystreams.Collection{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id: "http://example.org/collection?page=1",
 					},
 				},
 			},
 		}),
-		First: activitystreams.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
+		First: util.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
 			Collection: activitystreams.Collection{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id: "http://example.org/collection?page=1",
 					},
 				},
 			},
 		}),
-		Last: activitystreams.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
+		Last: util.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
 			Collection: activitystreams.Collection{
 				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
+					Entity: entity.Entity{
 						Id: "http://example.org/collection?page=2",
 					},
 				},
@@ -100,7 +103,7 @@ var _ = Describe("Collection", func() {
 			expectedCollectionMap["last"].(map[string]interface{})["type"] = "CollectionPage"
 		})
 
-		CheckActivityStreamsEntity("Collection", &actualCollection, expectedCollectionMap)
+		testutil.CheckActivityStreamsEntity("Collection", &actualCollection, expectedCollectionMap)
 	})
 
 	Context("Ordered", func() {

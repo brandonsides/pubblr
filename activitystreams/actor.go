@@ -1,5 +1,7 @@
 package activitystreams
 
+import "github.com/brandonsides/pubblr/activitystreams/json"
+
 type Application struct {
 	Object
 }
@@ -9,7 +11,7 @@ func (a *Application) Type() (string, error) {
 }
 
 func (a *Application) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(a)
+	return json.MarshalEntity(a)
 }
 
 type Group struct {
@@ -21,7 +23,7 @@ func (g *Group) Type() (string, error) {
 }
 
 func (g *Group) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(g)
+	return json.MarshalEntity(g)
 }
 
 type Organization struct {
@@ -33,7 +35,7 @@ func (o *Organization) Type() (string, error) {
 }
 
 func (o *Organization) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(o)
+	return json.MarshalEntity(o)
 }
 
 type Person struct {
@@ -45,7 +47,7 @@ func (p *Person) Type() (string, error) {
 }
 
 func (p *Person) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(p)
+	return json.MarshalEntity(p)
 }
 
 type Service struct {
@@ -57,5 +59,5 @@ func (s *Service) Type() (string, error) {
 }
 
 func (s *Service) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(s)
+	return json.MarshalEntity(s)
 }
