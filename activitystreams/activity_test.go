@@ -1,30 +1,29 @@
-package types_test
+package activitystreams_test
 
 import (
 	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/activitystreams/testutil"
-	"github.com/brandonsides/pubblr/activitystreams/types"
 	"github.com/brandonsides/pubblr/util/either"
 	. "github.com/onsi/ginkgo/v2"
 )
 
 var _ = Describe("Activity", func() {
 	Describe("IntransitiveActivity", func() {
-		actualIntransitiveActivity := types.IntransitiveActivity{
-			Object: types.Object{
+		actualIntransitiveActivity := activitystreams.IntransitiveActivity{
+			Object: activitystreams.Object{
 				Entity: activitystreams.Entity{
 					Id: "http://example.org/john/activities/1",
 				},
 				Attachment: []activitystreams.EntityIface{
-					&types.Image{
-						Object: types.Object{
+					&activitystreams.Image{
+						Object: activitystreams.Object{
 							Entity: activitystreams.Entity{
 								Id: "http://example.org/john/images/1",
 							},
-							URL: either.Left[string, types.LinkIface]("http://example.org/john/images/1.jpg"),
+							URL: either.Left[string, activitystreams.LinkIface]("http://example.org/john/images/1.jpg"),
 						},
 					},
-					&types.Link{
+					&activitystreams.Link{
 						Entity: activitystreams.Entity{
 							Id: "http://example.org/john/images/2",
 						},
@@ -32,31 +31,31 @@ var _ = Describe("Activity", func() {
 					},
 				},
 			},
-			Actor: &types.Person{
-				Object: types.Object{
+			Actor: &activitystreams.Person{
+				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/john",
 					},
 				},
 			},
-			Target: &types.Link{
+			Target: &activitystreams.Link{
 				Entity: activitystreams.Entity{
 					Id: "http://example.org/john/objects/1",
 				},
 				Href: "http://example.org/john/objects/1",
 			},
-			Result: &types.Object{
+			Result: &activitystreams.Object{
 				Entity: activitystreams.Entity{
 					Id: "http://example.org/john/activities/1/result",
 				},
 			},
-			Origin: &types.Link{
+			Origin: &activitystreams.Link{
 				Entity: activitystreams.Entity{
 					Id: "http://example.org/john/activities/1/origin",
 				},
 				Href: "http://example.org/john/activities/1/origin",
 			},
-			Instrument: &types.Object{
+			Instrument: &activitystreams.Object{
 				Entity: activitystreams.Entity{
 					Id: "http://example.org/john/activities/1/instrument",
 				},
@@ -104,7 +103,7 @@ var _ = Describe("Activity", func() {
 		testutil.CheckActivityStreamsEntity("IntransitiveActivity", &actualIntransitiveActivity, expectedIntransitiveActivityMap)
 
 		Describe("Arrive", func() {
-			actualArrive := types.Arrive{actualIntransitiveActivity}
+			actualArrive := activitystreams.Arrive{actualIntransitiveActivity}
 			expectedArriveMap := expectedIntransitiveActivityMap
 
 			BeforeEach(func() {
@@ -119,7 +118,7 @@ var _ = Describe("Activity", func() {
 		})
 
 		Describe("Listen", func() {
-			actualListen := types.Listen{actualIntransitiveActivity}
+			actualListen := activitystreams.Listen{actualIntransitiveActivity}
 			expectedListenMap := expectedIntransitiveActivityMap
 
 			BeforeEach(func() {
@@ -134,7 +133,7 @@ var _ = Describe("Activity", func() {
 		})
 
 		Describe("Read", func() {
-			actualRead := types.Read{actualIntransitiveActivity}
+			actualRead := activitystreams.Read{actualIntransitiveActivity}
 			expectedReadMap := expectedIntransitiveActivityMap
 
 			BeforeEach(func() {
@@ -149,7 +148,7 @@ var _ = Describe("Activity", func() {
 		})
 
 		Describe("Travel", func() {
-			actualTravel := types.Travel{actualIntransitiveActivity}
+			actualTravel := activitystreams.Travel{actualIntransitiveActivity}
 			expectedTravelMap := expectedIntransitiveActivityMap
 
 			BeforeEach(func() {
@@ -164,7 +163,7 @@ var _ = Describe("Activity", func() {
 		})
 
 		Describe("Question", func() {
-			actualQuestion := types.Question{actualIntransitiveActivity}
+			actualQuestion := activitystreams.Question{actualIntransitiveActivity}
 			expectedQuestionMap := expectedIntransitiveActivityMap
 
 			BeforeEach(func() {
@@ -178,16 +177,16 @@ var _ = Describe("Activity", func() {
 			testutil.CheckActivityStreamsEntity("Question", &actualQuestion, expectedQuestionMap)
 
 			Describe("SingleAnswerQuestion", func() {
-				actualSingleAnswerQuestion := types.SingleAnswerQuestion{
+				actualSingleAnswerQuestion := activitystreams.SingleAnswerQuestion{
 					Question: actualQuestion,
 					OneOf: []activitystreams.EntityIface{
-						&types.Object{
+						&activitystreams.Object{
 							Entity: activitystreams.Entity{
 								Id: "http://example.org/john/objects/2",
 							},
 							Content: "Hello world!",
 						},
-						&types.Link{
+						&activitystreams.Link{
 							Entity: activitystreams.Entity{
 								Id: "http://example.org/john/objects/3",
 							},
@@ -221,16 +220,16 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("MultiAnswerQuestion", func() {
-				actualMultiAnswerQuestion := types.MultiAnswerQuestion{
+				actualMultiAnswerQuestion := activitystreams.MultiAnswerQuestion{
 					Question: actualQuestion,
 					AnyOf: []activitystreams.EntityIface{
-						&types.Object{
+						&activitystreams.Object{
 							Entity: activitystreams.Entity{
 								Id: "http://example.org/john/objects/2",
 							},
 							Content: "Hello world!",
 						},
-						&types.Link{
+						&activitystreams.Link{
 							Entity: activitystreams.Entity{
 								Id: "http://example.org/john/objects/3",
 							},
@@ -264,9 +263,9 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("ClosedQuestion", func() {
-				actualClosedQuestion := types.ClosedQuestion{
+				actualClosedQuestion := activitystreams.ClosedQuestion{
 					Question: actualQuestion,
-					Closed: &types.Object{
+					Closed: &activitystreams.Object{
 						Entity: activitystreams.Entity{
 							Id: "http://example.org/john/objects/2",
 						},
@@ -293,9 +292,9 @@ var _ = Describe("Activity", func() {
 		})
 
 		Describe("Activity", func() {
-			actualActivity := types.Activity{
+			actualActivity := activitystreams.Activity{
 				IntransitiveActivity: actualIntransitiveActivity,
-				Object: &types.Object{
+				Object: &activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/john/objects/2",
 					},
@@ -349,7 +348,7 @@ var _ = Describe("Activity", func() {
 			testutil.CheckActivityStreamsEntity("Activity", &actualActivity, expectedActivityMap)
 
 			Describe("Accept", func() {
-				actualAccept := types.Accept{actualActivity}
+				actualAccept := activitystreams.Accept{actualActivity}
 				expectedAcceptMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -363,7 +362,7 @@ var _ = Describe("Activity", func() {
 				testutil.CheckActivityStreamsEntity("Accept", &actualAccept, expectedAcceptMap)
 
 				Describe("TentativeAccept", func() {
-					actualTentativeAccept := types.TentativeAccept{actualAccept}
+					actualTentativeAccept := activitystreams.TentativeAccept{actualAccept}
 					expectedTentativeAcceptMap := expectedAcceptMap
 
 					BeforeEach(func() {
@@ -379,7 +378,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Add", func() {
-				actualAdd := types.Add{actualActivity}
+				actualAdd := activitystreams.Add{actualActivity}
 				expectedAddMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -394,7 +393,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Create", func() {
-				actualCreate := types.Create{actualActivity}
+				actualCreate := activitystreams.Create{actualActivity}
 				expectedCreateMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -409,7 +408,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Delete", func() {
-				actualDelete := types.Delete{actualActivity}
+				actualDelete := activitystreams.Delete{actualActivity}
 				expectedDeleteMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -424,7 +423,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Follow", func() {
-				actualFollow := types.Follow{actualActivity}
+				actualFollow := activitystreams.Follow{actualActivity}
 				expectedFollowMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -439,7 +438,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Ignore", func() {
-				actualIgnore := types.Ignore{actualActivity}
+				actualIgnore := activitystreams.Ignore{actualActivity}
 				expectedIgnoreMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -453,7 +452,7 @@ var _ = Describe("Activity", func() {
 				testutil.CheckActivityStreamsEntity("Ignore", &actualIgnore, expectedIgnoreMap)
 
 				Describe("Block", func() {
-					actualBlock := types.Block{actualIgnore}
+					actualBlock := activitystreams.Block{actualIgnore}
 					expectedBlockMap := expectedIgnoreMap
 
 					BeforeEach(func() {
@@ -469,7 +468,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Join", func() {
-				actualJoin := types.Join{actualActivity}
+				actualJoin := activitystreams.Join{actualActivity}
 				expectedJoinMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -484,7 +483,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Leave", func() {
-				actualLeave := types.Leave{actualActivity}
+				actualLeave := activitystreams.Leave{actualActivity}
 				expectedLeaveMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -499,7 +498,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Like", func() {
-				actualLike := types.Like{actualActivity}
+				actualLike := activitystreams.Like{actualActivity}
 				expectedLikeMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -514,7 +513,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Offer", func() {
-				actualOffer := types.Offer{actualActivity}
+				actualOffer := activitystreams.Offer{actualActivity}
 				expectedOfferMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -528,7 +527,7 @@ var _ = Describe("Activity", func() {
 				testutil.CheckActivityStreamsEntity("Offer", &actualOffer, expectedOfferMap)
 
 				Describe("Invite", func() {
-					actualInvite := types.Invite{actualOffer}
+					actualInvite := activitystreams.Invite{actualOffer}
 					expectedInviteMap := expectedOfferMap
 
 					BeforeEach(func() {
@@ -544,7 +543,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Reject", func() {
-				actualReject := types.Reject{actualActivity}
+				actualReject := activitystreams.Reject{actualActivity}
 				expectedRejectMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -558,7 +557,7 @@ var _ = Describe("Activity", func() {
 				testutil.CheckActivityStreamsEntity("Reject", &actualReject, expectedRejectMap)
 
 				Describe("TentativeReject", func() {
-					actualTentativeReject := types.TentativeReject{actualReject}
+					actualTentativeReject := activitystreams.TentativeReject{actualReject}
 					expectedTentativeRejectMap := expectedRejectMap
 
 					BeforeEach(func() {
@@ -574,7 +573,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Remove", func() {
-				actualRemove := types.Remove{actualActivity}
+				actualRemove := activitystreams.Remove{actualActivity}
 				expectedRemoveMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -589,7 +588,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Undo", func() {
-				actualUndo := types.Undo{actualActivity}
+				actualUndo := activitystreams.Undo{actualActivity}
 				expectedUndoMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -604,7 +603,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Update", func() {
-				actualUpdate := types.Update{actualActivity}
+				actualUpdate := activitystreams.Update{actualActivity}
 				expectedUpdateMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -619,7 +618,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("View", func() {
-				actualView := types.View{actualActivity}
+				actualView := activitystreams.View{actualActivity}
 				expectedViewMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -634,7 +633,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Move", func() {
-				actualMove := types.Move{actualActivity}
+				actualMove := activitystreams.Move{actualActivity}
 				expectedMoveMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -649,7 +648,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Announce", func() {
-				actualAnnounce := types.Announce{actualActivity}
+				actualAnnounce := activitystreams.Announce{actualActivity}
 				expectedAnnounceMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -664,7 +663,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Flag", func() {
-				actualFlag := types.Flag{actualActivity}
+				actualFlag := activitystreams.Flag{actualActivity}
 				expectedFlagMap := expectedActivityMap
 
 				BeforeEach(func() {
@@ -679,7 +678,7 @@ var _ = Describe("Activity", func() {
 			})
 
 			Describe("Dislike", func() {
-				actualDislike := types.Dislike{actualActivity}
+				actualDislike := activitystreams.Dislike{actualActivity}
 				expectedDislikeMap := expectedActivityMap
 
 				BeforeEach(func() {

@@ -1,4 +1,4 @@
-package types_test
+package activitystreams_test
 
 import (
 	"time"
@@ -8,22 +8,21 @@ import (
 
 	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/activitystreams/testutil"
-	"github.com/brandonsides/pubblr/activitystreams/types"
 	"github.com/brandonsides/pubblr/util/either"
 )
 
-var _ = Describe("Actor", func() {
+var _ = Describe("Object", func() {
 	duration := time.Second * 60
 	startTime := time.Date(2023, 6, 18, 9, 47, 0, 0, time.UTC)
 	endTime := startTime.Add(duration)
 	published := time.Date(2023, 6, 18, 9, 46, 0, 0, time.UTC)
 	updated := time.Date(2023, 6, 18, 9, 46, 30, 0, time.UTC)
-	actualActor := types.Object{
+	actualObject := activitystreams.Object{
 		Entity: activitystreams.Entity{
 			Id: "http://example.org/~john",
 			AttributedTo: []activitystreams.EntityIface{
-				&types.Person{
-					Object: types.Object{
+				&activitystreams.Person{
+					Object: activitystreams.Object{
 						Entity: activitystreams.Entity{
 							Id: "http://example.org/~john",
 						},
@@ -33,15 +32,15 @@ var _ = Describe("Actor", func() {
 			Name: "A Simple Note",
 		},
 		Attachment: []activitystreams.EntityIface{
-			&types.Image{
-				Object: types.Object{
+			&activitystreams.Image{
+				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id:        "http://example.org/~john/picture",
 						MediaType: "image/jpeg",
 					},
 				},
 			},
-			&types.Link{
+			&activitystreams.Link{
 				Entity: activitystreams.Entity{
 					Id: "http://example.org/~john/profile",
 				},
@@ -49,8 +48,8 @@ var _ = Describe("Actor", func() {
 			},
 		},
 		Bcc: []activitystreams.EntityIface{
-			&types.Person{
-				Object: types.Object{
+			&activitystreams.Person{
+				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/~alice",
 					},
@@ -58,8 +57,8 @@ var _ = Describe("Actor", func() {
 			},
 		},
 		Bto: []activitystreams.EntityIface{
-			&types.Person{
-				Object: types.Object{
+			&activitystreams.Person{
+				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/~bob",
 					},
@@ -67,85 +66,85 @@ var _ = Describe("Actor", func() {
 			},
 		},
 		Cc: []activitystreams.EntityIface{
-			&types.Person{
-				Object: types.Object{
+			&activitystreams.Person{
+				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/~eve",
 					},
 				},
 			},
 		},
-		Context: &types.Object{
+		Context: &activitystreams.Object{
 			Entity: activitystreams.Entity{
 				Id: "http://example.org/contexts/1",
 			},
 		},
-		Generator: &types.Object{
+		Generator: &activitystreams.Object{
 			Entity: activitystreams.Entity{
 				Id: "http://example.org/generator",
 			},
 		},
-		Icon: &types.Image{
-			Object: types.Object{
+		Icon: &activitystreams.Image{
+			Object: activitystreams.Object{
 				Entity: activitystreams.Entity{
 					Name: "John's Avatar",
 				},
-				URL: either.Left[string, types.LinkIface]("http://example.org/~john/avatar.jpg"),
+				URL: either.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
 			},
 		},
-		Image: &types.Image{
-			Object: types.Object{
+		Image: &activitystreams.Image{
+			Object: activitystreams.Object{
 				Entity: activitystreams.Entity{
 					Name: "John's Header",
 				},
-				URL: either.Left[string, types.LinkIface]("http://example.org/~john/header.jpg"),
+				URL: either.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
 			},
 		},
 		InReplyTo: []activitystreams.EntityIface{
-			&types.Object{
+			&activitystreams.Object{
 				Entity: activitystreams.Entity{
 					Id: "http://example.org/posts/1",
 				},
 			},
 		},
 		Location: []activitystreams.EntityIface{
-			&types.Place{
-				Object: types.Object{
+			&activitystreams.Place{
+				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Name: "Work",
 					},
 				},
 			},
 		},
-		Preview: &types.Object{
+		Preview: &activitystreams.Object{
 			Entity: activitystreams.Entity{
 				Id: "http://example.org/~john/preview",
 			},
 		},
-		Replies: &types.Collection{
-			Object: types.Object{
+		Replies: &activitystreams.Collection{
+			Object: activitystreams.Object{
 				Entity: activitystreams.Entity{
 					Id: "http://example.org/~john/replies",
 				},
 			},
 		},
 		Tag: []activitystreams.EntityIface{
-			&types.Object{
+			&activitystreams.Object{
 				Entity: activitystreams.Entity{
 					Id: "http://example.org/tags/1",
 				},
 			},
 		},
 		To: []activitystreams.EntityIface{
-			&types.Person{
-				Object: types.Object{
+			&activitystreams.Person{
+				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/~alice",
 					},
 				},
 			},
 		},
-		URL:       either.Left[string, types.LinkIface]("http://example.org/~john"),
+		URL:       either.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
 		Content:   "This is a simple note",
 		Duration:  &duration,
 		EndTime:   &endTime,
@@ -154,7 +153,7 @@ var _ = Describe("Actor", func() {
 		Summary:   "A simple note",
 		Updated:   &updated,
 	}
-	expectedActorMap := map[string]interface{}{
+	expectedObjectMap := map[string]interface{}{
 		"id": "http://example.org/~john",
 		"attachment": []interface{}{
 			map[string]interface{}{
@@ -253,78 +252,183 @@ var _ = Describe("Actor", func() {
 		"updated":   "2023-06-18T09:46:30Z",
 	}
 
-	Describe("Application", func() {
-		actualApplication := types.Application{actualActor}
-		expectedApplicationMap := expectedActorMap
-
+	Describe("Object", func() {
 		BeforeEach(func() {
-			expectedApplicationMap["type"] = "Application"
+			expectedObjectMap["type"] = "Object"
 		})
 
 		AfterEach(func() {
-			delete(expectedApplicationMap, "type")
+			delete(expectedObjectMap, "type")
 		})
 
-		testutil.CheckActivityStreamsEntity("Application", &actualApplication, expectedApplicationMap)
+		testutil.CheckActivityStreamsEntity("Object", &actualObject, expectedObjectMap)
 	})
 
-	Describe("Group", func() {
-		actualGroup := types.Group{actualActor}
-		expectedGroupMap := expectedActorMap
-
+	Describe("Relationship", func() {
 		BeforeEach(func() {
-			expectedGroupMap["type"] = "Group"
+			expectedObjectMap["type"] = "Relationship"
 		})
 
 		AfterEach(func() {
-			delete(expectedGroupMap, "type")
+			delete(expectedObjectMap, "type")
 		})
 
-		testutil.CheckActivityStreamsEntity("Group", &actualGroup, expectedGroupMap)
+		testutil.CheckActivityStreamsEntity("Relationship", &activitystreams.Relationship{
+			Object: actualObject,
+		}, expectedObjectMap)
 	})
 
-	Describe("Organization", func() {
-		actualOrganization := types.Organization{actualActor}
-		expectedOrganizationMap := expectedActorMap
-
+	Describe("Article", func() {
 		BeforeEach(func() {
-			expectedOrganizationMap["type"] = "Organization"
+			expectedObjectMap["type"] = "Article"
 		})
 
 		AfterEach(func() {
-			delete(expectedOrganizationMap, "type")
+			delete(expectedObjectMap, "type")
 		})
 
-		testutil.CheckActivityStreamsEntity("Organization", &actualOrganization, expectedOrganizationMap)
+		testutil.CheckActivityStreamsEntity("Article", &activitystreams.Article{
+			Object: actualObject,
+		}, expectedObjectMap)
 	})
 
-	Describe("Person", func() {
-		actualPerson := types.Person{actualActor}
-		expectedPersonMap := expectedActorMap
-
+	Describe("Document", func() {
 		BeforeEach(func() {
-			expectedPersonMap["type"] = "Person"
+			expectedObjectMap["type"] = "Document"
 		})
 
 		AfterEach(func() {
-			delete(expectedPersonMap, "type")
+			delete(expectedObjectMap, "type")
 		})
 
-		testutil.CheckActivityStreamsEntity("Person", &actualPerson, expectedPersonMap)
+		testutil.CheckActivityStreamsEntity("Document", &activitystreams.Document{
+			Object: actualObject,
+		}, expectedObjectMap)
 	})
 
-	Describe("Service", func() {
-		actualService := types.Service{actualActor}
-		expectedServiceMap := expectedActorMap
-
+	Describe("Audio", func() {
 		BeforeEach(func() {
-			expectedServiceMap["type"] = "Service"
+			expectedObjectMap["type"] = "Audio"
 		})
 
 		AfterEach(func() {
-			delete(expectedServiceMap, "type")
+			delete(expectedObjectMap, "type")
 		})
 
-		testutil.CheckActivityStreamsEntity("Service", &actualService, expectedServiceMap)
+		testutil.CheckActivityStreamsEntity("Audio", &activitystreams.Audio{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Image", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Image"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		testutil.CheckActivityStreamsEntity("Image", &activitystreams.Image{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Video", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Video"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		testutil.CheckActivityStreamsEntity("Video", &activitystreams.Video{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Note", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Note"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		testutil.CheckActivityStreamsEntity("Note", &activitystreams.Note{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Page", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Page"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		testutil.CheckActivityStreamsEntity("Page", &activitystreams.Page{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Event", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Event"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		testutil.CheckActivityStreamsEntity("Event", &activitystreams.Event{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Place", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Place"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		testutil.CheckActivityStreamsEntity("Place", &activitystreams.Place{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Profile", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Profile"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		testutil.CheckActivityStreamsEntity("Profile", &activitystreams.Profile{
+			Object: actualObject,
+		}, expectedObjectMap)
+	})
+
+	Describe("Tombstone", func() {
+		BeforeEach(func() {
+			expectedObjectMap["type"] = "Tombstone"
+		})
+
+		AfterEach(func() {
+			delete(expectedObjectMap, "type")
+		})
+
+		testutil.CheckActivityStreamsEntity("Tombstone", &activitystreams.Tombstone{
+			Object: actualObject,
+		}, expectedObjectMap)
 	})
 })

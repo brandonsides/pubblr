@@ -7,15 +7,14 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/activitystreams/types"
 )
 
 var _ = Describe("Entity", func() {
 	actualEntity := activitystreams.Entity{
 		Id: "http://example.com/thing",
 		AttributedTo: []activitystreams.EntityIface{
-			&types.Person{
-				Object: types.Object{
+			&activitystreams.Person{
+				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.com/actor",
 					},
@@ -57,7 +56,7 @@ var _ = Describe("Entity", func() {
 
 	Describe("TopLevelEntity", func() {
 		tle := activitystreams.TopLevelEntity{
-			EntityIface: &types.Object{
+			EntityIface: &activitystreams.Object{
 				Entity: actualEntity,
 			},
 			Context: "https://www.w3.org/ns/activitystreams",

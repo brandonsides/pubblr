@@ -1,9 +1,8 @@
-package types
+package activitystreams
 
 import (
 	"encoding/json"
 
-	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/util/either"
 )
 
@@ -36,7 +35,7 @@ func (c *Collection) collection() *Collection {
 }
 
 func (c *Collection) MarshalJSON() ([]byte, error) {
-	retJson, err := activitystreams.MarshalEntity(c)
+	retJson, err := MarshalEntity(c)
 	if err != nil {
 		return nil, err
 	}
@@ -79,5 +78,5 @@ func (c *CollectionPage) Type() (string, error) {
 }
 
 func (c *CollectionPage) MarshalJSON() ([]byte, error) {
-	return activitystreams.MarshalEntity(c)
+	return MarshalEntity(c)
 }

@@ -1,4 +1,4 @@
-package types_test
+package activitystreams_test
 
 import (
 	"testing"

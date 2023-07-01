@@ -1,22 +1,21 @@
-package types_test
+package activitystreams_test
 
 import (
 	. "github.com/onsi/ginkgo/v2"
 
 	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/activitystreams/testutil"
-	"github.com/brandonsides/pubblr/activitystreams/types"
 )
 
 var _ = Describe("Link", func() {
 	height := uint64(100)
 	width := uint64(200)
-	actualLink := types.Link{
+	actualLink := activitystreams.Link{
 		Entity: activitystreams.Entity{
 			Id: "http://example.com/abc",
 			AttributedTo: []activitystreams.EntityIface{
-				types.ObjectIface(&types.Person{
-					Object: types.Object{
+				activitystreams.ObjectIface(&activitystreams.Person{
+					Object: activitystreams.Object{
 						Entity: activitystreams.Entity{
 							Id: "http://example.com/~john",
 						},
@@ -28,7 +27,7 @@ var _ = Describe("Link", func() {
 		},
 		Href:     "http://example.com/abc",
 		HrefLang: "en",
-		Preview: &types.Object{
+		Preview: &activitystreams.Object{
 			Entity: activitystreams.Entity{
 				Id: "http://example.com/abc/preview",
 			},
@@ -63,7 +62,7 @@ var _ = Describe("Link", func() {
 	})
 
 	Describe("Mention", func() {
-		actualMention := types.Mention{
+		actualMention := activitystreams.Mention{
 			Link: actualLink,
 		}
 
