@@ -1,4 +1,4 @@
-package activitystreams_test
+package types_test
 
 import (
 	"encoding/json"
@@ -7,58 +7,58 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/activitystreams/entity"
 	"github.com/brandonsides/pubblr/activitystreams/testutil"
-	"github.com/brandonsides/pubblr/activitystreams/util"
+	"github.com/brandonsides/pubblr/activitystreams/types"
+	"github.com/brandonsides/pubblr/activitystreams/util/either"
 )
 
 var _ = Describe("Collection", func() {
-	actualCollection := activitystreams.Collection{
-		Object: activitystreams.Object{
-			Entity: entity.Entity{
+	actualCollection := types.Collection{
+		Object: types.Object{
+			Entity: activitystreams.Entity{
 				Id: "http://example.org/collection",
 			},
 		},
 		TotalItems: 2,
 		Ordered:    false,
-		Items: []*util.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Note{
-				Object: activitystreams.Object{
-					Entity: entity.Entity{
+		Items: []*either.Either[types.ObjectIface, types.LinkIface]{
+			either.Left[types.ObjectIface, types.LinkIface](&types.Note{
+				Object: types.Object{
+					Entity: activitystreams.Entity{
 						Id: "http://example.org/note/1",
 					},
 				},
 			}),
-			util.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Image{
-				Object: activitystreams.Object{
-					Entity: entity.Entity{
+			either.Left[types.ObjectIface, types.LinkIface](&types.Image{
+				Object: types.Object{
+					Entity: activitystreams.Entity{
 						Id: "http://example.org/image/1",
 					},
 				},
 			}),
 		},
-		Current: util.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
-			Collection: activitystreams.Collection{
-				Object: activitystreams.Object{
-					Entity: entity.Entity{
+		Current: either.Left[*types.CollectionPage, types.LinkIface](&types.CollectionPage{
+			Collection: types.Collection{
+				Object: types.Object{
+					Entity: activitystreams.Entity{
 						Id: "http://example.org/collection?page=1",
 					},
 				},
 			},
 		}),
-		First: util.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
-			Collection: activitystreams.Collection{
-				Object: activitystreams.Object{
-					Entity: entity.Entity{
+		First: either.Left[*types.CollectionPage, types.LinkIface](&types.CollectionPage{
+			Collection: types.Collection{
+				Object: types.Object{
+					Entity: activitystreams.Entity{
 						Id: "http://example.org/collection?page=1",
 					},
 				},
 			},
 		}),
-		Last: util.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
-			Collection: activitystreams.Collection{
-				Object: activitystreams.Object{
-					Entity: entity.Entity{
+		Last: either.Left[*types.CollectionPage, types.LinkIface](&types.CollectionPage{
+			Collection: types.Collection{
+				Object: types.Object{
+					Entity: activitystreams.Entity{
 						Id: "http://example.org/collection?page=2",
 					},
 				},

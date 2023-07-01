@@ -1,4 +1,4 @@
-package entity_test
+package activitystreams_test
 
 import (
 	"encoding/json"
@@ -7,17 +7,16 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/activitystreams/entity"
-	pkgJson "github.com/brandonsides/pubblr/activitystreams/json"
+	"github.com/brandonsides/pubblr/activitystreams/types"
 )
 
 var _ = Describe("Entity", func() {
-	actualEntity := entity.Entity{
+	actualEntity := activitystreams.Entity{
 		Id: "http://example.com/thing",
-		AttributedTo: []entity.EntityIface{
-			&activitystreams.Person{
-				Object: activitystreams.Object{
-					Entity: entity.Entity{
+		AttributedTo: []activitystreams.EntityIface{
+			&types.Person{
+				Object: types.Object{
+					Entity: activitystreams.Entity{
 						Id: "http://example.com/actor",
 					},
 				},
@@ -31,7 +30,7 @@ var _ = Describe("Entity", func() {
 	Describe("MarshalEntity", func() {
 		It("should correctly marshal non-entity embedded type", func() {
 			actual := testStruct{
-				Entity: entity.Entity{
+				Entity: activitystreams.Entity{
 					Id: "http://example.com/thing",
 				},
 				TestEmbeddedStruct: TestEmbeddedStruct{
@@ -47,7 +46,7 @@ var _ = Describe("Entity", func() {
 				"type": "testStruct",
 			}
 
-			actualJSON, err := pkgJson.MarshalEntity(&actual)
+			actualJSON, err := activitystreams.MarshalEntity(&actual)
 			Expect(err).ToNot(HaveOccurred())
 			var actualMap map[string]interface{}
 			err = json.Unmarshal(actualJSON, &actualMap)
@@ -58,7 +57,7 @@ var _ = Describe("Entity", func() {
 
 	Describe("TopLevelEntity", func() {
 		tle := activitystreams.TopLevelEntity{
-			EntityIface: &activitystreams.Object{
+			EntityIface: &types.Object{
 				Entity: actualEntity,
 			},
 			Context: "https://www.w3.org/ns/activitystreams",
@@ -112,7 +111,7 @@ type TestEmbeddedStruct struct {
 	B string
 }
 type testStruct struct {
-	entity.Entity
+	activitystreams.Entity
 	TestEmbeddedStruct
 	B string
 }
@@ -122,5 +121,5 @@ func (t *testStruct) Type() (string, error) {
 }
 
 func (t *testStruct) MarshalJSON() ([]byte, error) {
-	return pkgJson.MarshalEntity(t)
+	return activitystreams.MarshalEntity(t)
 }

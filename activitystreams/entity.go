@@ -1,16 +1,38 @@
-package json
+package activitystreams
 
 import (
 	"encoding/json"
 	"reflect"
 
-	"github.com/brandonsides/pubblr/activitystreams/entity"
+	jsonutil "github.com/brandonsides/pubblr/util/json"
 )
+
+type EntityIface interface {
+	json.Marshaler
+	Type() (string, error)
+	entity() *Entity
+}
+
+// Get a reference to the Entity struct embedded in the given EntityIface
+func ToEntity(e EntityIface) *Entity {
+	return e.entity()
+}
+
+type Entity struct {
+	Id           string        `json:"id,omitempty"`
+	AttributedTo []EntityIface `json:"attributedTo,omitempty"`
+	Name         string        `json:"name,omitempty"`
+	MediaType    string        `json:"mediaType,omitempty"`
+}
+
+func (e *Entity) entity() *Entity {
+	return e
+}
 
 // Marshal an EntityIface to JSON
 // Marshals the implementing type to JSON and adds a "type" field to the JSON
 // representation with the value returned by the Type() method.
-func MarshalEntity(e entity.EntityIface) ([]byte, error) {
+func MarshalEntity(e EntityIface) ([]byte, error) {
 	entMap := make(map[string]interface{})
 
 	eElemType := reflect.TypeOf(e).Elem()
@@ -36,7 +58,7 @@ func MarshalEntity(e entity.EntityIface) ([]byte, error) {
 			}
 			continue
 		}
-		tag := TagFromStructField(field)
+		tag := jsonutil.TagFromStructField(field)
 		if tag.Omit || tag.OmitEmpty && reflect.ValueOf(e).Elem().Field(fieldIndex).IsZero() {
 			continue
 		}

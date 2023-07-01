@@ -6,14 +6,14 @@ import (
 	"reflect"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/activitystreams/entity"
+	pkgJson "github.com/brandonsides/pubblr/activitystreams/util/json"
 	"github.com/go-test/deep"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-func CheckActivityStreamsEntity(objectType string, actual entity.EntityIface, expected map[string]interface{}) {
+func CheckActivityStreamsEntity(objectType string, actual activitystreams.EntityIface, expected map[string]interface{}) {
 	Describe("MarshalJSON", func() {
 		It("should correctly marshal fully populated type", func() {
 			jsonObject, err := actual.MarshalJSON()
@@ -28,7 +28,7 @@ func CheckActivityStreamsEntity(objectType string, actual entity.EntityIface, ex
 		})
 
 		It("should correctly marshal zero value", func() {
-			actual := reflect.New(reflect.TypeOf(actual).Elem()).Interface().(entity.EntityIface)
+			actual := reflect.New(reflect.TypeOf(actual).Elem()).Interface().(activitystreams.EntityIface)
 
 			expected := map[string]interface{}{
 				"type": objectType,
@@ -49,7 +49,7 @@ func CheckActivityStreamsEntity(objectType string, actual entity.EntityIface, ex
 			Expect(err).ToNot(HaveOccurred())
 
 			var unmarshalled interface{}
-			err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(jsonObject, &unmarshalled)
+			err = pkgJson.DefaultEntityUnmarshaler.Unmarshal(jsonObject, &unmarshalled)
 			Expect(err).ToNot(HaveOccurred())
 			diff := deep.Equal(unmarshalled, actual)
 			if diff != nil {

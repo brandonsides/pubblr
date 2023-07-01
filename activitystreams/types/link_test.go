@@ -1,23 +1,23 @@
-package activitystreams_test
+package types_test
 
 import (
 	. "github.com/onsi/ginkgo/v2"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/activitystreams/entity"
 	"github.com/brandonsides/pubblr/activitystreams/testutil"
+	"github.com/brandonsides/pubblr/activitystreams/types"
 )
 
 var _ = Describe("Link", func() {
 	height := uint64(100)
 	width := uint64(200)
-	actualLink := activitystreams.Link{
-		Entity: entity.Entity{
+	actualLink := types.Link{
+		Entity: activitystreams.Entity{
 			Id: "http://example.com/abc",
-			AttributedTo: []entity.EntityIface{
-				activitystreams.ObjectIface(&activitystreams.Person{
-					Object: activitystreams.Object{
-						Entity: entity.Entity{
+			AttributedTo: []activitystreams.EntityIface{
+				types.ObjectIface(&types.Person{
+					Object: types.Object{
+						Entity: activitystreams.Entity{
 							Id: "http://example.com/~john",
 						},
 					},
@@ -28,8 +28,8 @@ var _ = Describe("Link", func() {
 		},
 		Href:     "http://example.com/abc",
 		HrefLang: "en",
-		Preview: &activitystreams.Object{
-			Entity: entity.Entity{
+		Preview: &types.Object{
+			Entity: activitystreams.Entity{
 				Id: "http://example.com/abc/preview",
 			},
 		},
@@ -63,7 +63,7 @@ var _ = Describe("Link", func() {
 	})
 
 	Describe("Mention", func() {
-		actualMention := activitystreams.Mention{
+		actualMention := types.Mention{
 			Link: actualLink,
 		}
 

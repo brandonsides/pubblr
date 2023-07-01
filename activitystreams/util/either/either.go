@@ -1,10 +1,10 @@
-package util
+package either
 
 import (
 	"encoding/json"
 	"fmt"
 
-	pkgJson "github.com/brandonsides/pubblr/activitystreams/json"
+	jsonutil "github.com/brandonsides/pubblr/util/json"
 )
 
 type Either[A, B any] struct {
@@ -57,7 +57,7 @@ func (e *Either[A, B]) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("Could not unmarshal Either[%T, %T]", a, b)
 }
 
-func (e *Either[A, B]) CustomUnmarshalJSON(u pkgJson.CustomUnmarshaler, data []byte) error {
+func (e *Either[A, B]) CustomUnmarshalJSON(u jsonutil.CustomUnmarshaler, data []byte) error {
 	var a A
 	var b B
 

@@ -3,10 +3,7 @@ package json
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"reflect"
-
-	"github.com/brandonsides/pubblr/activitystreams/entity"
 )
 
 type CustomUnmarshaler interface {
@@ -104,7 +101,7 @@ func (e *InterfaceUnmarshaler) RegisterUnmarshalFn(t string, fn UnmarshalFn) {
 	e.unmarshalFnByType[t] = fn
 }
 
-func (u *InterfaceUnmarshaler) RegisterType(t string, e entity.EntityIface) {
+func (u *InterfaceUnmarshaler) RegisterType(t string, e interface{}) {
 	u.RegisterUnmarshalFn(t, defaultUnmarshalFn(e))
 }
 
@@ -130,7 +127,7 @@ func (u *InterfaceUnmarshaler) unmarshalInterface(b []byte) (interface{}, error)
 	return fn(u, b)
 }
 
-func defaultUnmarshalFn(e entity.EntityIface) UnmarshalFn {
+func defaultUnmarshalFn(e interface{}) UnmarshalFn {
 	targetType := reflect.TypeOf(e)
 	return func(u *InterfaceUnmarshaler, b []byte) (interface{}, error) {
 		ret := reflect.New(targetType)
@@ -146,12 +143,9 @@ func defaultUnmarshalFn(e entity.EntityIface) UnmarshalFn {
 			return nil, err
 		}
 
-		entRet, ok := ret.Elem().Interface().(entity.EntityIface)
-		if !ok {
-			return nil, fmt.Errorf("unmarshal: expected activitystreams.EntityIface, got %T", ret)
-		}
+		retIface := ret.Elem().Interface()
 
-		return entRet, nil
+		return retIface, nil
 	}
 }
 
