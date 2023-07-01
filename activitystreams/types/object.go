@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/activitystreams/util/either"
+	"github.com/brandonsides/pubblr/util/either"
 )
 
 // ObjectIface is an interface representing any ActivityStreams object.

@@ -4,7 +4,7 @@ import (
 	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/activitystreams/testutil"
 	"github.com/brandonsides/pubblr/activitystreams/types"
-	"github.com/brandonsides/pubblr/activitystreams/util/either"
+	"github.com/brandonsides/pubblr/util/either"
 	. "github.com/onsi/ginkgo/v2"
 )
 

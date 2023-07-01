@@ -1,7 +1,7 @@
 package either_test
 
 import (
-	"github.com/brandonsides/pubblr/activitystreams/util/either"
+	"github.com/brandonsides/pubblr/util/either"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

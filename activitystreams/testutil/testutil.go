@@ -6,7 +6,7 @@ import (
 	"reflect"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	pkgJson "github.com/brandonsides/pubblr/activitystreams/util/json"
+	"github.com/brandonsides/pubblr/activitystreams/types"
 	"github.com/go-test/deep"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -49,7 +49,7 @@ func CheckActivityStreamsEntity(objectType string, actual activitystreams.Entity
 			Expect(err).ToNot(HaveOccurred())
 
 			var unmarshalled interface{}
-			err = pkgJson.DefaultEntityUnmarshaler.Unmarshal(jsonObject, &unmarshalled)
+			err = types.DefaultEntityUnmarshaler.Unmarshal(jsonObject, &unmarshalled)
 			Expect(err).ToNot(HaveOccurred())
 			diff := deep.Equal(unmarshalled, actual)
 			if diff != nil {

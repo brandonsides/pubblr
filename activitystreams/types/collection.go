@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/activitystreams/util/either"
+	"github.com/brandonsides/pubblr/util/either"
 )
 
 const (
