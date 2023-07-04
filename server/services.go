@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi"
 )
 
-func (router *PubblrRouter) Create(c *activitystreams.Create) {
-
+func (router *PubblrRouter) Create(c *activitystreams.Create) (*activitystreams.ObjectIface, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "Create not implemented")
 }
 
 func (router *PubblrRouter) DoActivity(r *http.Request) (*activitystreams.ObjectIface, apiutil.Status) {
