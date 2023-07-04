@@ -1,16 +1,18 @@
 package activitystreams_test
 
 import (
+	"encoding/json"
+
 	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/activitystreams/testutil"
 )
 
 var _ = Describe("Toplevelentity", func() {
-	topLevelEntity := activitystreams.TopLevelEntity{
+	actual := activitystreams.TopLevelEntity{
 		EntityIface: &activitystreams.Like{
-			Activity: activitystreams.Activity{
+			TransitiveActivity: activitystreams.TransitiveActivity{
 				IntransitiveActivity: activitystreams.IntransitiveActivity{
 					Object: activitystreams.Object{
 						Entity: activitystreams.Entity{
@@ -57,7 +59,7 @@ var _ = Describe("Toplevelentity", func() {
 					},
 				},
 				Object: &activitystreams.Announce{
-					Activity: activitystreams.Activity{
+					TransitiveActivity: activitystreams.TransitiveActivity{
 						IntransitiveActivity: activitystreams.IntransitiveActivity{
 							Object: activitystreams.Object{
 								Entity: activitystreams.Entity{
@@ -78,7 +80,7 @@ var _ = Describe("Toplevelentity", func() {
 		},
 		Context: "https://www.w3.org/ns/activitystreams",
 	}
-	expectedTopLevelEntityMap := map[string]interface{}{
+	expected := map[string]interface{}{
 		"@context": "https://www.w3.org/ns/activitystreams",
 		"type":     "Like",
 		"id":       "http://example.org/like/1",
@@ -118,5 +120,42 @@ var _ = Describe("Toplevelentity", func() {
 		},
 	}
 
-	testutil.CheckActivityStreamsEntity("Like", &topLevelEntity, expectedTopLevelEntityMap)
+	Describe("MarshalJSON", func() {
+		It("should correctly marshal fully populated type", func() {
+			jsonObject, err := actual.MarshalJSON()
+			Expect(err).ToNot(HaveOccurred())
+			var actual map[string]interface{}
+			err = json.Unmarshal(jsonObject, &actual)
+			Expect(err).ToNot(HaveOccurred())
+			for key, value := range expected {
+				Expect(actual[key]).To(Equal(value))
+			}
+			Expect(actual).To(Equal(expected))
+		})
+
+		It("should fail to marshal zero value", func() {
+			actual := activitystreams.TopLevelEntity{}
+
+			_, err := actual.MarshalJSON()
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Describe("EntityUnmarshaler", func() {
+		It("should correctly unmarshal fully populated type", func() {
+			jsonObject, err := json.Marshal(expected)
+			Expect(err).ToNot(HaveOccurred())
+
+			var unmarshalled activitystreams.TopLevelEntity
+			err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(jsonObject, &unmarshalled)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(unmarshalled).To(Equal(actual))
+		})
+	})
+
+	Describe("Type", func() {
+		It("should return correct type", func() {
+			Expect(actual.Type()).To(Equal("Like"))
+		})
+	})
 })

@@ -36,7 +36,7 @@ func (u *InterfaceUnmarshaler) Unmarshal(b []byte, dest interface{}) error {
 	}
 	var err error
 	if reflect.TypeOf(dest).Implements(customUnmarshalerUserType) {
-		dest.(CustomUnmarshalerUser).CustomUnmarshalJSON(u, b)
+		err = dest.(CustomUnmarshalerUser).CustomUnmarshalJSON(u, b)
 	} else if reflect.TypeOf(dest).Implements(jsonUnmarshalerType) {
 		err = json.Unmarshal(b, dest)
 	} else if targetType.Kind() == reflect.Interface {

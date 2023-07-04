@@ -292,7 +292,7 @@ var _ = Describe("Activity", func() {
 		})
 
 		Describe("Activity", func() {
-			actualActivity := activitystreams.Activity{
+			actualActivity := activitystreams.TransitiveActivity{
 				IntransitiveActivity: actualIntransitiveActivity,
 				Object: &activitystreams.Object{
 					Entity: activitystreams.Entity{

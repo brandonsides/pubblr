@@ -3,6 +3,7 @@ module github.com/brandonsides/pubblr
 go 1.18
 
 require (
+	github.com/go-chi/chi v1.5.4
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/go-test/deep v1.1.0 // indirect

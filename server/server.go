@@ -1,9 +1,35 @@
 package server
 
-import "net/http"
+import (
+	"net/http"
+	"strconv"
 
-type ActivityPubServer http.Server
+	"github.com/brandonsides/pubblr/activitystreams"
+	"github.com/brandonsides/pubblr/database"
+	"github.com/brandonsides/pubblr/logging"
+	"github.com/go-chi/chi"
+)
 
-func NewActivityPubServer() *ActivityPubServer {
-	return &ActivityPubServer{}
+type DB interface {
+	CreatePost(post activitystreams.ObjectIface) (string, error)
+	GetPostByTypeAndId(typ, id string) (activitystreams.ObjectIface, error)
+}
+
+type PubblrServer struct {
+	http.Server
+}
+
+type PubblrServerConfig struct {
+	MountPath string                        `json:"mountPath"`
+	Database  database.PubblrDatabaseConfig `json:"database"`
+	Logger    logging.PubblrLoggerConfig    `json:"logger"`
+	Host      string
+	Port      int
+}
+
+func NewPubblrServer(config PubblrServerConfig, baseRouter chi.Router) *http.Server {
+	return &http.Server{
+		Addr:    config.Host + ":" + strconv.Itoa(config.Port),
+		Handler: NewPubblrRouter(config, baseRouter),
+	}
 }
