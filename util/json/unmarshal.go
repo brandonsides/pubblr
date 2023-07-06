@@ -194,11 +194,3 @@ func (u *InterfaceUnmarshaler) unmarshalStruct(b []byte, dest interface{}) error
 
 	return nil
 }
-
-func (u *InterfaceUnmarshaler) unmarshalAs(t string, b []byte) (interface{}, error) {
-	fn, ok := u.unmarshalFnByType[t]
-	if !ok {
-		return nil, errors.New("no unmarshal function for type: " + t)
-	}
-	return fn(u, b)
-}

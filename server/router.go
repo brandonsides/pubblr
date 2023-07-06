@@ -1,11 +1,8 @@
 package server
 
 import (
-	"net/http"
 	"net/url"
-	"path"
 	"strconv"
-	"strings"
 
 	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/database"
@@ -13,6 +10,15 @@ import (
 	"github.com/brandonsides/pubblr/server/apiutil"
 	"github.com/go-chi/chi"
 )
+
+type DB interface {
+	CreateObject(obj activitystreams.ObjectIface, user string, baseIdUrl url.URL) (activitystreams.ObjectIface, error)
+	CreateActivity(act activitystreams.ActivityIface, user string, baseIdUrl url.URL) (activitystreams.ActivityIface, error)
+	GetActivity(user, id string) (activitystreams.ActivityIface, error)
+	GetPost(user, typ, id string) (activitystreams.ObjectIface, error)
+	CreateUser(user activitystreams.ActorIface, username string, baseIdUrl url.URL) (activitystreams.ActorIface, error)
+	GetUser(username string) (activitystreams.ActorIface, error)
+}
 
 type PubblrRouter struct {
 	chi.Router
@@ -33,29 +39,28 @@ func NewPubblrRouter(cfg PubblrServerConfig, baseRouter chi.Router) chi.Router {
 		},
 	}
 
-	router.Use(func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Content-Type", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
-			h.ServeHTTP(w, r)
-		})
-	})
+	router.Use(
+		SetContentType("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\""),
+	)
 
-	router.Method("POST", "/create", apiutil.LogEndpoint(router.DoActivity, router.Logger))
-	router.Method("GET", "/{type}/{id}", apiutil.LogEndpoint(router.GetObject, router.Logger))
+	// OUTBOX
+	router.Method("POST", "/{actor}/outbox", apiutil.LogEndpoint(router.PostObject, router.Logger))
+	router.Method("GET", "/{actor}/outbox", apiutil.LogEndpoint(router.GetOutbox, router.Logger))
+	router.Method("GET", "/{actor}/outbox/{id}", apiutil.LogEndpoint(router.GetOutboxActivity, router.Logger))
+
+	// INBOX
+	router.Method("GET", "/{actor}/inbox", apiutil.LogEndpoint(router.GetInbox, router.Logger))
+
+	// OBJECTS
+	router.Method("GET", "/{actor}/{type}/{id}", apiutil.LogEndpoint(router.GetObject, router.Logger))
+
+	// ACTORS
+	router.Method("GET", "/{actor}", apiutil.LogEndpoint(router.GetUser, router.Logger))
+	router.Method("POST", "/{actor}", apiutil.LogEndpoint(router.PostUser, router.Logger))
 
 	if baseRouter != nil {
 		baseRouter.Mount(cfg.MountPath, router)
 		return baseRouter
 	}
 	return router
-}
-
-func (s *PubblrRouter) ToId(ent activitystreams.EntityIface, id string) string {
-	typ, err := ent.Type()
-	if err != nil {
-		typ = "Object"
-	}
-	retUrl := s.baseUrl
-	retUrl.Path = path.Join(retUrl.Path, strings.ToLower(typ), id)
-	return retUrl.String()
 }

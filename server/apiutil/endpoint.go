@@ -3,6 +3,7 @@ package apiutil
 import (
 	"encoding/json"
 	"net/http"
+	"runtime/debug"
 )
 
 type Logger interface {
@@ -13,19 +14,20 @@ type Logger interface {
 	Fatalf(format string, args ...interface{})
 }
 
-type Endpoint[T any] func(*http.Request) (*T, Status)
+type Endpoint[T any] func(*http.Request) (T, Status)
 
 func LogEndpoint[T any](endpoint Endpoint[T], logger Logger) Endpoint[T] {
-	return Endpoint[T](func(r *http.Request) (ret *T, status Status) {
+	return Endpoint[T](func(r *http.Request) (ret T, status Status) {
 		defer func() {
 			if r := recover(); r != nil {
-				logger.Errorf("Recovered from panic: %s", r)
+				logger.Errorf("Recovered from panic: %s\n%v", r, string(debug.Stack()))
 				status = Statusf(http.StatusInternalServerError, "Recovered from panic: %s", r)
+
 			}
 		}()
 
 		ret, status = endpoint(r)
-		if status != nil {
+		if status != nil && status.StatusCode()/100 == 2 {
 			logger.Errorf("%s", status.Error())
 		}
 		return
@@ -52,12 +54,6 @@ func (e Endpoint[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if status.StatusCode()/100 == 4 {
 			w.Write([]byte(status.Error()))
 		}
-		return
-	}
-
-	if resp == nil {
-		w.WriteHeader(statusCode)
-		w.Write([]byte(status.Error()))
 		return
 	}
 

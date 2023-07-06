@@ -4,16 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/database"
 	"github.com/brandonsides/pubblr/logging"
 	"github.com/go-chi/chi"
 )
-
-type DB interface {
-	CreatePost(post activitystreams.ObjectIface) (string, error)
-	GetPostByTypeAndId(typ, id string) (activitystreams.ObjectIface, error)
-}
 
 type PubblrServer struct {
 	http.Server
