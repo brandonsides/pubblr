@@ -4,6 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 
 	"github.com/brandonsides/pubblr/activitystreams"
+	"github.com/brandonsides/pubblr/activitystreams/testutil"
 )
 
 var _ = Describe("Link", func() {
@@ -57,7 +58,7 @@ var _ = Describe("Link", func() {
 			delete(expectedLinkMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Link", &actualLink, expectedLinkMap)
+		testutil.CheckActivityStreamsEntity("Link", &actualLink, expectedLinkMap)
 	})
 
 	Describe("Mention", func() {
@@ -73,6 +74,6 @@ var _ = Describe("Link", func() {
 			delete(expectedLinkMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Mention", &actualMention, expectedLinkMap)
+		testutil.CheckActivityStreamsEntity("Mention", &actualMention, expectedLinkMap)
 	})
 })

@@ -1,1 +1,5 @@
 coverage*
+__debug_bin
+*vscode*
+pubblr
+*ginkgo*

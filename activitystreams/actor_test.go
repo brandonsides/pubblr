@@ -7,7 +7,8 @@ import (
 	//	. "github.com/onsi/gomega"
 
 	"github.com/brandonsides/pubblr/activitystreams"
-	"github.com/brandonsides/pubblr/util"
+	"github.com/brandonsides/pubblr/activitystreams/testutil"
+	"github.com/brandonsides/pubblr/util/either"
 )
 
 var _ = Describe("Actor", func() {
@@ -88,7 +89,7 @@ var _ = Describe("Actor", func() {
 				Entity: activitystreams.Entity{
 					Name: "John's Avatar",
 				},
-				URL: util.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
+				URL: either.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
 			},
 		},
 		Image: &activitystreams.Image{
@@ -96,7 +97,7 @@ var _ = Describe("Actor", func() {
 				Entity: activitystreams.Entity{
 					Name: "John's Header",
 				},
-				URL: util.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
+				URL: either.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
 			},
 		},
 		InReplyTo: []activitystreams.EntityIface{
@@ -143,7 +144,7 @@ var _ = Describe("Actor", func() {
 				},
 			},
 		},
-		URL:       util.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
+		URL:       either.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
 		Content:   "This is a simple note",
 		Duration:  &duration,
 		EndTime:   &endTime,
@@ -263,7 +264,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedApplicationMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Application", &actualApplication, expectedApplicationMap)
+		testutil.CheckActivityStreamsEntity("Application", &actualApplication, expectedApplicationMap)
 	})
 
 	Describe("Group", func() {
@@ -278,7 +279,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedGroupMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Group", &actualGroup, expectedGroupMap)
+		testutil.CheckActivityStreamsEntity("Group", &actualGroup, expectedGroupMap)
 	})
 
 	Describe("Organization", func() {
@@ -293,7 +294,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedOrganizationMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Organization", &actualOrganization, expectedOrganizationMap)
+		testutil.CheckActivityStreamsEntity("Organization", &actualOrganization, expectedOrganizationMap)
 	})
 
 	Describe("Person", func() {
@@ -308,7 +309,7 @@ var _ = Describe("Actor", func() {
 			delete(expectedPersonMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Person", &actualPerson, expectedPersonMap)
+		testutil.CheckActivityStreamsEntity("Person", &actualPerson, expectedPersonMap)
 	})
 
 	Describe("Service", func() {
@@ -323,6 +324,6 @@ var _ = Describe("Actor", func() {
 			delete(expectedServiceMap, "type")
 		})
 
-		CheckActivityStreamsEntity("Service", &actualService, expectedServiceMap)
+		testutil.CheckActivityStreamsEntity("Service", &actualService, expectedServiceMap)
 	})
 })

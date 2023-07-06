@@ -3,7 +3,7 @@ package activitystreams
 import (
 	"time"
 
-	"github.com/brandonsides/pubblr/util"
+	"github.com/brandonsides/pubblr/util/either"
 )
 
 // ObjectIface is an interface representing any ActivityStreams object.
@@ -24,29 +24,29 @@ func ToObject[O ObjectIface](o O) *Object {
 // Concrete type representing an ActivityStreams Object
 type Object struct {
 	Entity
-	Attachment []EntityIface                   `json:"attachment,omitempty"`
-	Audience   []EntityIface                   `json:"audience,omitempty"`
-	Bcc        []EntityIface                   `json:"bcc,omitempty"`
-	Bto        []EntityIface                   `json:"bto,omitempty"`
-	Cc         []EntityIface                   `json:"cc,omitempty"`
-	Context    EntityIface                     `json:"context,omitempty"`
-	Generator  EntityIface                     `json:"generator,omitempty"`
-	Icon       EntityIface                     `json:"icon,omitempty"`
-	Image      EntityIface                     `json:"image,omitempty"`
-	InReplyTo  []EntityIface                   `json:"inReplyTo,omitempty"`
-	Location   []EntityIface                   `json:"location,omitempty"`
-	Preview    EntityIface                     `json:"preview,omitempty"`
-	Replies    CollectionIface                 `json:"replies,omitempty"`
-	Tag        []EntityIface                   `json:"tag,omitempty"`
-	To         []EntityIface                   `json:"to,omitempty"`
-	URL        *util.Either[string, LinkIface] `json:"url,omitempty"`
-	Content    string                          `json:"content,omitempty"`
-	Duration   *time.Duration                  `json:"duration,omitempty"`
-	EndTime    *time.Time                      `json:"endTime,omitempty"`
-	Published  *time.Time                      `json:"published,omitempty"`
-	StartTime  *time.Time                      `json:"startTime,omitempty"`
-	Summary    string                          `json:"summary,omitempty"`
-	Updated    *time.Time                      `json:"updated,omitempty"`
+	Attachment []EntityIface                     `json:"attachment,omitempty"`
+	Audience   []EntityIface                     `json:"audience,omitempty"`
+	Bcc        []EntityIface                     `json:"bcc,omitempty"`
+	Bto        []EntityIface                     `json:"bto,omitempty"`
+	Cc         []EntityIface                     `json:"cc,omitempty"`
+	Context    EntityIface                       `json:"context,omitempty"`
+	Generator  EntityIface                       `json:"generator,omitempty"`
+	Icon       EntityIface                       `json:"icon,omitempty"`
+	Image      EntityIface                       `json:"image,omitempty"`
+	InReplyTo  []EntityIface                     `json:"inReplyTo,omitempty"`
+	Location   []EntityIface                     `json:"location,omitempty"`
+	Preview    EntityIface                       `json:"preview,omitempty"`
+	Replies    CollectionIface                   `json:"replies,omitempty"`
+	Tag        []EntityIface                     `json:"tag,omitempty"`
+	To         []EntityIface                     `json:"to,omitempty"`
+	URL        *either.Either[string, LinkIface] `json:"url,omitempty"`
+	Content    string                            `json:"content,omitempty"`
+	Duration   *time.Duration                    `json:"duration,omitempty"`
+	EndTime    *time.Time                        `json:"endTime,omitempty"`
+	Published  *time.Time                        `json:"published,omitempty"`
+	StartTime  *time.Time                        `json:"startTime,omitempty"`
+	Summary    string                            `json:"summary,omitempty"`
+	Updated    *time.Time                        `json:"updated,omitempty"`
 }
 
 func (o *Object) object() *Object {
@@ -64,9 +64,9 @@ func (o *Object) MarshalJSON() ([]byte, error) {
 // Represents an ActivityStreams Relationship object
 type Relationship struct {
 	Object
-	Subject      *util.Either[ObjectIface, Link] `json:"subject,omitempty"`
-	Obj          *util.Either[ObjectIface, Link] `json:"object,omitempty"`
-	Relationship ObjectIface                     `json:"relationship,omitempty"`
+	Subject      *either.Either[ObjectIface, Link] `json:"subject,omitempty"`
+	Obj          *either.Either[ObjectIface, Link] `json:"object,omitempty"`
+	Relationship ObjectIface                       `json:"relationship,omitempty"`
 }
 
 func (r *Relationship) Type() (string, error) {

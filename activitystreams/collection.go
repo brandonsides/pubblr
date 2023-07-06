@@ -3,7 +3,7 @@ package activitystreams
 import (
 	"encoding/json"
 
-	"github.com/brandonsides/pubblr/util"
+	"github.com/brandonsides/pubblr/util/either"
 )
 
 const (
@@ -20,35 +20,14 @@ func ToCollection(c CollectionIface) *Collection {
 	return c.collection()
 }
 
-/*
-func MarshalCollection(c CollectionIface) ([]byte, error) {
-	var mapped map[string]interface{}
-	j, err := MarshalObject(c)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(j, &mapped)
-	if err != nil {
-		return nil, err
-	}
-
-	if c.Type() == CollectionTypeOrdered {
-		mapped["orderedItems"] = mapped["items"]
-		delete(mapped, "items")
-	}
-
-	return json.Marshal(mapped)
-}
-*/
-
 type Collection struct {
 	Object
-	Ordered    bool                                     `json:"-"`
-	TotalItems uint64                                   `json:"totalItems,omitempty"`
-	Current    *util.Either[*CollectionPage, LinkIface] `json:"current,omitempty"`
-	First      *util.Either[*CollectionPage, LinkIface] `json:"first,omitempty"`
-	Last       *util.Either[*CollectionPage, LinkIface] `json:"last,omitempty"`
-	Items      []util.Either[ObjectIface, LinkIface]    `json:"items,omitempty"`
+	Ordered    bool                                       `json:"-"`
+	TotalItems uint64                                     `json:"totalItems,omitempty"`
+	Current    *either.Either[*CollectionPage, LinkIface] `json:"current,omitempty"`
+	First      *either.Either[*CollectionPage, LinkIface] `json:"first,omitempty"`
+	Last       *either.Either[*CollectionPage, LinkIface] `json:"last,omitempty"`
+	Items      []*either.Either[ObjectIface, LinkIface]   `json:"items,omitempty"`
 }
 
 func (c *Collection) collection() *Collection {
@@ -86,9 +65,9 @@ func (c *Collection) Type() (string, error) {
 
 type CollectionPage struct {
 	Collection
-	PartOf *util.Either[Collection, Link]     `json:"partOf,omitempty"`
-	Next   *util.Either[CollectionPage, Link] `json:"next,omitempty"`
-	Prev   *util.Either[CollectionPage, Link] `json:"prev,omitempty"`
+	PartOf *either.Either[Collection, Link]     `json:"partOf,omitempty"`
+	Next   *either.Either[CollectionPage, Link] `json:"next,omitempty"`
+	Prev   *either.Either[CollectionPage, Link] `json:"prev,omitempty"`
 }
 
 func (c *CollectionPage) Type() (string, error) {
