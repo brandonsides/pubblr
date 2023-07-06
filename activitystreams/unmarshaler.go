@@ -30,7 +30,7 @@ func init() {
 		return &ret, err
 	})
 	DefaultEntityUnmarshaler.RegisterType("IntransitiveActivity", &IntransitiveActivity{})
-	DefaultEntityUnmarshaler.RegisterType("Activity", &Activity{})
+	DefaultEntityUnmarshaler.RegisterType("Activity", &TransitiveActivity{})
 	DefaultEntityUnmarshaler.RegisterType("Accept", &Accept{})
 	DefaultEntityUnmarshaler.RegisterType("Announce", &Announce{})
 	DefaultEntityUnmarshaler.RegisterType("Add", &Add{})

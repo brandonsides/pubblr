@@ -1,7 +1,37 @@
 package activitystreams
 
-type Application struct {
+type Actor struct {
 	Object
+	Inbox             CollectionIface `json:"inbox,omitempty"`
+	Outbox            CollectionIface `json:"outbox,omitempty"`
+	Following         CollectionIface `json:"following,omitempty"`
+	Followers         CollectionIface `json:"followers,omitempty"`
+	Liked             CollectionIface `json:"liked,omitempty"`
+	Streams           CollectionIface `json:"streams,omitempty"`
+	PreferredUsername string          `json:"preferredUsername,omitempty"`
+	Endpoints         ActorEndpoints  `json:"endpoints,omitempty"`
+}
+
+type ActorEndpoints struct {
+	ProxyUrl                   string `json:"proxyUrl,omitempty"`
+	OauthAuthorizationEndpoint string `json:"oauthAuthorizationEndpoint,omitempty"`
+	OauthTokenEndpoint         string `json:"oauthTokenEndpoint,omitempty"`
+	ProvideClientKey           bool   `json:"provideClientKey,omitempty"`
+	SignClientKey              bool   `json:"signClientKey,omitempty"`
+}
+
+type ActorIface interface {
+	ObjectIface
+	actor() *Actor
+	Type() (string, error)
+}
+
+func (a *Actor) actor() *Actor {
+	return a
+}
+
+type Application struct {
+	Actor
 }
 
 func (a *Application) Type() (string, error) {
@@ -13,7 +43,7 @@ func (a *Application) MarshalJSON() ([]byte, error) {
 }
 
 type Group struct {
-	Object
+	Actor
 }
 
 func (g *Group) Type() (string, error) {
@@ -25,7 +55,7 @@ func (g *Group) MarshalJSON() ([]byte, error) {
 }
 
 type Organization struct {
-	Object
+	Actor
 }
 
 func (o *Organization) Type() (string, error) {
@@ -37,7 +67,7 @@ func (o *Organization) MarshalJSON() ([]byte, error) {
 }
 
 type Person struct {
-	Object
+	Actor
 }
 
 func (p *Person) Type() (string, error) {
@@ -49,7 +79,7 @@ func (p *Person) MarshalJSON() ([]byte, error) {
 }
 
 type Service struct {
-	Object
+	Actor
 }
 
 func (s *Service) Type() (string, error) {

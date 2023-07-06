@@ -32,9 +32,11 @@ var _ = Describe("Activity", func() {
 				},
 			},
 			Actor: &activitystreams.Person{
-				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
-						Id: "http://example.org/john",
+				Actor: activitystreams.Actor{
+					Object: activitystreams.Object{
+						Entity: activitystreams.Entity{
+							Id: "http://example.org/john",
+						},
 					},
 				},
 			},
@@ -292,7 +294,7 @@ var _ = Describe("Activity", func() {
 		})
 
 		Describe("Activity", func() {
-			actualActivity := activitystreams.Activity{
+			actualActivity := activitystreams.TransitiveActivity{
 				IntransitiveActivity: actualIntransitiveActivity,
 				Object: &activitystreams.Object{
 					Entity: activitystreams.Entity{

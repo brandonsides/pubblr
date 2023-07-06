@@ -15,9 +15,11 @@ var _ = Describe("Link", func() {
 			Id: "http://example.com/abc",
 			AttributedTo: []activitystreams.EntityIface{
 				activitystreams.ObjectIface(&activitystreams.Person{
-					Object: activitystreams.Object{
-						Entity: activitystreams.Entity{
-							Id: "http://example.com/~john",
+					Actor: activitystreams.Actor{
+						Object: activitystreams.Object{
+							Entity: activitystreams.Entity{
+								Id: "http://example.com/~john",
+							},
 						},
 					},
 				}),
