@@ -2,6 +2,22 @@ package activitystreams
 
 type Actor struct {
 	Object
+	Inbox             CollectionIface `json:"inbox,omitempty"`
+	Outbox            CollectionIface `json:"outbox,omitempty"`
+	Following         CollectionIface `json:"following,omitempty"`
+	Followers         CollectionIface `json:"followers,omitempty"`
+	Liked             CollectionIface `json:"liked,omitempty"`
+	Streams           CollectionIface `json:"streams,omitempty"`
+	PreferredUsername string          `json:"preferredUsername,omitempty"`
+	Endpoints         ActorEndpoints  `json:"endpoints,omitempty"`
+}
+
+type ActorEndpoints struct {
+	ProxyUrl                   string `json:"proxyUrl,omitempty"`
+	OauthAuthorizationEndpoint string `json:"oauthAuthorizationEndpoint,omitempty"`
+	OauthTokenEndpoint         string `json:"oauthTokenEndpoint,omitempty"`
+	ProvideClientKey           bool   `json:"provideClientKey,omitempty"`
+	SignClientKey              bool   `json:"signClientKey,omitempty"`
 }
 
 type ActorIface interface {

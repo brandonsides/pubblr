@@ -6,6 +6,10 @@ type ActivityIface interface {
 	Type() (string, error)
 }
 
+func ToIntransitiveActivity(a ActivityIface) *IntransitiveActivity {
+	return a.intransitiveActivity()
+}
+
 type IntransitiveActivity struct {
 	Object
 	Actor      EntityIface `json:"actor,omitempty"`
