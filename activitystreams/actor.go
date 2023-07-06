@@ -1,7 +1,21 @@
 package activitystreams
 
-type Application struct {
+type Actor struct {
 	Object
+}
+
+type ActorIface interface {
+	ObjectIface
+	actor() *Actor
+	Type() (string, error)
+}
+
+func (a *Actor) actor() *Actor {
+	return a
+}
+
+type Application struct {
+	Actor
 }
 
 func (a *Application) Type() (string, error) {
@@ -13,7 +27,7 @@ func (a *Application) MarshalJSON() ([]byte, error) {
 }
 
 type Group struct {
-	Object
+	Actor
 }
 
 func (g *Group) Type() (string, error) {
@@ -25,7 +39,7 @@ func (g *Group) MarshalJSON() ([]byte, error) {
 }
 
 type Organization struct {
-	Object
+	Actor
 }
 
 func (o *Organization) Type() (string, error) {
@@ -37,7 +51,7 @@ func (o *Organization) MarshalJSON() ([]byte, error) {
 }
 
 type Person struct {
-	Object
+	Actor
 }
 
 func (p *Person) Type() (string, error) {
@@ -49,7 +63,7 @@ func (p *Person) MarshalJSON() ([]byte, error) {
 }
 
 type Service struct {
-	Object
+	Actor
 }
 
 func (s *Service) Type() (string, error) {

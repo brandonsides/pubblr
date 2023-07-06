@@ -22,9 +22,11 @@ var _ = Describe("Object", func() {
 			Id: "http://example.org/~john",
 			AttributedTo: []activitystreams.EntityIface{
 				&activitystreams.Person{
-					Object: activitystreams.Object{
-						Entity: activitystreams.Entity{
-							Id: "http://example.org/~john",
+					Actor: activitystreams.Actor{
+						Object: activitystreams.Object{
+							Entity: activitystreams.Entity{
+								Id: "http://example.org/~john",
+							},
 						},
 					},
 				},
@@ -49,27 +51,33 @@ var _ = Describe("Object", func() {
 		},
 		Bcc: []activitystreams.EntityIface{
 			&activitystreams.Person{
-				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
-						Id: "http://example.org/~alice",
+				Actor: activitystreams.Actor{
+					Object: activitystreams.Object{
+						Entity: activitystreams.Entity{
+							Id: "http://example.org/~alice",
+						},
 					},
 				},
 			},
 		},
 		Bto: []activitystreams.EntityIface{
 			&activitystreams.Person{
-				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
-						Id: "http://example.org/~bob",
+				Actor: activitystreams.Actor{
+					Object: activitystreams.Object{
+						Entity: activitystreams.Entity{
+							Id: "http://example.org/~bob",
+						},
 					},
 				},
 			},
 		},
 		Cc: []activitystreams.EntityIface{
 			&activitystreams.Person{
-				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
-						Id: "http://example.org/~eve",
+				Actor: activitystreams.Actor{
+					Object: activitystreams.Object{
+						Entity: activitystreams.Entity{
+							Id: "http://example.org/~eve",
+						},
 					},
 				},
 			},
@@ -137,9 +145,11 @@ var _ = Describe("Object", func() {
 		},
 		To: []activitystreams.EntityIface{
 			&activitystreams.Person{
-				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
-						Id: "http://example.org/~alice",
+				Actor: activitystreams.Actor{
+					Object: activitystreams.Object{
+						Entity: activitystreams.Entity{
+							Id: "http://example.org/~alice",
+						},
 					},
 				},
 			},

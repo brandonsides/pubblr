@@ -19,10 +19,12 @@ var _ = Describe("Toplevelentity", func() {
 							Id: "http://example.org/like/1",
 							AttributedTo: []activitystreams.EntityIface{
 								&activitystreams.Person{
-									Object: activitystreams.Object{
-										Entity: activitystreams.Entity{
-											Id:   "http://sally.example.org",
-											Name: "Sally",
+									Actor: activitystreams.Actor{
+										Object: activitystreams.Object{
+											Entity: activitystreams.Entity{
+												Id:   "http://sally.example.org",
+												Name: "Sally",
+											},
 										},
 									},
 								},
@@ -31,10 +33,12 @@ var _ = Describe("Toplevelentity", func() {
 						Summary: "Sally liked a repubbed note",
 						To: []activitystreams.EntityIface{
 							&activitystreams.Person{
-								Object: activitystreams.Object{
-									Entity: activitystreams.Entity{
-										Id:   "http://joe.example.org",
-										Name: "Joe",
+								Actor: activitystreams.Actor{
+									Object: activitystreams.Object{
+										Entity: activitystreams.Entity{
+											Id:   "http://joe.example.org",
+											Name: "Joe",
+										},
 									},
 								},
 							},
@@ -50,10 +54,12 @@ var _ = Describe("Toplevelentity", func() {
 						},
 					},
 					Actor: &activitystreams.Person{
-						Object: activitystreams.Object{
-							Entity: activitystreams.Entity{
-								Id:   "http://sally.example.org",
-								Name: "Sally",
+						Actor: activitystreams.Actor{
+							Object: activitystreams.Object{
+								Entity: activitystreams.Entity{
+									Id:   "http://sally.example.org",
+									Name: "Sally",
+								},
 							},
 						},
 					},

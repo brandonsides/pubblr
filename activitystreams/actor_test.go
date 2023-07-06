@@ -17,141 +17,153 @@ var _ = Describe("Actor", func() {
 	endTime := startTime.Add(duration)
 	published := time.Date(2023, 6, 18, 9, 46, 0, 0, time.UTC)
 	updated := time.Date(2023, 6, 18, 9, 46, 30, 0, time.UTC)
-	actualActor := activitystreams.Object{
-		Entity: activitystreams.Entity{
-			Id: "http://example.org/~john",
-			AttributedTo: []activitystreams.EntityIface{
-				&activitystreams.Person{
+	actualActor := activitystreams.Actor{
+		Object: activitystreams.Object{
+			Entity: activitystreams.Entity{
+				Id: "http://example.org/~john",
+				AttributedTo: []activitystreams.EntityIface{
+					&activitystreams.Person{
+						Actor: activitystreams.Actor{
+							Object: activitystreams.Object{
+								Entity: activitystreams.Entity{
+									Id: "http://example.org/~john",
+								},
+							},
+						},
+					},
+				},
+				Name: "A Simple Note",
+			},
+			Attachment: []activitystreams.EntityIface{
+				&activitystreams.Image{
 					Object: activitystreams.Object{
 						Entity: activitystreams.Entity{
-							Id: "http://example.org/~john",
+							Id:        "http://example.org/~john/picture",
+							MediaType: "image/jpeg",
+						},
+					},
+				},
+				&activitystreams.Link{
+					Entity: activitystreams.Entity{
+						Id: "http://example.org/~john/profile",
+					},
+					Href: "http://example.org/~john/profile",
+				},
+			},
+			Bcc: []activitystreams.EntityIface{
+				&activitystreams.Person{
+					Actor: activitystreams.Actor{
+						Object: activitystreams.Object{
+							Entity: activitystreams.Entity{
+								Id: "http://example.org/~alice",
+							},
 						},
 					},
 				},
 			},
-			Name: "A Simple Note",
-		},
-		Attachment: []activitystreams.EntityIface{
-			&activitystreams.Image{
-				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
-						Id:        "http://example.org/~john/picture",
-						MediaType: "image/jpeg",
+			Bto: []activitystreams.EntityIface{
+				&activitystreams.Person{
+					Actor: activitystreams.Actor{
+						Object: activitystreams.Object{
+							Entity: activitystreams.Entity{
+								Id: "http://example.org/~bob",
+							},
+						},
 					},
 				},
 			},
-			&activitystreams.Link{
-				Entity: activitystreams.Entity{
-					Id: "http://example.org/~john/profile",
-				},
-				Href: "http://example.org/~john/profile",
-			},
-		},
-		Bcc: []activitystreams.EntityIface{
-			&activitystreams.Person{
-				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
-						Id: "http://example.org/~alice",
+			Cc: []activitystreams.EntityIface{
+				&activitystreams.Person{
+					Actor: activitystreams.Actor{
+						Object: activitystreams.Object{
+							Entity: activitystreams.Entity{
+								Id: "http://example.org/~eve",
+							},
+						},
 					},
 				},
 			},
-		},
-		Bto: []activitystreams.EntityIface{
-			&activitystreams.Person{
+			Context: &activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/contexts/1",
+				},
+			},
+			Generator: &activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/generator",
+				},
+			},
+			Icon: &activitystreams.Image{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
-						Id: "http://example.org/~bob",
+						Name: "John's Avatar",
+					},
+					URL: either.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
+				},
+			},
+			Image: &activitystreams.Image{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Name: "John's Header",
+					},
+					URL: either.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
+				},
+			},
+			InReplyTo: []activitystreams.EntityIface{
+				&activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: "http://example.org/posts/1",
 					},
 				},
 			},
-		},
-		Cc: []activitystreams.EntityIface{
-			&activitystreams.Person{
-				Object: activitystreams.Object{
-					Entity: activitystreams.Entity{
-						Id: "http://example.org/~eve",
+			Location: []activitystreams.EntityIface{
+				&activitystreams.Place{
+					Object: activitystreams.Object{
+						Entity: activitystreams.Entity{
+							Name: "Work",
+						},
 					},
 				},
 			},
-		},
-		Context: &activitystreams.Object{
-			Entity: activitystreams.Entity{
-				Id: "http://example.org/contexts/1",
-			},
-		},
-		Generator: &activitystreams.Object{
-			Entity: activitystreams.Entity{
-				Id: "http://example.org/generator",
-			},
-		},
-		Icon: &activitystreams.Image{
-			Object: activitystreams.Object{
+			Preview: &activitystreams.Object{
 				Entity: activitystreams.Entity{
-					Name: "John's Avatar",
-				},
-				URL: either.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
-			},
-		},
-		Image: &activitystreams.Image{
-			Object: activitystreams.Object{
-				Entity: activitystreams.Entity{
-					Name: "John's Header",
-				},
-				URL: either.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
-			},
-		},
-		InReplyTo: []activitystreams.EntityIface{
-			&activitystreams.Object{
-				Entity: activitystreams.Entity{
-					Id: "http://example.org/posts/1",
+					Id: "http://example.org/~john/preview",
 				},
 			},
-		},
-		Location: []activitystreams.EntityIface{
-			&activitystreams.Place{
+			Replies: &activitystreams.Collection{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
-						Name: "Work",
+						Id: "http://example.org/~john/replies",
 					},
 				},
 			},
-		},
-		Preview: &activitystreams.Object{
-			Entity: activitystreams.Entity{
-				Id: "http://example.org/~john/preview",
-			},
-		},
-		Replies: &activitystreams.Collection{
-			Object: activitystreams.Object{
-				Entity: activitystreams.Entity{
-					Id: "http://example.org/~john/replies",
-				},
-			},
-		},
-		Tag: []activitystreams.EntityIface{
-			&activitystreams.Object{
-				Entity: activitystreams.Entity{
-					Id: "http://example.org/tags/1",
-				},
-			},
-		},
-		To: []activitystreams.EntityIface{
-			&activitystreams.Person{
-				Object: activitystreams.Object{
+			Tag: []activitystreams.EntityIface{
+				&activitystreams.Object{
 					Entity: activitystreams.Entity{
-						Id: "http://example.org/~alice",
+						Id: "http://example.org/tags/1",
 					},
 				},
 			},
+			To: []activitystreams.EntityIface{
+				&activitystreams.Person{
+					Actor: activitystreams.Actor{
+						Object: activitystreams.Object{
+							Entity: activitystreams.Entity{
+								Id: "http://example.org/~alice",
+							},
+						},
+					},
+				},
+			},
+			URL:       either.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
+			Content:   "This is a simple note",
+			Duration:  &duration,
+			EndTime:   &endTime,
+			Published: &published,
+			StartTime: &startTime,
+			Summary:   "A simple note",
+			Updated:   &updated,
 		},
-		URL:       either.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
-		Content:   "This is a simple note",
-		Duration:  &duration,
-		EndTime:   &endTime,
-		Published: &published,
-		StartTime: &startTime,
-		Summary:   "A simple note",
-		Updated:   &updated,
 	}
 	expectedActorMap := map[string]interface{}{
 		"id": "http://example.org/~john",
