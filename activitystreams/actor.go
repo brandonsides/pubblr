@@ -9,7 +9,7 @@ type Actor struct {
 	Liked             CollectionIface `json:"liked,omitempty"`
 	Streams           CollectionIface `json:"streams,omitempty"`
 	PreferredUsername string          `json:"preferredUsername,omitempty"`
-	Endpoints         ActorEndpoints  `json:"endpoints,omitempty"`
+	Endpoints         *ActorEndpoints `json:"endpoints,omitempty"`
 }
 
 type ActorEndpoints struct {
