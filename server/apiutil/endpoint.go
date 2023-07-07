@@ -27,7 +27,7 @@ func LogEndpoint[T any](endpoint Endpoint[T], logger Logger) Endpoint[T] {
 		}()
 
 		ret, status = endpoint(r)
-		if status != nil && status.StatusCode()/100 == 2 {
+		if status != nil && status.StatusCode()/100 != 2 {
 			logger.Errorf("%s", status.Error())
 		}
 		return

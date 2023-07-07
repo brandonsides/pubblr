@@ -43,7 +43,7 @@ func (c *Collection) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if typ == CollectionTypeOrdered {
+	if typ == CollectionTypeOrdered && len(c.Items) > 0 {
 		var mapped map[string]interface{}
 		err := json.Unmarshal(retJson, &mapped)
 		if err != nil {

@@ -19,7 +19,7 @@ func (router *PubblrRouter) Create(create activitystreams.Create) (activitystrea
 
 	actorObjIface, ok := create.Actor.(activitystreams.ObjectIface)
 	if !ok {
-		return nil, apiutil.NewStatus(http.StatusBadRequest, "Create activity object must be an Object")
+		return nil, apiutil.NewStatus(http.StatusBadRequest, "Create activity actor must be an Object")
 	}
 
 	objectObjIface, ok := create.Object.(activitystreams.ObjectIface)
@@ -35,8 +35,8 @@ func (router *PubblrRouter) Create(create activitystreams.Create) (activitystrea
 	actorId := activitystreams.ToObject(actorObjIface).Id
 	shortId := shortId(actorId)
 
-	router.Database.CreateActivity(&create, shortId, router.baseUrl)
 	router.Database.CreateObject(objectObjIface, shortId, router.baseUrl)
+	router.Database.CreateActivity(&create, shortId, router.baseUrl)
 
 	return object, apiutil.StatusFromCode(http.StatusCreated)
 }

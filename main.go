@@ -17,5 +17,6 @@ func main() {
 		Host:      "localhost",
 		Port:      8080,
 		MountPath: "/pubblr",
+		PageSize:  25,
 	}, router).ListenAndServe()
 }

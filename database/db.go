@@ -15,8 +15,13 @@ type PubblrDatabaseConfig struct {
 }
 
 type UserData struct {
-	Actor    json.RawMessage `json:"actor"`
-	Password string          `json:"password"`
+	Actor     json.RawMessage               `json:"actor"`
+	Password  string                        `json:"password"`
+	Inbox     map[string][]json.RawMessage  `json:"inbox"`
+	Outbox    map[string][]json.RawMessage  `json:"outbox"`
+	Followers []activitystreams.Actor       `json:"followers"`
+	Following []activitystreams.EntityIface `json:"following"`
+	Streams   []activitystreams.EntityIface `json:"streams"`
 }
 
 type PubblrDatabase struct {
@@ -97,16 +102,23 @@ func (d *PubblrDatabase) CreateActivity(activity activitystreams.ActivityIface, 
 	return activity, nil
 }
 
-func (d *PubblrDatabase) GetOutbox(user string) ([]activitystreams.ActivityIface, error) {
+func (d *PubblrDatabase) GetOutboxPage(user string, page int, pageSize int) ([]activitystreams.ActivityIface, error) {
 	if d.outboxes == nil {
 		d.outboxes = make(map[string][]json.RawMessage)
 	}
 
 	rawOutbox, ok := d.outboxes[user]
 	if !ok {
-		rawOutbox = make([]json.RawMessage, 0)
-		d.outboxes[user] = rawOutbox
+		return nil, fmt.Errorf("User %s does not have an outbox", user)
 	}
+
+	start := page * pageSize
+	end := start + pageSize
+	if end > len(rawOutbox) {
+		end = len(rawOutbox)
+
+	}
+	rawOutbox = rawOutbox[start:end]
 
 	outbox := make([]activitystreams.ActivityIface, len(rawOutbox))
 	for i, activityJson := range rawOutbox {
@@ -120,6 +132,19 @@ func (d *PubblrDatabase) GetOutbox(user string) ([]activitystreams.ActivityIface
 	}
 
 	return outbox, nil
+}
+
+func (d *PubblrDatabase) GetOutboxCount(user string) (int, error) {
+	if d.outboxes == nil {
+		d.outboxes = make(map[string][]json.RawMessage)
+	}
+
+	outbox, ok := d.outboxes[user]
+	if !ok {
+		return 0, fmt.Errorf("User %s does not have an outbox", user)
+	}
+
+	return len(outbox), nil
 }
 
 func (d *PubblrDatabase) GetActivity(user, id string) (activitystreams.ActivityIface, error) {

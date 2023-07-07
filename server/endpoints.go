@@ -3,43 +3,30 @@ package server
 import (
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/server/apiutil"
+	"github.com/brandonsides/pubblr/util/either"
 	"github.com/go-chi/chi"
 )
 
-type CreateAccountRequest struct {
-	Password string                     `json:"password"`
-	Actor    activitystreams.ActorIface `json:"actor"`
-}
+// OBJECTS
 
-func (router *PubblrRouter) GetInbox(r *http.Request) ([]activitystreams.ObjectIface, apiutil.Status) {
-	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetInbox not implemented")
-}
-
-func (router *PubblrRouter) GetOutbox(r *http.Request) ([]activitystreams.ActivityIface, apiutil.Status) {
-	actor := chi.URLParam(r, "actor")
-
-	activities, err := router.Database.GetOutbox(actor)
-	if err != nil {
-		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
-	}
-
-	return activities, apiutil.StatusFromCode(http.StatusOK)
-}
-
-func (router *PubblrRouter) GetOutboxActivity(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
-	id := chi.URLParam(r, "id")
+func (router *PubblrRouter) GetObject(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
 	user := chi.URLParam(r, "actor")
+	typ := chi.URLParam(r, "type")
+	id := chi.URLParam(r, "id")
 
-	activity, err := router.Database.GetActivity(user, id)
+	post, err := router.Database.GetPost(user, typ, id)
 	if err != nil {
 		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
 	}
 
-	return activity, apiutil.StatusFromCode(http.StatusOK)
+	return post, nil
 }
+
+// ACTORS
 
 func (router *PubblrRouter) GetUser(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
 	username := chi.URLParam(r, "actor")
@@ -52,6 +39,11 @@ func (router *PubblrRouter) GetUser(r *http.Request) (activitystreams.ObjectIfac
 	router.setEndpoints(user)
 
 	return user, apiutil.StatusFromCode(http.StatusOK)
+}
+
+type CreateAccountRequest struct {
+	Password string                     `json:"password"`
+	Actor    activitystreams.ActorIface `json:"actor"`
 }
 
 func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
@@ -76,6 +68,122 @@ func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIfa
 	router.setEndpoints(createAccountRequest.Actor)
 
 	return createAccountRequest.Actor, apiutil.Statusf(http.StatusCreated, "created user %s", username)
+}
+
+//INBOX
+
+func (router *PubblrRouter) GetInbox(r *http.Request) (*activitystreams.Collection, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetInbox not implemented")
+}
+
+func (router *PubblrRouter) GetInboxPage(r *http.Request) (*activitystreams.CollectionPage, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetInboxPage not implemented")
+}
+
+// OUTBOX
+
+func (router *PubblrRouter) GetOutbox(r *http.Request) (*activitystreams.Collection, apiutil.Status) {
+	// params
+	actorShortId := chi.URLParam(r, "actor")
+
+	// Make sure user actually exists
+	actorIface, err := router.Database.GetUser(actorShortId)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
+	}
+	actor := activitystreams.ToActor(actorIface)
+
+	router.setEndpoints(actorIface)
+
+	count, err := router.Database.GetOutboxCount(actorShortId)
+	if err != nil {
+		count = 0
+	}
+
+	ret := &activitystreams.Collection{
+		Object: activitystreams.Object{
+			Entity: activitystreams.Entity{
+				Id: actor.Id + "/outbox",
+			},
+		},
+		TotalItems: uint64(count),
+		Ordered:    true,
+	}
+
+	if ret.TotalItems == 0 {
+		return ret, apiutil.StatusFromCode(http.StatusOK)
+	}
+	lastPage := ret.TotalItems / uint64(router.pageSize)
+
+	ret.First = either.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](
+		&activitystreams.CollectionPage{
+			Collection: activitystreams.Collection{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: actor.Id + "/outbox/page/0",
+					},
+				},
+			},
+		},
+	)
+	ret.Last = either.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](
+		&activitystreams.CollectionPage{
+			Collection: activitystreams.Collection{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: actor.Id + "/outbox/page/" + strconv.Itoa(int(lastPage)),
+					},
+				},
+			},
+		},
+	)
+
+	return ret, apiutil.StatusFromCode(http.StatusOK)
+}
+
+func (router *PubblrRouter) GetOutboxPage(r *http.Request) (*activitystreams.CollectionPage, apiutil.Status) {
+	actorShortId := chi.URLParam(r, "actor")
+	page, err := strconv.Atoi(chi.URLParam(r, "page"))
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusBadRequest, err)
+	}
+
+	actorIface, err := router.Database.GetUser(actorShortId)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
+	}
+	actor := activitystreams.ToActor(actorIface)
+
+	posts, err := router.Database.GetOutboxPage(actorShortId, page, router.pageSize)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusInternalServerError, err)
+	}
+
+	items := make([]*either.Either[activitystreams.ObjectIface, activitystreams.LinkIface], len(posts))
+	for i, post := range posts {
+		items[i] = either.Left[activitystreams.ObjectIface, activitystreams.LinkIface](post)
+	}
+
+	return &activitystreams.CollectionPage{
+		Collection: activitystreams.Collection{
+			Object: activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Id: actor.Id + "/outbox/page/" + strconv.Itoa(page),
+				},
+			},
+			Ordered: true,
+			Items:   items,
+		},
+		PartOf: either.Left[activitystreams.Collection, activitystreams.Link](
+			activitystreams.Collection{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: actor.Id + "/outbox",
+					},
+				},
+			},
+		),
+	}, nil
 }
 
 func (router *PubblrRouter) PostObject(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
@@ -121,18 +229,71 @@ func (router *PubblrRouter) PostObject(r *http.Request) (activitystreams.ObjectI
 	}
 }
 
-func (router *PubblrRouter) GetObject(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
-	user := chi.URLParam(r, "actor")
-	typ := chi.URLParam(r, "type")
+func (router *PubblrRouter) GetOutboxActivity(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
 	id := chi.URLParam(r, "id")
+	user := chi.URLParam(r, "actor")
 
-	post, err := router.Database.GetPost(user, typ, id)
+	activity, err := router.Database.GetActivity(user, id)
 	if err != nil {
 		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
 	}
 
-	return post, nil
+	return activity, apiutil.StatusFromCode(http.StatusOK)
 }
+
+// STREAMS
+
+func (router *PubblrRouter) GetStreams(r *http.Request) (*activitystreams.Collection, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetStreams not implemented")
+}
+
+func (router *PubblrRouter) GetStream(r *http.Request) (*activitystreams.Collection, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetStream not implemented")
+}
+
+func (router *PubblrRouter) GetStreamPage(r *http.Request) (*activitystreams.CollectionPage, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetStreamPage not implemented")
+}
+
+func (router *PubblrRouter) GetStreamFollowers(r *http.Request) (*activitystreams.Collection, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetStreamFollowers not implemented")
+}
+
+func (router *PubblrRouter) GetStreamFollowersPage(r *http.Request) (*activitystreams.CollectionPage, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetStreamFollowersPage not implemented")
+}
+
+// FOLLOWING
+
+func (router *PubblrRouter) GetFollowing(r *http.Request) (*activitystreams.Collection, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetFollowing not implemented")
+}
+
+func (router *PubblrRouter) GetFollowingPage(r *http.Request) (*activitystreams.CollectionPage, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetFollowingPage not implemented")
+}
+
+// FOLLOWERS
+
+func (router *PubblrRouter) GetFollowers(r *http.Request) (*activitystreams.Collection, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetFollowers not implemented")
+}
+
+func (router *PubblrRouter) GetFollowersPage(r *http.Request) (*activitystreams.CollectionPage, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetFollowersPage not implemented")
+}
+
+// LIKED
+
+func (router *PubblrRouter) GetLiked(r *http.Request) (*activitystreams.Collection, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetLiked not implemented")
+}
+
+func (router *PubblrRouter) GetLikedPage(r *http.Request) (*activitystreams.CollectionPage, apiutil.Status) {
+	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetLikedPage not implemented")
+}
+
+// helpers
 
 func (router *PubblrRouter) setEndpoints(a activitystreams.ActorIface) {
 	actor := activitystreams.ToActor(a)
@@ -156,4 +317,8 @@ func (router *PubblrRouter) setEndpoints(a activitystreams.ActorIface) {
 	liked := &activitystreams.Collection{}
 	liked.Id = actor.Id + "/liked"
 	actor.Liked = liked
+
+	streams := &activitystreams.Collection{}
+	streams.Id = actor.Id + "/streams"
+	actor.Streams = streams
 }

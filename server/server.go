@@ -19,6 +19,7 @@ type PubblrServerConfig struct {
 	Logger    logging.PubblrLoggerConfig    `json:"logger"`
 	Host      string
 	Port      int
+	PageSize  int `json:"pageSize"`
 }
 
 func NewPubblrServer(config PubblrServerConfig, baseRouter chi.Router) *http.Server {
