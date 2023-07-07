@@ -49,6 +49,8 @@ func (router *PubblrRouter) GetUser(r *http.Request) (activitystreams.ObjectIfac
 		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
 	}
 
+	router.setEndpoints(user)
+
 	return user, apiutil.StatusFromCode(http.StatusOK)
 }
 
@@ -70,6 +72,8 @@ func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIfa
 	if err != nil {
 		return nil, apiutil.NewStatusFromError(http.StatusInternalServerError, err)
 	}
+
+	router.setEndpoints(createAccountRequest.Actor)
 
 	return createAccountRequest.Actor, apiutil.Statusf(http.StatusCreated, "created user %s", username)
 }
@@ -128,4 +132,28 @@ func (router *PubblrRouter) GetObject(r *http.Request) (activitystreams.ObjectIf
 	}
 
 	return post, nil
+}
+
+func (router *PubblrRouter) setEndpoints(a activitystreams.ActorIface) {
+	actor := activitystreams.ToActor(a)
+
+	inbox := &activitystreams.Collection{}
+	inbox.Id = actor.Id + "/inbox"
+	actor.Inbox = inbox
+
+	outbox := &activitystreams.Collection{}
+	outbox.Id = actor.Id + "/outbox"
+	actor.Outbox = outbox
+
+	following := &activitystreams.Collection{}
+	following.Id = actor.Id + "/following"
+	actor.Following = following
+
+	followers := &activitystreams.Collection{}
+	followers.Id = actor.Id + "/followers"
+	actor.Followers = followers
+
+	liked := &activitystreams.Collection{}
+	liked.Id = actor.Id + "/liked"
+	actor.Liked = liked
 }

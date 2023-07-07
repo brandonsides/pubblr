@@ -31,6 +31,10 @@ func (a *Actor) actor() *Actor {
 	return a
 }
 
+func ToActor(a ActorIface) *Actor {
+	return a.actor()
+}
+
 type Application struct {
 	Actor
 }
