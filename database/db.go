@@ -14,16 +14,21 @@ import (
 type PubblrDatabaseConfig struct {
 }
 
+type UserData struct {
+	Actor    json.RawMessage `json:"actor"`
+	Password string          `json:"password"`
+}
+
 type PubblrDatabase struct {
 	posts    map[string]map[string][]json.RawMessage
-	users    map[string]json.RawMessage
+	users    map[string]UserData
 	outboxes map[string][]json.RawMessage
 }
 
 func NewPubblrDatabase(config PubblrDatabaseConfig) *PubblrDatabase {
 	return &PubblrDatabase{
 		posts:    make(map[string]map[string][]json.RawMessage),
-		users:    make(map[string]json.RawMessage),
+		users:    make(map[string]UserData),
 		outboxes: make(map[string][]json.RawMessage),
 	}
 }
@@ -92,6 +97,31 @@ func (d *PubblrDatabase) CreateActivity(activity activitystreams.ActivityIface, 
 	return activity, nil
 }
 
+func (d *PubblrDatabase) GetOutbox(user string) ([]activitystreams.ActivityIface, error) {
+	if d.outboxes == nil {
+		d.outboxes = make(map[string][]json.RawMessage)
+	}
+
+	rawOutbox, ok := d.outboxes[user]
+	if !ok {
+		rawOutbox = make([]json.RawMessage, 0)
+		d.outboxes[user] = rawOutbox
+	}
+
+	outbox := make([]activitystreams.ActivityIface, len(rawOutbox))
+	for i, activityJson := range rawOutbox {
+		var activity activitystreams.ActivityIface
+		err := activitystreams.DefaultEntityUnmarshaler.Unmarshal(activityJson, &activity)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to unmarshal activity: %w", err)
+		}
+
+		outbox[i] = activity
+	}
+
+	return outbox, nil
+}
+
 func (d *PubblrDatabase) GetActivity(user, id string) (activitystreams.ActivityIface, error) {
 	if d.outboxes == nil {
 		d.outboxes = make(map[string][]json.RawMessage)
@@ -148,9 +178,9 @@ func (d *PubblrDatabase) GetPost(user, typ, id string) (activitystreams.ObjectIf
 	return post, nil
 }
 
-func (d *PubblrDatabase) CreateUser(user activitystreams.ActorIface, username string, baseUrl url.URL) (activitystreams.ActorIface, error) {
+func (d *PubblrDatabase) CreateUser(user activitystreams.ActorIface, username, password string, baseUrl url.URL) (activitystreams.ActorIface, error) {
 	if d.users == nil {
-		d.users = make(map[string]json.RawMessage)
+		d.users = make(map[string]UserData)
 	}
 
 	_, ok := d.users[username]
@@ -168,15 +198,19 @@ func (d *PubblrDatabase) CreateUser(user activitystreams.ActorIface, username st
 		return nil, err
 	}
 
-	d.users[username] = bytes
+	userdata := d.users[username]
+	userdata.Actor = bytes
+	userdata.Password = password
+	d.users[username] = userdata
 	return user, nil
 }
 
 func (d *PubblrDatabase) GetUser(username string) (activitystreams.ActorIface, error) {
-	userJson, ok := d.users[username]
+	userData, ok := d.users[username]
 	if !ok {
 		return nil, fmt.Errorf("User %s does not exist", username)
 	}
+	userJson := userData.Actor
 
 	var user activitystreams.ActorIface
 	err := activitystreams.DefaultEntityUnmarshaler.Unmarshal(userJson, &user)

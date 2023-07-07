@@ -15,8 +15,9 @@ type DB interface {
 	CreateObject(obj activitystreams.ObjectIface, user string, baseIdUrl url.URL) (activitystreams.ObjectIface, error)
 	CreateActivity(act activitystreams.ActivityIface, user string, baseIdUrl url.URL) (activitystreams.ActivityIface, error)
 	GetActivity(user, id string) (activitystreams.ActivityIface, error)
+	GetOutbox(user string) ([]activitystreams.ActivityIface, error)
 	GetPost(user, typ, id string) (activitystreams.ObjectIface, error)
-	CreateUser(user activitystreams.ActorIface, username string, baseIdUrl url.URL) (activitystreams.ActorIface, error)
+	CreateUser(user activitystreams.ActorIface, username, password string, baseIdUrl url.URL) (activitystreams.ActorIface, error)
 	GetUser(username string) (activitystreams.ActorIface, error)
 }
 

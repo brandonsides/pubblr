@@ -9,12 +9,24 @@ import (
 	"github.com/go-chi/chi"
 )
 
+type CreateAccountRequest struct {
+	Password string                     `json:"password"`
+	Actor    activitystreams.ActorIface `json:"actor"`
+}
+
 func (router *PubblrRouter) GetInbox(r *http.Request) ([]activitystreams.ObjectIface, apiutil.Status) {
 	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetInbox not implemented")
 }
 
-func (router *PubblrRouter) GetOutbox(r *http.Request) ([]activitystreams.ObjectIface, apiutil.Status) {
-	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetOutbox not implemented")
+func (router *PubblrRouter) GetOutbox(r *http.Request) ([]activitystreams.ActivityIface, apiutil.Status) {
+	actor := chi.URLParam(r, "actor")
+
+	activities, err := router.Database.GetOutbox(actor)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
+	}
+
+	return activities, apiutil.StatusFromCode(http.StatusOK)
 }
 
 func (router *PubblrRouter) GetOutboxActivity(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
@@ -30,7 +42,14 @@ func (router *PubblrRouter) GetOutboxActivity(r *http.Request) (activitystreams.
 }
 
 func (router *PubblrRouter) GetUser(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
-	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetUser not implemented")
+	username := chi.URLParam(r, "actor")
+
+	user, err := router.Database.GetUser(username)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
+	}
+
+	return user, apiutil.StatusFromCode(http.StatusOK)
 }
 
 func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
@@ -40,18 +59,19 @@ func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIfa
 		return nil, apiutil.NewStatusFromError(http.StatusBadRequest, err)
 	}
 
-	var actor activitystreams.ActorIface
-	err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(b, &actor)
+	var createAccountRequest CreateAccountRequest
+	err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(b, &createAccountRequest)
 	if err != nil {
 		return nil, apiutil.Statusf(http.StatusBadRequest, "invalid ActivityStreams actor: %w", err)
 	}
 
-	actor, err = router.Database.CreateUser(actor, username, router.baseUrl)
+	createAccountRequest.Actor, err = router.Database.CreateUser(createAccountRequest.Actor, username,
+		createAccountRequest.Password, router.baseUrl)
 	if err != nil {
 		return nil, apiutil.NewStatusFromError(http.StatusInternalServerError, err)
 	}
 
-	return actor, apiutil.Statusf(http.StatusCreated, "created user %s", username)
+	return createAccountRequest.Actor, apiutil.Statusf(http.StatusCreated, "created user %s", username)
 }
 
 func (router *PubblrRouter) PostObject(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {

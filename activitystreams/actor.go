@@ -16,6 +16,7 @@ type ActorEndpoints struct {
 	ProxyUrl                   string `json:"proxyUrl,omitempty"`
 	OauthAuthorizationEndpoint string `json:"oauthAuthorizationEndpoint,omitempty"`
 	OauthTokenEndpoint         string `json:"oauthTokenEndpoint,omitempty"`
+	UploadMedia                string `json:"uploadMedia,omitempty"`
 	ProvideClientKey           bool   `json:"provideClientKey,omitempty"`
 	SignClientKey              bool   `json:"signClientKey,omitempty"`
 }
