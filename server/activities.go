@@ -9,7 +9,7 @@ import (
 	"github.com/brandonsides/pubblr/server/apiutil"
 )
 
-func (router *PubblrRouter) Create(create activitystreams.Create) (activitystreams.ObjectIface, apiutil.Status) {
+func (router *PubblrRouter) Create(create *activitystreams.Create) (activitystreams.ObjectIface, apiutil.Status) {
 	if create.Actor == nil {
 		return nil, apiutil.NewStatus(http.StatusBadRequest, "Create activity must have an actor")
 	}
@@ -63,7 +63,7 @@ func (router *PubblrRouter) Create(create activitystreams.Create) (activitystrea
 	shortId := shortId(actorId)
 
 	router.Database.CreateObject(objectObjIface, shortId, router.baseUrl)
-	router.Database.CreateActivity(&create, shortId, router.baseUrl)
+	router.Database.CreateOutboxItem(create, shortId, router.baseUrl)
 
 	return object, apiutil.StatusFromCode(http.StatusCreated)
 }

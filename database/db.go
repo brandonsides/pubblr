@@ -15,32 +15,36 @@ type PubblrDatabaseConfig struct {
 }
 
 type UserData struct {
-	Actor     json.RawMessage               `json:"actor"`
-	Password  string                        `json:"password"`
-	Inbox     map[string][]json.RawMessage  `json:"inbox"`
-	Outbox    map[string][]json.RawMessage  `json:"outbox"`
-	Followers []activitystreams.Actor       `json:"followers"`
-	Following []activitystreams.EntityIface `json:"following"`
-	Streams   []activitystreams.EntityIface `json:"streams"`
+	Actor    json.RawMessage              `json:"actor"`
+	Password string                       `json:"password"`
+	Inbox    []json.RawMessage            `json:"-"`
+	Outbox   []json.RawMessage            `json:"-"`
+	Objects  map[string][]json.RawMessage `json:"-"`
+	// TODO: make this EntityIface
+	Followers []activitystreams.Actor       `json:"-"`
+	Following []activitystreams.EntityIface `json:"-"`
+	Streams   []activitystreams.EntityIface `json:"-"`
 }
 
 type PubblrDatabase struct {
-	posts    map[string]map[string][]json.RawMessage
-	users    map[string]UserData
-	outboxes map[string][]json.RawMessage
+	users map[string]UserData
 }
 
 func NewPubblrDatabase(config PubblrDatabaseConfig) *PubblrDatabase {
 	return &PubblrDatabase{
-		posts:    make(map[string]map[string][]json.RawMessage),
-		users:    make(map[string]UserData),
-		outboxes: make(map[string][]json.RawMessage),
+		users: make(map[string]UserData),
 	}
 }
 
 func (d *PubblrDatabase) CreateObject(post activitystreams.ObjectIface, user string, baseUrl url.URL) (activitystreams.ObjectIface, error) {
-	if d.posts == nil {
-		d.posts = make(map[string]map[string][]json.RawMessage)
+	userData, ok := d.users[user]
+	if !ok {
+		return nil, fmt.Errorf("user %s does not exist")
+	}
+
+	objects := userData.Objects
+	if objects == nil {
+		objects = make(map[string][]json.RawMessage)
 	}
 
 	postType, err := post.Type()
@@ -49,19 +53,7 @@ func (d *PubblrDatabase) CreateObject(post activitystreams.ObjectIface, user str
 	}
 	postType = strings.ToLower(postType)
 
-	postsByUser, ok := d.posts[user]
-	if !ok {
-		postsByUser = make(map[string][]json.RawMessage)
-		d.posts[user] = postsByUser
-	}
-
-	postsOfType, ok := postsByUser[postType]
-	if !ok {
-		postsOfType = make([]json.RawMessage, 0)
-		postsByUser[postType] = postsOfType
-	}
-
-	baseUrl.Path = path.Join(baseUrl.Path, user, postType, strconv.Itoa(len(postsOfType)))
+	baseUrl.Path = path.Join(baseUrl.Path, user, postType, strconv.Itoa(len(objects[postType])))
 	id := baseUrl.String()
 	activitystreams.ToObject(post).Id = id
 
@@ -70,24 +62,43 @@ func (d *PubblrDatabase) CreateObject(post activitystreams.ObjectIface, user str
 		return nil, fmt.Errorf("Failed to marshal retrieved post: %w", err)
 	}
 
-	postsOfType = append(postsOfType, postJson)
-	postsByUser[postType] = postsOfType
+	objects[postType] = append(objects[postType], postJson)
 
 	return post, nil
 }
 
-func (d *PubblrDatabase) CreateActivity(activity activitystreams.ActivityIface, user string, baseUrl url.URL) (activitystreams.ActivityIface, error) {
-	if d.outboxes == nil {
-		d.outboxes = make(map[string][]json.RawMessage)
+func (d *PubblrDatabase) CreateInboxItem(a activitystreams.ActivityIface, user string) (activitystreams.ActivityIface, error) {
+	if d.users == nil {
+		d.users = make(map[string]UserData)
 	}
 
-	outbox, ok := d.outboxes[user]
+	userData, ok := d.users[user]
 	if !ok {
-		outbox = make([]json.RawMessage, 0)
-		d.outboxes[user] = outbox
+		return nil, fmt.Errorf("User %s does not exist", user)
 	}
 
-	baseUrl.Path = path.Join(baseUrl.Path, user, "outbox", strconv.Itoa(len(outbox)))
+	marshalledActivity, err := json.Marshal(a)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to marshal activity: %w", err)
+	}
+
+	userData.Inbox = append(userData.Inbox, marshalledActivity)
+	d.users[user] = userData
+
+	return a, nil
+}
+
+func (d *PubblrDatabase) CreateOutboxItem(activity activitystreams.ActivityIface, user string, baseUrl url.URL) (activitystreams.ActivityIface, error) {
+	if d.users == nil {
+		d.users = make(map[string]UserData)
+	}
+
+	userData, ok := d.users[user]
+	if !ok {
+		return nil, fmt.Errorf("User %s does not exist", user)
+	}
+
+	baseUrl.Path = path.Join(baseUrl.Path, user, "outbox", strconv.Itoa(len(userData.Outbox)))
 	id := baseUrl.String()
 	activitystreams.ToObject(activity).Id = id
 
@@ -96,20 +107,64 @@ func (d *PubblrDatabase) CreateActivity(activity activitystreams.ActivityIface, 
 		return nil, fmt.Errorf("Failed to marshal activity: %w", err)
 	}
 
-	outbox = append(outbox, activityJson)
-	d.outboxes[user] = outbox
+	userData.Outbox = append(userData.Outbox, activityJson)
+	d.users[user] = userData
 
 	return activity, nil
 }
 
-func (d *PubblrDatabase) GetOutboxPage(user string, page int, pageSize int) ([]activitystreams.ActivityIface, error) {
-	if d.outboxes == nil {
-		d.outboxes = make(map[string][]json.RawMessage)
+func (d *PubblrDatabase) GetInboxPage(user string, page int, pageSize int) ([]activitystreams.ActivityIface, error) {
+	if d.users == nil {
+		d.users = make(map[string]UserData)
 	}
 
-	rawOutbox, ok := d.outboxes[user]
+	userData, ok := d.users[user]
 	if !ok {
-		return nil, fmt.Errorf("User %s does not have an outbox", user)
+		return nil, fmt.Errorf("User %s does not exist", user)
+	}
+
+	rawInbox := userData.Inbox
+	if !ok {
+		rawInbox = make([]json.RawMessage, 0)
+		userData.Inbox = rawInbox
+	}
+
+	start := page * pageSize
+	end := start + pageSize
+	if end > len(rawInbox) {
+		end = len(rawInbox)
+
+	}
+	rawInbox = rawInbox[start:end]
+
+	inbox := make([]activitystreams.ActivityIface, len(rawInbox))
+	for i, activityJson := range rawInbox {
+		var activity activitystreams.ActivityIface
+		err := activitystreams.DefaultEntityUnmarshaler.Unmarshal(activityJson, &activity)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to unmarshal activity: %w", err)
+		}
+
+		inbox[i] = activity
+	}
+
+	return inbox, nil
+}
+
+func (d *PubblrDatabase) GetOutboxPage(user string, page int, pageSize int) ([]activitystreams.ActivityIface, error) {
+	if d.users == nil {
+		d.users = make(map[string]UserData)
+	}
+
+	userData, ok := d.users[user]
+	if !ok {
+		return nil, fmt.Errorf("User %s does not exist", user)
+	}
+
+	rawOutbox := userData.Outbox
+	if !ok {
+		rawOutbox = make([]json.RawMessage, 0)
+		userData.Outbox = rawOutbox
 	}
 
 	start := page * pageSize
@@ -134,28 +189,40 @@ func (d *PubblrDatabase) GetOutboxPage(user string, page int, pageSize int) ([]a
 	return outbox, nil
 }
 
-func (d *PubblrDatabase) GetOutboxCount(user string) (int, error) {
-	if d.outboxes == nil {
-		d.outboxes = make(map[string][]json.RawMessage)
+func (d *PubblrDatabase) GetInboxCount(user string) (int, error) {
+	if d.users == nil {
+		d.users = make(map[string]UserData)
 	}
 
-	outbox, ok := d.outboxes[user]
+	userData, ok := d.users[user]
 	if !ok {
-		return 0, fmt.Errorf("User %s does not have an outbox", user)
+		return 0, fmt.Errorf("user %s does not exist", user)
 	}
 
-	return len(outbox), nil
+	return len(userData.Inbox), nil
 }
 
-func (d *PubblrDatabase) GetActivity(user, id string) (activitystreams.ActivityIface, error) {
-	if d.outboxes == nil {
-		d.outboxes = make(map[string][]json.RawMessage)
+func (d *PubblrDatabase) GetOutboxCount(user string) (int, error) {
+	if d.users == nil {
+		d.users = make(map[string]UserData)
 	}
 
-	outbox, ok := d.outboxes[user]
+	userData, ok := d.users[user]
 	if !ok {
-		outbox = make([]json.RawMessage, 0)
-		d.outboxes[user] = outbox
+		return 0, fmt.Errorf("user %s does not exist", user)
+	}
+
+	return len(userData.Outbox), nil
+}
+
+func (d *PubblrDatabase) GetInboxItem(user, id string) (activitystreams.ActivityIface, error) {
+	if d.users == nil {
+		d.users = make(map[string]UserData)
+	}
+
+	userData, ok := d.users[user]
+	if !ok {
+		return nil, fmt.Errorf("user %s does not exist", user)
 	}
 
 	parsedId, err := strconv.Atoi(id)
@@ -163,37 +230,64 @@ func (d *PubblrDatabase) GetActivity(user, id string) (activitystreams.ActivityI
 		return nil, fmt.Errorf("Failed to parse id: %w", err)
 	}
 
-	if len(outbox) <= parsedId {
+	if len(userData.Inbox) <= parsedId {
 		return nil, fmt.Errorf("No activity with id %s", id)
 	}
 
-	activityJson := outbox[parsedId]
+	activityJson := userData.Inbox[parsedId]
 	var activity activitystreams.ActivityIface
 	err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(activityJson, &activity)
 
 	return activity, err
 }
 
-func (d *PubblrDatabase) GetPost(user, typ, id string) (activitystreams.ObjectIface, error) {
+func (d *PubblrDatabase) GetOutboxItem(user, id string) (activitystreams.ActivityIface, error) {
+	if d.users == nil {
+		d.users = make(map[string]UserData)
+	}
+
+	userData, ok := d.users[user]
+	if !ok {
+		return nil, fmt.Errorf("user %s does not exist", user)
+	}
+
 	parsedId, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse id: %w", err)
 	}
 
-	postsByUser, ok := d.posts[user]
-	if !ok {
-		return nil, fmt.Errorf("No posts by user %s", user)
+	if len(userData.Outbox) <= parsedId {
+		return nil, fmt.Errorf("No activity with id %s", id)
 	}
 
-	postsOfType, ok := postsByUser[typ]
+	activityJson := userData.Outbox[parsedId]
+	var activity activitystreams.ActivityIface
+	err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(activityJson, &activity)
+
+	return activity, err
+}
+
+func (d *PubblrDatabase) GetObject(user, typ, id string) (activitystreams.ObjectIface, error) {
+	userData, ok := d.users[user]
 	if !ok {
-		return nil, fmt.Errorf("No posts of type %s", typ)
-	}
-	if len(postsOfType) <= parsedId {
-		return nil, fmt.Errorf("No post of type %s with id %s", typ, id)
+		return nil, fmt.Errorf("user %s does not exist", user)
 	}
 
-	postJson := postsOfType[parsedId]
+	parsedId, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse id: %w", err)
+	}
+
+	objects := userData.Objects[typ]
+	if !ok {
+		return nil, fmt.Errorf("Object not found")
+	}
+
+	if len(objects) <= parsedId {
+		return nil, fmt.Errorf("Object not found")
+	}
+
+	postJson := objects[parsedId]
 	var post activitystreams.ObjectIface
 	err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(postJson, &post)
 	if err != nil {

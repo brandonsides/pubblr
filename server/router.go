@@ -13,11 +13,15 @@ import (
 
 type DB interface {
 	CreateObject(obj activitystreams.ObjectIface, user string, baseIdUrl url.URL) (activitystreams.ObjectIface, error)
-	CreateActivity(act activitystreams.ActivityIface, user string, baseIdUrl url.URL) (activitystreams.ActivityIface, error)
-	GetActivity(user, id string) (activitystreams.ActivityIface, error)
-	GetOutboxPage(user string, page int, pageSize int) ([]activitystreams.ActivityIface, error)
+	CreateInboxItem(item activitystreams.ActivityIface, user string) (activitystreams.ActivityIface, error)
+	CreateOutboxItem(act activitystreams.ActivityIface, user string, baseIdUrl url.URL) (activitystreams.ActivityIface, error)
+	GetOutboxItem(user, id string) (activitystreams.ActivityIface, error)
+	GetInboxPage(user string, page, pageSize int) ([]activitystreams.ActivityIface, error)
+	GetInboxCount(user string) (int, error)
+	GetInboxItem(user, id string) (activitystreams.ActivityIface, error)
+	GetOutboxPage(user string, page, pageSize int) ([]activitystreams.ActivityIface, error)
 	GetOutboxCount(user string) (int, error)
-	GetPost(user, typ, id string) (activitystreams.ObjectIface, error)
+	GetObject(user, typ, id string) (activitystreams.ObjectIface, error)
 	CreateUser(user activitystreams.ActorIface, username, password string, baseIdUrl url.URL) (activitystreams.ActorIface, error)
 	GetUser(username string) (activitystreams.ActorIface, error)
 }
@@ -58,8 +62,10 @@ func NewPubblrRouter(cfg PubblrServerConfig, baseRouter chi.Router) chi.Router {
 	router.Method("POST", "/{actor}", apiutil.LogEndpoint(router.PostUser, router.Logger))
 
 	// INBOX
+	router.Method("POST", "/{actor}/inbox", apiutil.LogEndpoint(router.PostToInbox, router.Logger))
 	router.Method("GET", "/{actor}/inbox", apiutil.LogEndpoint(router.GetInbox, router.Logger))
 	router.Method("GET", "/{actor}/inbox/page/{page}", apiutil.LogEndpoint(router.GetInboxPage, router.Logger))
+	router.Method("GET", "/{actor}/inbox/{id}", apiutil.LogEndpoint(router.GetInboxItem, router.Logger))
 
 	// OUTBOX
 	router.Method("POST", "/{actor}/outbox", apiutil.LogEndpoint(router.PostObject, router.Logger))

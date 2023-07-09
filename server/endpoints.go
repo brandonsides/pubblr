@@ -18,7 +18,7 @@ func (router *PubblrRouter) GetObject(r *http.Request) (activitystreams.ObjectIf
 	typ := chi.URLParam(r, "type")
 	id := chi.URLParam(r, "id")
 
-	post, err := router.Database.GetPost(user, typ, id)
+	post, err := router.Database.GetObject(user, typ, id)
 	if err != nil {
 		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
 	}
@@ -72,16 +72,130 @@ func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIfa
 
 //INBOX
 
+func (router *PubblrRouter) PostToInbox(r *http.Request) (*activitystreams.ActivityIface, apiutil.Status) {
+	return nil, apiutil.NewStatus(http.StatusNotImplemented, "PostToInbox not yet implemented")
+}
+
 func (router *PubblrRouter) GetInbox(r *http.Request) (*activitystreams.Collection, apiutil.Status) {
-	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetInbox not implemented")
+	// params
+	actorShortId := chi.URLParam(r, "actor")
+
+	// Make sure user actually exists
+	actorIface, err := router.Database.GetUser(actorShortId)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
+	}
+	actor := activitystreams.ToActor(actorIface)
+
+	router.setEndpoints(actorIface)
+
+	count, err := router.Database.GetInboxCount(actorShortId)
+	if err != nil {
+		count = 0
+	}
+
+	ret := &activitystreams.Collection{
+		Object: activitystreams.Object{
+			Entity: activitystreams.Entity{
+				Id: actor.Id + "/inbox",
+			},
+		},
+		TotalItems: uint64(count),
+		Ordered:    true,
+	}
+
+	if ret.TotalItems == 0 {
+		return ret, apiutil.StatusFromCode(http.StatusOK)
+	}
+	lastPage := ret.TotalItems / uint64(router.pageSize)
+
+	ret.First = either.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](
+		&activitystreams.CollectionPage{
+			Collection: activitystreams.Collection{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: actor.Id + "/inbox/page/0",
+					},
+				},
+			},
+		},
+	)
+	ret.Last = either.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](
+		&activitystreams.CollectionPage{
+			Collection: activitystreams.Collection{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: actor.Id + "/inbox/page/" + strconv.Itoa(int(lastPage)),
+					},
+				},
+			},
+		},
+	)
+
+	return ret, apiutil.StatusFromCode(http.StatusOK)
 }
 
 func (router *PubblrRouter) GetInboxPage(r *http.Request) (*activitystreams.CollectionPage, apiutil.Status) {
-	return nil, apiutil.Statusf(http.StatusNotImplemented, "GetInboxPage not implemented")
+	actorShortId := chi.URLParam(r, "actor")
+	page, err := strconv.Atoi(chi.URLParam(r, "page"))
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusBadRequest, err)
+	}
+
+	actorIface, err := router.Database.GetUser(actorShortId)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
+	}
+	actor := activitystreams.ToActor(actorIface)
+
+	posts, err := router.Database.GetInboxPage(actorShortId, page, router.pageSize)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusInternalServerError, err)
+	}
+
+	items := make([]*either.Either[activitystreams.ObjectIface, activitystreams.LinkIface], len(posts))
+	for i, post := range posts {
+		obj := activitystreams.ToObject(post)
+		obj.Bcc = nil
+		obj.Bto = nil
+		items[i] = either.Left[activitystreams.ObjectIface, activitystreams.LinkIface](post)
+	}
+
+	return &activitystreams.CollectionPage{
+		Collection: activitystreams.Collection{
+			Object: activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Id: actor.Id + "/inbox/page/" + strconv.Itoa(page),
+				},
+			},
+			Ordered: true,
+			Items:   items,
+		},
+		PartOf: either.Left[activitystreams.Collection, activitystreams.Link](
+			activitystreams.Collection{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: actor.Id + "/inbox",
+					},
+				},
+			},
+		),
+	}, nil
+}
+
+func (router *PubblrRouter) GetInboxItem(r *http.Request) (activitystreams.ActivityIface, apiutil.Status) {
+	id := chi.URLParam(r, "id")
+	user := chi.URLParam(r, "actor")
+
+	activity, err := router.Database.GetInboxItem(user, id)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
+	}
+
+	return activity, apiutil.StatusFromCode(http.StatusOK)
 }
 
 // OUTBOX
-
 func (router *PubblrRouter) GetOutbox(r *http.Request) (*activitystreams.Collection, apiutil.Status) {
 	// params
 	actorShortId := chi.URLParam(r, "actor")
@@ -161,6 +275,9 @@ func (router *PubblrRouter) GetOutboxPage(r *http.Request) (*activitystreams.Col
 
 	items := make([]*either.Either[activitystreams.ObjectIface, activitystreams.LinkIface], len(posts))
 	for i, post := range posts {
+		obj := activitystreams.ToObject(post)
+		obj.Bcc = nil
+		obj.Bto = nil
 		items[i] = either.Left[activitystreams.ObjectIface, activitystreams.LinkIface](post)
 	}
 
@@ -221,19 +338,28 @@ func (router *PubblrRouter) PostObject(r *http.Request) (activitystreams.ObjectI
 	intransitiveActivity.Actor = actor
 	intransitiveActivity.AttributedTo = []activitystreams.EntityIface{actor}
 
+	var result activitystreams.ObjectIface
+	var status apiutil.Status
 	switch typ {
 	case "Create":
-		return router.Create(*activityIface.(*activitystreams.Create))
+		result, status = router.Create(activityIface.(*activitystreams.Create))
 	default:
-		return nil, apiutil.Statusf(http.StatusBadRequest, "invalid ActivityStreams activity type: %s", typ)
+		status = apiutil.Statusf(http.StatusBadRequest, "invalid ActivityStreams activity type: %s", typ)
 	}
+	if !apiutil.IsOK(status) {
+		return nil, status
+	}
+
+	router.Deliver(activityIface)
+
+	return result, apiutil.StatusFromCode(http.StatusCreated)
 }
 
 func (router *PubblrRouter) GetOutboxActivity(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
 	id := chi.URLParam(r, "id")
 	user := chi.URLParam(r, "actor")
 
-	activity, err := router.Database.GetActivity(user, id)
+	activity, err := router.Database.GetOutboxItem(user, id)
 	if err != nil {
 		return nil, apiutil.NewStatusFromError(http.StatusNotFound, err)
 	}

@@ -41,3 +41,7 @@ func Statusf(statusCode int, format string, args ...interface{}) Status {
 func StatusFromCode(statusCode int) Status {
 	return &status{statusCode: statusCode}
 }
+
+func IsOK(s Status) bool {
+	return s == nil || s.StatusCode()/100 == 2
+}
