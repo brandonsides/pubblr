@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/server/apiutil"
@@ -31,6 +32,32 @@ func (router *PubblrRouter) Create(create activitystreams.Create) (activitystrea
 	mergedAttributedTo := merge([]activitystreams.EntityIface{actorObjIface}, object.AttributedTo, create.AttributedTo)
 	create.AttributedTo = mergedAttributedTo
 	object.AttributedTo = mergedAttributedTo
+
+	mergedTo := merge(object.To, create.To)
+	create.To = mergedTo
+	object.To = mergedTo
+
+	mergedCc := merge(object.Cc, create.Cc)
+	create.Cc = mergedCc
+	object.Cc = mergedCc
+
+	mergedBto := merge(object.Bto, create.Bto)
+	create.Bto = mergedBto
+	object.Bto = mergedBto
+
+	mergedBcc := merge(object.Bcc, create.Bcc)
+	create.Bcc = mergedBcc
+	object.Bcc = mergedBcc
+
+	mergedAudience := merge(object.Audience, create.Audience)
+	create.Audience = mergedAudience
+	object.Audience = mergedAudience
+
+	published := time.Now()
+	create.Published = &published
+	create.Updated = &published
+	object.Published = &published
+	object.Updated = &published
 
 	actorId := activitystreams.ToObject(actorObjIface).Id
 	shortId := shortId(actorId)
