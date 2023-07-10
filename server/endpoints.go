@@ -84,7 +84,12 @@ type CreateAccountRequest struct {
 	Actor    activitystreams.ActorIface `json:"actor"`
 }
 
-func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
+type CreateAccountResponse struct {
+	Actor activitystreams.ActorIface `json:"actor"`
+	JWT   string                     `json:"jwt"`
+}
+
+func (router *PubblrRouter) PostUser(r *http.Request) (*CreateAccountResponse, apiutil.Status) {
 	username := chi.URLParam(r, "actor")
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -97,6 +102,11 @@ func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIfa
 		return nil, apiutil.Statusf(http.StatusBadRequest, "invalid ActivityStreams actor: %w", err)
 	}
 
+	jwt, err := router.Auth.GenerateToken(username)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusInternalServerError, err)
+	}
+
 	createAccountRequest.Actor, err = router.Database.CreateUser(createAccountRequest.Actor, username,
 		createAccountRequest.Password, router.baseUrl)
 	if err != nil {
@@ -105,7 +115,10 @@ func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIfa
 
 	router.setEndpoints(createAccountRequest.Actor)
 
-	return createAccountRequest.Actor, apiutil.Statusf(http.StatusCreated, "created user %s", username)
+	return &CreateAccountResponse{
+		Actor: createAccountRequest.Actor,
+		JWT:   jwt,
+	}, apiutil.Statusf(http.StatusCreated, "created user %s", username)
 }
 
 //INBOX

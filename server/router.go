@@ -78,7 +78,7 @@ func NewPubblrRouter(cfg PubblrServerConfig, baseRouter chi.Router) (chi.Router,
 
 	// ACTORS
 	router.Method("GET", "/{actor}", apiutil.LogEndpoint(AuthMiddleware(router.Auth, router.GetUser), router.Logger))
-	router.Method("POST", "/{actor}", apiutil.LogEndpoint(AuthMiddleware(router.Auth, router.PostUser), router.Logger))
+	router.Method("POST", "/{actor}", apiutil.LogEndpoint(router.PostUser, router.Logger))
 
 	// INBOX
 	router.Method("POST", "/{actor}/inbox",

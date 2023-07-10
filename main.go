@@ -2,8 +2,10 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/brandonsides/pubblr/server"
+	"github.com/brandonsides/pubblr/server/auth"
 	"github.com/go-chi/chi"
 )
 
@@ -18,5 +20,9 @@ func main() {
 		Port:      8080,
 		MountPath: "/pubblr",
 		PageSize:  25,
+		Auth: auth.AuthConfig{
+			AuthKeyLocation:       "auth.pem",
+			JWTExpirationDuration: 36 * time.Hour,
+		},
 	}, router).ListenAndServe()
 }

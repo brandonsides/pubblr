@@ -22,30 +22,30 @@ func SetContentType(contentType string) Middleware {
 
 func AuthMiddleware[T any](auth Auth, next apiutil.Endpoint[T]) apiutil.Endpoint[*T] {
 	return apiutil.Endpoint[*T](func(r *http.Request) (*T, apiutil.Status) {
-		tokenString := r.Header.Get("Authorization")
-		if tokenString == "" {
-			return nil, apiutil.NewStatus(http.StatusUnauthorized, "Missing authorization header")
-		}
-
 		owner := chi.URLParam(r, "actor")
 
-		username, err := auth.VerifyToken(tokenString)
-		if err == nil {
-			r = r.WithContext(context.WithValue(r.Context(), "username", username))
+		var username string
+		var err error
+		tokenString := r.Header.Get("Authorization")
+		if tokenString != "" {
+			username, err = auth.VerifyToken(tokenString)
+			if err == nil {
+				r = r.WithContext(context.WithValue(r.Context(), "username", username))
+			}
 		}
 
-		var ret interface{}
 		ret, status := next(r)
+		var retInterface interface{} = ret
 		if !apiutil.IsOK(status) {
 			return nil, status
 		}
 
-		retObject, ok := ret.(activitystreams.ObjectIface)
+		retObject, ok := retInterface.(activitystreams.ObjectIface)
 		if !ok {
-			return ret.(*T), status
+			return &ret, status
 		}
 
-		if !intendedFor(username, retObject) {
+		if !intendedFor(username, owner, retObject) {
 			return nil, apiutil.NewStatus(http.StatusForbidden, "You are not authorized to access this resource")
 		}
 
@@ -55,24 +55,47 @@ func AuthMiddleware[T any](auth Auth, next apiutil.Endpoint[T]) apiutil.Endpoint
 			object.Bto = nil
 		}
 
-		return ret.(*T), status
+		return &ret, status
 	})
 }
 
-func intendedFor(username string, objectIface activitystreams.ObjectIface) bool {
+func intendedFor(username string, owner string, objectIface activitystreams.ObjectIface) bool {
 	object := activitystreams.ToObject(objectIface)
-	return in(username, object.To, object.Bto, object.Audience)
+
+	return username == owner || in(
+		username, mapitems(
+			func(e activitystreams.EntityIface) string {
+				entity := activitystreams.ToEntity(e)
+				return shortId(entity.Id)
+			}, object.To, object.Cc, object.Bto, object.Bcc, object.Audience,
+		),
+	) || in(
+		"https://www.w3.org/ns/activitystreams#Public", mapitems(
+			func(e activitystreams.EntityIface) string {
+				entity := activitystreams.ToEntity(e)
+				return entity.Id
+			}, object.To, object.Cc, object.Bto, object.Bcc, object.Audience,
+		),
+	)
 }
 
-func in(username string, entities ...[]activitystreams.EntityIface) bool {
-	for _, entityList := range entities {
-		for _, entityIface := range entityList {
-			entity := activitystreams.ToEntity(entityIface)
-			// TODO: Also check that this entity is local
-			if shortId(entity.Id) == username {
+func in[T comparable](i T, tArrs ...[]T) bool {
+	for _, tArr := range tArrs {
+		for _, t := range tArr {
+			if i == t {
 				return true
 			}
 		}
 	}
 	return false
+}
+
+func mapitems[T, U any](f func(T) U, items ...[]T) []U {
+	var ret []U
+	for _, itemlist := range items {
+		for _, item := range itemlist {
+			ret = append(ret, f(item))
+		}
+	}
+	return ret
 }

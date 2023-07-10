@@ -3,6 +3,7 @@ package auth
 import (
 	"crypto/rsa"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"time"
 
@@ -45,10 +46,10 @@ func (auth Auth) GenerateToken(username string) (string, error) {
 		"username": username,
 	})
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsMap)
-	tokenString, err := token.SignedString(auth.AuthKey)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS512, claimsMap)
+	tokenString, err := token.SignedString(&auth.AuthKey)
 	if err != nil {
-		return "", errors.New("Error generating token")
+		return "", fmt.Errorf("Error generating token: %w", err)
 	}
 
 	return tokenString, nil
