@@ -29,9 +29,7 @@ func (router *PubblrRouter) Create(create *activitystreams.Create) (activitystre
 	}
 	object := activitystreams.ToObject(objectObjIface)
 
-	mergedAttributedTo := merge([]activitystreams.EntityIface{actorObjIface}, object.AttributedTo, create.AttributedTo)
-	create.AttributedTo = mergedAttributedTo
-	object.AttributedTo = mergedAttributedTo
+	object.AttributedTo = create.AttributedTo
 
 	mergedTo := merge(object.To, create.To)
 	create.To = mergedTo
