@@ -34,6 +34,10 @@ func AuthMiddleware[T any](auth Auth, next apiutil.Endpoint[T]) apiutil.Endpoint
 			}
 		}
 
+		if r.Method == "POST" && owner != "" && owner != username {
+			return nil, apiutil.NewStatus(http.StatusForbidden, "You are not authorized act on behalf of this user")
+		}
+
 		ret, status := next(r)
 		var retInterface interface{} = ret
 		if !apiutil.IsOK(status) {
