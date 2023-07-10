@@ -14,34 +14,34 @@ Alpha phase is reached, focus will shift to testing, bug fixes and incremental i
 - [x] ActivityStreams type hierarchy
 - [x] User registration
 - [x] User authentication
-- [] User authorization
+- [ ] User authorization
 - [x] Outboxes
 - [x] Inboxes
-- [] Delivery
+- [ ] Delivery
     - [x] Local Delivery
-    - [] Remote Delivery
+    - [ ] Remote Delivery
 - [x] Object Retrieval
-- [] Activity Processing
-    - [] Client-to-Server
+- [ ] Activity Processing
+    - [ ] Client-to-Server
         - [x] Create
-        - [] Update
-        - [] Delete
-        - [] Follow
-        - [] Add
-        - [] Remove
-        - [] Like
-        - [] Block
-        - [] Undo
-    - [] Server-to-Server
-        - [] Create
-        - [] Update
-        - [] Delete
-        - [] Follow
-        - [] Accept
-        - [] Reject
-        - [] Add
-        - [] Remove
-        - [] Like
-        - [] Announce
-        - [] Undo
-- [] Media Uploading
+        - [ ] Update
+        - [ ] Delete
+        - [ ] Follow
+        - [ ] Add
+        - [ ] Remove
+        - [ ] Like
+        - [ ] Block
+        - [ ] Undo
+    - [ ] Server-to-Server
+        - [ ] Create
+        - [ ] Update
+        - [ ] Delete
+        - [ ] Follow
+        - [ ] Accept
+        - [ ] Reject
+        - [ ] Add
+        - [ ] Remove
+        - [ ] Like
+        - [ ] Announce
+        - [ ] Undo
+- [ ] Media Uploading
