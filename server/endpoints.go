@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -10,6 +11,43 @@ import (
 	"github.com/brandonsides/pubblr/util/either"
 	"github.com/go-chi/chi"
 )
+
+// AUTH
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func (router *PubblrRouter) Login(r *http.Request) (string, apiutil.Status) {
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return "", apiutil.NewStatus(http.StatusBadRequest, "Invalid JSON")
+	}
+	var body LoginRequest
+	err = json.Unmarshal(reqBody, &body)
+	if err != nil {
+		return "", apiutil.NewStatus(http.StatusBadRequest, "Invalid JSON")
+	}
+
+	if body.Username == "" {
+		return "", apiutil.NewStatus(http.StatusBadRequest, "Missing username")
+	}
+
+	if body.Password == "" {
+		return "", apiutil.NewStatus(http.StatusBadRequest, "Missing password")
+	}
+
+	if router.Database.CheckPassword(body.Username, body.Password) != nil {
+		return "", apiutil.NewStatus(http.StatusUnauthorized, "Invalid username or password")
+	}
+
+	ret, err := router.Auth.GenerateToken(body.Username)
+	if err != nil {
+		return "", apiutil.NewStatus(http.StatusInternalServerError, "Error generating token")
+	}
+	return ret, nil
+}
 
 // OBJECTS
 
@@ -46,7 +84,12 @@ type CreateAccountRequest struct {
 	Actor    activitystreams.ActorIface `json:"actor"`
 }
 
-func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIface, apiutil.Status) {
+type CreateAccountResponse struct {
+	Actor activitystreams.ActorIface `json:"actor"`
+	JWT   string                     `json:"jwt"`
+}
+
+func (router *PubblrRouter) PostUser(r *http.Request) (*CreateAccountResponse, apiutil.Status) {
 	username := chi.URLParam(r, "actor")
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -59,6 +102,11 @@ func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIfa
 		return nil, apiutil.Statusf(http.StatusBadRequest, "invalid ActivityStreams actor: %w", err)
 	}
 
+	jwt, err := router.Auth.GenerateToken(username)
+	if err != nil {
+		return nil, apiutil.NewStatusFromError(http.StatusInternalServerError, err)
+	}
+
 	createAccountRequest.Actor, err = router.Database.CreateUser(createAccountRequest.Actor, username,
 		createAccountRequest.Password, router.baseUrl)
 	if err != nil {
@@ -67,7 +115,10 @@ func (router *PubblrRouter) PostUser(r *http.Request) (activitystreams.ObjectIfa
 
 	router.setEndpoints(createAccountRequest.Actor)
 
-	return createAccountRequest.Actor, apiutil.Statusf(http.StatusCreated, "created user %s", username)
+	return &CreateAccountResponse{
+		Actor: createAccountRequest.Actor,
+		JWT:   jwt,
+	}, apiutil.Statusf(http.StatusCreated, "created user %s", username)
 }
 
 //INBOX

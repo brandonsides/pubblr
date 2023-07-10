@@ -14,7 +14,15 @@ type Logger interface {
 	Fatalf(format string, args ...interface{})
 }
 
+type UntypedEndpoint interface {
+	http.Handler
+	Process(r *http.Request) (interface{}, Status)
+}
+
 type Endpoint[T any] func(*http.Request) (T, Status)
+
+// Endpoint[T] implements UntypedEndpoint
+var _ UntypedEndpoint = Endpoint[int](nil)
 
 func LogEndpoint[T any](endpoint Endpoint[T], logger Logger) Endpoint[T] {
 	return Endpoint[T](func(r *http.Request) (ret T, status Status) {
@@ -65,4 +73,8 @@ func (e Endpoint[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(statusCode)
 	w.Write(marshalled)
+}
+
+func (e Endpoint[T]) Process(r *http.Request) (interface{}, Status) {
+	return e(r)
 }

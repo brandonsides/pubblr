@@ -339,3 +339,16 @@ func (d *PubblrDatabase) GetUser(username string) (activitystreams.ActorIface, e
 
 	return user, nil
 }
+
+func (d *PubblrDatabase) CheckPassword(username, password string) error {
+	userData, ok := d.users[username]
+	if !ok {
+		return fmt.Errorf("User %s does not exist", username)
+	}
+
+	if userData.Password != password {
+		return fmt.Errorf("Wrong password")
+	}
+
+	return nil
+}
