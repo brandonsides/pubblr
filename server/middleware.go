@@ -21,7 +21,7 @@ func SetContentType(contentType string) Middleware {
 }
 
 func AuthMiddleware[T any](auth Auth, next apiutil.Endpoint[T]) apiutil.Endpoint[*T] {
-	return apiutil.Endpoint[*T](func(r *http.Request) (*T, apiutil.Status) {
+	return apiutil.Endpoint[*T](func(r *http.Request) (*T, http.Header, apiutil.Status) {
 		owner := chi.URLParam(r, "actor")
 
 		var username string
@@ -35,22 +35,22 @@ func AuthMiddleware[T any](auth Auth, next apiutil.Endpoint[T]) apiutil.Endpoint
 		}
 
 		if r.Method == "POST" && owner != "" && owner != username {
-			return nil, apiutil.NewStatus(http.StatusForbidden, "You are not authorized act on behalf of this user")
+			return nil, nil, apiutil.NewStatus(http.StatusForbidden, "You are not authorized act on behalf of this user")
 		}
 
-		ret, status := next(r)
+		ret, header, status := next(r)
 		var retInterface interface{} = ret
 		if !apiutil.IsOK(status) {
-			return nil, status
+			return nil, header, status
 		}
 
 		retObject, ok := retInterface.(activitystreams.ObjectIface)
 		if !ok {
-			return &ret, status
+			return &ret, header, status
 		}
 
 		if !intendedFor(username, owner, retObject) {
-			return nil, apiutil.NewStatus(http.StatusForbidden, "You are not authorized to access this resource")
+			return nil, header, apiutil.NewStatus(http.StatusForbidden, "You are not authorized to access this resource")
 		}
 
 		if owner != "" && owner != username {
@@ -59,7 +59,7 @@ func AuthMiddleware[T any](auth Auth, next apiutil.Endpoint[T]) apiutil.Endpoint
 			object.Bto = nil
 		}
 
-		return &ret, status
+		return &ret, header, status
 	})
 }
 

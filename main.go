@@ -15,7 +15,7 @@ func main() {
 	}
 	router := chi.NewRouter()
 	router.Get("/hello", handlerFunc)
-	server.NewPubblrServer(server.PubblrServerConfig{
+	server.NewPubblrServer(server.PubblrRouterConfig{
 		Host:      "localhost",
 		Port:      8080,
 		MountPath: "/pubblr",

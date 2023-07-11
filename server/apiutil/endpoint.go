@@ -16,16 +16,16 @@ type Logger interface {
 
 type UntypedEndpoint interface {
 	http.Handler
-	Process(r *http.Request) (interface{}, Status)
+	Process(r *http.Request) (interface{}, http.Header, Status)
 }
 
-type Endpoint[T any] func(*http.Request) (T, Status)
+type Endpoint[T any] func(*http.Request) (T, http.Header, Status)
 
 // Endpoint[T] implements UntypedEndpoint
 var _ UntypedEndpoint = Endpoint[int](nil)
 
 func LogEndpoint[T any](endpoint Endpoint[T], logger Logger) Endpoint[T] {
-	return Endpoint[T](func(r *http.Request) (ret T, status Status) {
+	return Endpoint[T](func(r *http.Request) (ret T, header http.Header, status Status) {
 		defer func() {
 			if r := recover(); r != nil {
 				logger.Errorf("Recovered from panic: %s\n%v", r, string(debug.Stack()))
@@ -34,7 +34,7 @@ func LogEndpoint[T any](endpoint Endpoint[T], logger Logger) Endpoint[T] {
 			}
 		}()
 
-		ret, status = endpoint(r)
+		ret, header, status = endpoint(r)
 		if status != nil && status.StatusCode()/100 != 2 {
 			logger.Errorf("%s\n", status.Error())
 		}
@@ -50,7 +50,7 @@ func (e Endpoint[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	resp, status := e(r)
+	resp, header, status := e(r)
 
 	statusCode := http.StatusOK
 	if status != nil {
@@ -71,10 +71,13 @@ func (e Endpoint[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for k, v := range header {
+		w.Header()[k] = v
+	}
 	w.WriteHeader(statusCode)
 	w.Write(marshalled)
 }
 
-func (e Endpoint[T]) Process(r *http.Request) (interface{}, Status) {
+func (e Endpoint[T]) Process(r *http.Request) (interface{}, http.Header, Status) {
 	return e(r)
 }
