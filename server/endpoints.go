@@ -404,7 +404,7 @@ func (router *PubblrRouter) PostObject(r *http.Request) (activitystreams.ObjectI
 	router.Deliver(activityIface)
 
 	return result, http.Header{
-		"Location": []string{activitystreams.ToEntity(result).Id},
+		"Location": []string{intransitiveActivity.Id},
 	}, apiutil.StatusFromCode(http.StatusCreated)
 }
 
