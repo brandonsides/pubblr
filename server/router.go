@@ -42,7 +42,17 @@ type PubblrRouter struct {
 	pageSize int
 }
 
-func NewPubblrRouter(cfg PubblrServerConfig, baseRouter chi.Router) (chi.Router, error) {
+type PubblrRouterConfig struct {
+	MountPath string                        `json:"mountPath"`
+	Database  database.PubblrDatabaseConfig `json:"database"`
+	Logger    logging.PubblrLoggerConfig    `json:"logger"`
+	Auth      auth.AuthConfig               `json:"auth"`
+	Host      string                        `json:"host"`
+	Port      int                           `json:"port"`
+	PageSize  int                           `json:"pageSize"`
+}
+
+func NewPubblrRouter(cfg PubblrRouterConfig, baseRouter chi.Router) (chi.Router, error) {
 	if cfg.PageSize == 0 {
 		cfg.PageSize = 50
 	}
