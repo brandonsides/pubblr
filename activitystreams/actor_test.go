@@ -160,12 +160,12 @@ var _ = Describe("Actor", func() {
 			},
 			URL:       either.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
 			Content:   "This is a simple note",
-			Duration:  (*activitystreams.Duration)(&duration),
-			EndTime:   (*activitystreams.Time)(&endTime),
-			Published: (*activitystreams.Time)(&published),
-			StartTime: (*activitystreams.Time)(&startTime),
+			Duration:  &duration,
+			EndTime:   &endTime,
+			Published: &published,
+			StartTime: &startTime,
 			Summary:   "A simple note",
-			Updated:   (*activitystreams.Time)(&updated),
+			Updated:   &updated,
 		},
 	}
 	expectedActorMap := map[string]interface{}{
