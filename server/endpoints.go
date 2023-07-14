@@ -258,8 +258,6 @@ func (router *PubblrRouter) GetOutbox(r *http.Request) (*activitystreams.Collect
 	}
 	actor := activitystreams.ToActor(actorIface)
 
-	router.setEndpoints(actorIface)
-
 	count, err := router.Database.GetOutboxCount(actorShortId)
 	if err != nil {
 		count = 0

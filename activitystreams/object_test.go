@@ -96,6 +96,7 @@ var _ = Describe("Object", func() {
 			Object: activitystreams.Object{
 				Entity: activitystreams.Entity{
 					Name: "John's Avatar",
+					Id:   "http://example.org/~john/avatar",
 				},
 				URL: either.Left[string, activitystreams.LinkIface]("http://example.org/~john/avatar.jpg"),
 			},
@@ -104,6 +105,7 @@ var _ = Describe("Object", func() {
 			Object: activitystreams.Object{
 				Entity: activitystreams.Entity{
 					Name: "John's Header",
+					Id:   "http://example.org/~john/header",
 				},
 				URL: either.Left[string, activitystreams.LinkIface]("http://example.org/~john/header.jpg"),
 			},
@@ -120,6 +122,7 @@ var _ = Describe("Object", func() {
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Name: "Work",
+						Id:   "http://example.org/~john/location",
 					},
 				},
 			},
@@ -156,100 +159,48 @@ var _ = Describe("Object", func() {
 		},
 		URL:       either.Left[string, activitystreams.LinkIface]("http://example.org/~john"),
 		Content:   "This is a simple note",
-		Duration:  &duration,
-		EndTime:   &endTime,
-		Published: &published,
-		StartTime: &startTime,
+		Duration:  (*activitystreams.Duration)(&duration),
+		EndTime:   (*activitystreams.Time)(&endTime),
+		Published: (*activitystreams.Time)(&published),
+		StartTime: (*activitystreams.Time)(&startTime),
 		Summary:   "A simple note",
-		Updated:   &updated,
+		Updated:   (*activitystreams.Time)(&updated),
 	}
 	expectedObjectMap := map[string]interface{}{
 		"id": "http://example.org/~john",
 		"attachment": []interface{}{
-			map[string]interface{}{
-				"type":      "Image",
-				"id":        "http://example.org/~john/picture",
-				"mediaType": "image/jpeg",
-			},
-			map[string]interface{}{
-				"type": "Link",
-				"id":   "http://example.org/~john/profile",
-				"href": "http://example.org/~john/profile",
-			},
+			"http://example.org/~john/picture",
+			"http://example.org/~john/profile",
 		},
 		"attributedTo": []interface{}{
-			map[string]interface{}{
-				"type": "Person",
-				"id":   "http://example.org/~john",
-			},
+			"http://example.org/~john",
 		},
 		"bcc": []interface{}{
-			map[string]interface{}{
-				"type": "Person",
-				"id":   "http://example.org/~alice",
-			},
+			"http://example.org/~alice",
 		},
 		"bto": []interface{}{
-			map[string]interface{}{
-				"type": "Person",
-				"id":   "http://example.org/~bob",
-			},
+			"http://example.org/~bob",
 		},
 		"cc": []interface{}{
-			map[string]interface{}{
-				"type": "Person",
-				"id":   "http://example.org/~eve",
-			},
+			"http://example.org/~eve",
 		},
-		"context": map[string]interface{}{
-			"type": "Object",
-			"id":   "http://example.org/contexts/1",
-		},
-		"generator": map[string]interface{}{
-			"type": "Object",
-			"id":   "http://example.org/generator",
-		},
-		"icon": map[string]interface{}{
-			"name": "John's Avatar",
-			"type": "Image",
-			"url":  "http://example.org/~john/avatar.jpg",
-		},
-		"image": map[string]interface{}{
-			"type": "Image",
-			"name": "John's Header",
-			"url":  "http://example.org/~john/header.jpg",
-		},
+		"context":   "http://example.org/contexts/1",
+		"generator": "http://example.org/generator",
+		"icon":      "http://example.org/~john/avatar",
+		"image":     "http://example.org/~john/header",
 		"inReplyTo": []interface{}{
-			map[string]interface{}{
-				"type": "Object",
-				"id":   "http://example.org/posts/1",
-			},
+			"http://example.org/posts/1",
 		},
 		"location": []interface{}{
-			map[string]interface{}{
-				"type": "Place",
-				"name": "Work",
-			},
+			"http://example.org/~john/location",
 		},
-		"preview": map[string]interface{}{
-			"type": "Object",
-			"id":   "http://example.org/~john/preview",
-		},
-		"replies": map[string]interface{}{
-			"type": "Collection",
-			"id":   "http://example.org/~john/replies",
-		},
+		"preview": "http://example.org/~john/preview",
+		"replies": "http://example.org/~john/replies",
 		"tag": []interface{}{
-			map[string]interface{}{
-				"type": "Object",
-				"id":   "http://example.org/tags/1",
-			},
+			"http://example.org/tags/1",
 		},
 		"to": []interface{}{
-			map[string]interface{}{
-				"type": "Person",
-				"id":   "http://example.org/~alice",
-			},
+			"http://example.org/~alice",
 		},
 		"url":       "http://example.org/~john",
 		"content":   "This is a simple note",

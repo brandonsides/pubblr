@@ -15,9 +15,11 @@ type CustomUnmarshalerUser interface {
 }
 
 type UnmarshalFn func(*InterfaceUnmarshaler, []byte) (interface{}, error)
+type UnmarshalFnWithDest func(*InterfaceUnmarshaler, []byte, interface{}) error
 
 type InterfaceUnmarshaler struct {
-	unmarshalFnByType map[string]UnmarshalFn
+	unmarshalFnByType  map[string]UnmarshalFn
+	defaultUnmarshalFn UnmarshalFnWithDest
 }
 
 func (u *InterfaceUnmarshaler) Unmarshal(b []byte, dest interface{}) error {
@@ -36,11 +38,10 @@ func (u *InterfaceUnmarshaler) Unmarshal(b []byte, dest interface{}) error {
 	}
 	var err error
 	if targetType.Kind() == reflect.Interface {
-		val, err := u.unmarshalInterface(b)
+		err := u.unmarshalInterface(b, dest)
 		if err != nil {
 			return err
 		}
-		reflect.ValueOf(dest).Elem().Set(reflect.ValueOf(val))
 	} else if reflect.TypeOf(dest).Implements(customUnmarshalerUserType) {
 		err = dest.(CustomUnmarshalerUser).CustomUnmarshalJSON(u, b)
 	} else if reflect.TypeOf(dest).Implements(jsonUnmarshalerType) {
@@ -105,26 +106,43 @@ func (u *InterfaceUnmarshaler) RegisterType(t string, e interface{}) {
 	u.RegisterUnmarshalFn(t, defaultUnmarshalFn(e))
 }
 
-func (u *InterfaceUnmarshaler) unmarshalInterface(b []byte) (interface{}, error) {
+func (u *InterfaceUnmarshaler) SetDefaultUnmarshalFn(fn UnmarshalFnWithDest) {
+	u.defaultUnmarshalFn = fn
+}
+
+func (u *InterfaceUnmarshaler) unmarshalInterface(b []byte, dest interface{}) error {
+	// ensure dest is a pointer
+	targetType := reflect.TypeOf(dest)
+	if targetType.Kind() != reflect.Ptr {
+		return errors.New("dest must be a pointer")
+	}
+	targetType = targetType.Elem()
 	var raw map[string]json.RawMessage
 	err := json.Unmarshal(b, &raw)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		var t string
+		tRaw, ok := raw["type"]
+		if ok {
+			err = json.Unmarshal(tRaw, &t)
+			if err != nil {
+				return err
+			}
+			fn, ok := u.unmarshalFnByType[t]
+			if !ok {
+				return errors.New("no unmarshal function for type: " + t)
+			}
+			res, err := fn(u, b)
+			if err != nil {
+				return err
+			}
+			reflect.ValueOf(dest).Elem().Set(reflect.ValueOf(res))
+			return nil
+		}
 	}
-	var t string
-	tRaw, ok := raw["type"]
-	if !ok {
-		return nil, errors.New("no type field")
+	if u.defaultUnmarshalFn != nil {
+		return u.defaultUnmarshalFn(u, b, dest)
 	}
-	err = json.Unmarshal(tRaw, &t)
-	if err != nil {
-		return nil, err
-	}
-	fn, ok := u.unmarshalFnByType[t]
-	if !ok {
-		return nil, errors.New("no unmarshal function for type: " + t)
-	}
-	return fn(u, b)
+	return err
 }
 
 func defaultUnmarshalFn(e interface{}) UnmarshalFn {

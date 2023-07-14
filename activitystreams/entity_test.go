@@ -39,10 +39,7 @@ var _ = Describe("Entity", func() {
 		expectedTLEMap := map[string]interface{}{
 			"id": "http://example.com/thing",
 			"attributedTo": []interface{}{
-				map[string]interface{}{
-					"id":   "http://example.com/actor",
-					"type": "Person",
-				},
+				"http://example.com/actor",
 			},
 			"name":      "thing",
 			"mediaType": "text/plain",

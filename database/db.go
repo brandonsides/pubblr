@@ -1,7 +1,6 @@
 package database
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"path"
@@ -15,13 +14,13 @@ type PubblrDatabaseConfig struct {
 }
 
 type UserData struct {
-	Actor    json.RawMessage              `json:"actor"`
-	Password string                       `json:"password"`
-	Inbox    []json.RawMessage            `json:"-"`
-	Outbox   []json.RawMessage            `json:"-"`
-	Objects  map[string][]json.RawMessage `json:"-"`
+	Actor    activitystreams.ActorIface               `json:"actor"`
+	Password string                                   `json:"password"`
+	Inbox    []activitystreams.ActivityIface          `json:"-"`
+	Outbox   []activitystreams.ActivityIface          `json:"-"`
+	Objects  map[string][]activitystreams.ObjectIface `json:"-"`
 	// TODO: make this EntityIface
-	Followers []activitystreams.Actor       `json:"-"`
+	Followers []activitystreams.ActorIface  `json:"-"`
 	Following []activitystreams.EntityIface `json:"-"`
 	Streams   []activitystreams.EntityIface `json:"-"`
 }
@@ -44,7 +43,7 @@ func (d *PubblrDatabase) CreateObject(post activitystreams.ObjectIface, user str
 
 	objects := userData.Objects
 	if objects == nil {
-		objects = make(map[string][]json.RawMessage)
+		objects = make(map[string][]activitystreams.ObjectIface)
 	}
 
 	postType, err := post.Type()
@@ -57,12 +56,7 @@ func (d *PubblrDatabase) CreateObject(post activitystreams.ObjectIface, user str
 	id := baseUrl.String()
 	activitystreams.ToObject(post).Id = id
 
-	postJson, err := json.Marshal(post)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to marshal retrieved post: %w", err)
-	}
-
-	objects[postType] = append(objects[postType], postJson)
+	objects[postType] = append(objects[postType], post)
 
 	return post, nil
 }
@@ -77,12 +71,7 @@ func (d *PubblrDatabase) CreateInboxItem(a activitystreams.ActivityIface, user s
 		return nil, fmt.Errorf("User %s does not exist", user)
 	}
 
-	marshalledActivity, err := json.Marshal(a)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to marshal activity: %w", err)
-	}
-
-	userData.Inbox = append(userData.Inbox, marshalledActivity)
+	userData.Inbox = append(userData.Inbox, a)
 	d.users[user] = userData
 
 	return a, nil
@@ -102,12 +91,7 @@ func (d *PubblrDatabase) CreateOutboxItem(activity activitystreams.ActivityIface
 	id := baseUrl.String()
 	activitystreams.ToObject(activity).Id = id
 
-	activityJson, err := json.Marshal(activity)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to marshal activity: %w", err)
-	}
-
-	userData.Outbox = append(userData.Outbox, activityJson)
+	userData.Outbox = append(userData.Outbox, activity)
 	d.users[user] = userData
 
 	return activity, nil
@@ -123,32 +107,21 @@ func (d *PubblrDatabase) GetInboxPage(user string, page int, pageSize int) ([]ac
 		return nil, fmt.Errorf("User %s does not exist", user)
 	}
 
-	rawInbox := userData.Inbox
+	inbox := userData.Inbox
 	if !ok {
-		rawInbox = make([]json.RawMessage, 0)
-		userData.Inbox = rawInbox
+		inbox = make([]activitystreams.ActivityIface, 0)
+		userData.Inbox = inbox
 	}
 
 	start := page * pageSize
 	end := start + pageSize
-	if end > len(rawInbox) {
-		end = len(rawInbox)
+	if end > len(inbox) {
+		end = len(inbox)
 
 	}
-	rawInbox = rawInbox[start:end]
+	inboxPage := inbox[start:end]
 
-	inbox := make([]activitystreams.ActivityIface, len(rawInbox))
-	for i, activityJson := range rawInbox {
-		var activity activitystreams.ActivityIface
-		err := activitystreams.DefaultEntityUnmarshaler.Unmarshal(activityJson, &activity)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to unmarshal activity: %w", err)
-		}
-
-		inbox[i] = activity
-	}
-
-	return inbox, nil
+	return inboxPage, nil
 }
 
 func (d *PubblrDatabase) GetOutboxPage(user string, page int, pageSize int) ([]activitystreams.ActivityIface, error) {
@@ -161,32 +134,21 @@ func (d *PubblrDatabase) GetOutboxPage(user string, page int, pageSize int) ([]a
 		return nil, fmt.Errorf("User %s does not exist", user)
 	}
 
-	rawOutbox := userData.Outbox
+	outbox := userData.Outbox
 	if !ok {
-		rawOutbox = make([]json.RawMessage, 0)
-		userData.Outbox = rawOutbox
+		outbox = make([]activitystreams.ActivityIface, 0)
+		userData.Outbox = outbox
 	}
 
 	start := page * pageSize
 	end := start + pageSize
-	if end > len(rawOutbox) {
-		end = len(rawOutbox)
+	if end > len(outbox) {
+		end = len(outbox)
 
 	}
-	rawOutbox = rawOutbox[start:end]
+	outboxPage := outbox[start:end]
 
-	outbox := make([]activitystreams.ActivityIface, len(rawOutbox))
-	for i, activityJson := range rawOutbox {
-		var activity activitystreams.ActivityIface
-		err := activitystreams.DefaultEntityUnmarshaler.Unmarshal(activityJson, &activity)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to unmarshal activity: %w", err)
-		}
-
-		outbox[i] = activity
-	}
-
-	return outbox, nil
+	return outboxPage, nil
 }
 
 func (d *PubblrDatabase) GetInboxCount(user string) (int, error) {
@@ -234,11 +196,8 @@ func (d *PubblrDatabase) GetInboxItem(user, id string) (activitystreams.Activity
 		return nil, fmt.Errorf("No activity with id %s", id)
 	}
 
-	activityJson := userData.Inbox[parsedId]
-	var activity activitystreams.ActivityIface
-	err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(activityJson, &activity)
-
-	return activity, err
+	activity := userData.Inbox[parsedId]
+	return activity, nil
 }
 
 func (d *PubblrDatabase) GetOutboxItem(user, id string) (activitystreams.ActivityIface, error) {
@@ -260,11 +219,8 @@ func (d *PubblrDatabase) GetOutboxItem(user, id string) (activitystreams.Activit
 		return nil, fmt.Errorf("No activity with id %s", id)
 	}
 
-	activityJson := userData.Outbox[parsedId]
-	var activity activitystreams.ActivityIface
-	err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(activityJson, &activity)
-
-	return activity, err
+	activity := userData.Outbox[parsedId]
+	return activity, nil
 }
 
 func (d *PubblrDatabase) GetObject(user, typ, id string) (activitystreams.ObjectIface, error) {
@@ -287,13 +243,7 @@ func (d *PubblrDatabase) GetObject(user, typ, id string) (activitystreams.Object
 		return nil, fmt.Errorf("Object not found")
 	}
 
-	postJson := objects[parsedId]
-	var post activitystreams.ObjectIface
-	err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(postJson, &post)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to unmarshal retrieved post: %w", err)
-	}
-
+	post := objects[parsedId]
 	return post, nil
 }
 
@@ -312,13 +262,8 @@ func (d *PubblrDatabase) CreateUser(user activitystreams.ActorIface, username, p
 
 	activitystreams.ToObject(user).Id = id
 
-	bytes, err := json.Marshal(user)
-	if err != nil {
-		return nil, err
-	}
-
 	userdata := d.users[username]
-	userdata.Actor = bytes
+	userdata.Actor = user
 	userdata.Password = password
 	d.users[username] = userdata
 	return user, nil
@@ -329,14 +274,7 @@ func (d *PubblrDatabase) GetUser(username string) (activitystreams.ActorIface, e
 	if !ok {
 		return nil, fmt.Errorf("User %s does not exist", username)
 	}
-	userJson := userData.Actor
-
-	var user activitystreams.ActorIface
-	err := activitystreams.DefaultEntityUnmarshaler.Unmarshal(userJson, &user)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to unmarshal retrieved user: %w", err)
-	}
-
+	user := userData.Actor
 	return user, nil
 }
 

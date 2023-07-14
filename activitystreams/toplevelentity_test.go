@@ -69,7 +69,7 @@ var _ = Describe("Toplevelentity", func() {
 						IntransitiveActivity: activitystreams.IntransitiveActivity{
 							Object: activitystreams.Object{
 								Entity: activitystreams.Entity{
-									Id: "http://sally.example.org/repubs/1",
+									Id: "http://john.example.org/repubs/1",
 								},
 							},
 						},
@@ -90,39 +90,17 @@ var _ = Describe("Toplevelentity", func() {
 		"@context": "https://www.w3.org/ns/activitystreams",
 		"type":     "Like",
 		"id":       "http://example.org/like/1",
-		"actor": map[string]interface{}{
-			"type": "Person",
-			"id":   "http://sally.example.org",
-			"name": "Sally",
-		},
-		"object": map[string]interface{}{
-			"type": "Announce",
-			"id":   "http://sally.example.org/repubs/1",
-			"object": map[string]interface{}{
-				"type": "Note",
-				"id":   "http://joe.example.org/note/1",
-			},
-		},
-		"summary": "Sally liked a repubbed note",
+		"actor":    "http://sally.example.org",
+		"object":   "http://john.example.org/repubs/1",
+		"summary":  "Sally liked a repubbed note",
 		"to": []interface{}{
-			map[string]interface{}{
-				"type": "Person",
-				"id":   "http://joe.example.org",
-				"name": "Joe",
-			},
+			"http://joe.example.org",
 		},
 		"audience": []interface{}{
-			map[string]interface{}{
-				"type": "Collection",
-				"id":   "http://sally.example.org/followers",
-			},
+			"http://sally.example.org/followers",
 		},
 		"attributedTo": []interface{}{
-			map[string]interface{}{
-				"type": "Person",
-				"id":   "http://sally.example.org",
-				"name": "Sally",
-			},
+			"http://sally.example.org",
 		},
 	}
 

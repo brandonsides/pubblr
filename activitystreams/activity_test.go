@@ -64,42 +64,17 @@ var _ = Describe("Activity", func() {
 			},
 		}
 		expectedIntransitiveActivityMap := map[string]interface{}{
-			"type": "IntransitiveActivity",
-			"actor": map[string]interface{}{
-				"type": "Person",
-				"id":   "http://example.org/john",
-			},
+			"type":  "IntransitiveActivity",
+			"actor": "http://example.org/john",
 			"attachment": []interface{}{
-				map[string]interface{}{
-					"type": "Image",
-					"id":   "http://example.org/john/images/1",
-					"url":  "http://example.org/john/images/1.jpg",
-				},
-				map[string]interface{}{
-					"type": "Link",
-					"id":   "http://example.org/john/images/2",
-					"href": "http://example.org/john/images/2.jpg",
-				},
+				"http://example.org/john/images/1",
+				"http://example.org/john/images/2",
 			},
-			"id": "http://example.org/john/activities/1",
-			"instrument": map[string]interface{}{
-				"id":   "http://example.org/john/activities/1/instrument",
-				"type": "Object",
-			},
-			"origin": map[string]interface{}{
-				"href": "http://example.org/john/activities/1/origin",
-				"id":   "http://example.org/john/activities/1/origin",
-				"type": "Link",
-			},
-			"result": map[string]interface{}{
-				"id":   "http://example.org/john/activities/1/result",
-				"type": "Object",
-			},
-			"target": map[string]interface{}{
-				"href": "http://example.org/john/objects/1",
-				"id":   "http://example.org/john/objects/1",
-				"type": "Link",
-			},
+			"id":         "http://example.org/john/activities/1",
+			"instrument": "http://example.org/john/activities/1/instrument",
+			"origin":     "http://example.org/john/activities/1/origin",
+			"result":     "http://example.org/john/activities/1/result",
+			"target":     "http://example.org/john/objects/1",
 		}
 
 		testutil.CheckActivityStreamsEntity("IntransitiveActivity", &actualIntransitiveActivity, expectedIntransitiveActivityMap)
@@ -200,16 +175,8 @@ var _ = Describe("Activity", func() {
 
 				BeforeEach(func() {
 					expectedSingleAnswerQuestionMap["oneOf"] = []interface{}{
-						map[string]interface{}{
-							"type":    "Object",
-							"id":      "http://example.org/john/objects/2",
-							"content": "Hello world!",
-						},
-						map[string]interface{}{
-							"type": "Link",
-							"id":   "http://example.org/john/objects/3",
-							"href": "http://example.org/john/objects/3",
-						},
+						"http://example.org/john/objects/2",
+						"http://example.org/john/objects/3",
 					}
 				})
 
@@ -243,16 +210,8 @@ var _ = Describe("Activity", func() {
 
 				BeforeEach(func() {
 					expectedMultiAnswerQuestionMap["anyOf"] = []interface{}{
-						map[string]interface{}{
-							"type":    "Object",
-							"id":      "http://example.org/john/objects/2",
-							"content": "Hello world!",
-						},
-						map[string]interface{}{
-							"type": "Link",
-							"id":   "http://example.org/john/objects/3",
-							"href": "http://example.org/john/objects/3",
-						},
+						"http://example.org/john/objects/2",
+						"http://example.org/john/objects/3",
 					}
 				})
 
@@ -277,11 +236,7 @@ var _ = Describe("Activity", func() {
 				expectedClosedQuestionMap := expectedQuestionMap
 
 				BeforeEach(func() {
-					expectedClosedQuestionMap["closed"] = map[string]interface{}{
-						"type":    "Object",
-						"id":      "http://example.org/john/objects/2",
-						"content": "Hello world!",
-					}
+					expectedClosedQuestionMap["closed"] = "http://example.org/john/objects/2"
 				})
 
 				AfterEach(func() {
@@ -304,47 +259,18 @@ var _ = Describe("Activity", func() {
 				},
 			}
 			expectedActivityMap := map[string]interface{}{
-				"type": "Activity",
-				"actor": map[string]interface{}{
-					"type": "Person",
-					"id":   "http://example.org/john",
-				},
+				"type":  "Activity",
+				"actor": "http://example.org/john",
 				"attachment": []interface{}{
-					map[string]interface{}{
-						"type": "Image",
-						"id":   "http://example.org/john/images/1",
-						"url":  "http://example.org/john/images/1.jpg",
-					},
-					map[string]interface{}{
-						"type": "Link",
-						"id":   "http://example.org/john/images/2",
-						"href": "http://example.org/john/images/2.jpg",
-					},
+					"http://example.org/john/images/1",
+					"http://example.org/john/images/2",
 				},
-				"id": "http://example.org/john/activities/1",
-				"instrument": map[string]interface{}{
-					"id":   "http://example.org/john/activities/1/instrument",
-					"type": "Object",
-				},
-				"origin": map[string]interface{}{
-					"href": "http://example.org/john/activities/1/origin",
-					"id":   "http://example.org/john/activities/1/origin",
-					"type": "Link",
-				},
-				"result": map[string]interface{}{
-					"id":   "http://example.org/john/activities/1/result",
-					"type": "Object",
-				},
-				"target": map[string]interface{}{
-					"href": "http://example.org/john/objects/1",
-					"id":   "http://example.org/john/objects/1",
-					"type": "Link",
-				},
-				"object": map[string]interface{}{
-					"content": "Hello world!",
-					"id":      "http://example.org/john/objects/2",
-					"type":    "Object",
-				},
+				"id":         "http://example.org/john/activities/1",
+				"instrument": "http://example.org/john/activities/1/instrument",
+				"origin":     "http://example.org/john/activities/1/origin",
+				"result":     "http://example.org/john/activities/1/result",
+				"target":     "http://example.org/john/objects/1",
+				"object":     "http://example.org/john/objects/2",
 			}
 
 			testutil.CheckActivityStreamsEntity("Activity", &actualActivity, expectedActivityMap)
