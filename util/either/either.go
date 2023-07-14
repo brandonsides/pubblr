@@ -27,6 +27,14 @@ func Right[A, B any](b B) *Either[A, B] {
 	}
 }
 
+func (e Either[A, B]) IsLeft() bool {
+	return e.isLeft
+}
+
+func (e Either[A, B]) IsRight() bool {
+	return !e.isLeft
+}
+
 func (e Either[A, B]) Left() *A {
 	return e.a
 }

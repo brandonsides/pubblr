@@ -2,8 +2,11 @@ package activitystreams
 
 import (
 	"errors"
+	"fmt"
 
-	"github.com/brandonsides/pubblr/util/json"
+	"encoding/json"
+
+	jsonutil "github.com/brandonsides/pubblr/util/json"
 )
 
 // Represents an entity at the top level of an ActivityStreams document,
@@ -16,7 +19,25 @@ type TopLevelEntity struct {
 type JsonTopLevelEntity TopLevelEntity
 
 func (t *TopLevelEntity) MarshalJSON() ([]byte, error) {
-	return MarshalEntity(t)
+	if t.EntityIface == nil {
+		return nil, errors.New("No EntityIface set on TopLevelEntity")
+	}
+	topLevelEntity, err := json.Marshal(t.EntityIface)
+	if err != nil {
+		return nil, err
+	}
+
+	var topLevelEntityMap map[string]json.RawMessage
+	err = json.Unmarshal(topLevelEntity, &topLevelEntityMap)
+	if err != nil {
+		return nil, err
+	}
+
+	if t.Context != "" {
+		topLevelEntityMap["@context"] = []byte(fmt.Sprintf("%q", t.Context))
+	}
+
+	return json.Marshal(topLevelEntityMap)
 }
 
 func (t *TopLevelEntity) Type() (string, error) {
@@ -26,7 +47,7 @@ func (t *TopLevelEntity) Type() (string, error) {
 	return "", errors.New("No EntityIface set on TopLevelEntity")
 }
 
-func (t *TopLevelEntity) CustomUnmarshalJSON(u json.CustomUnmarshaler, b []byte) error {
+func (t *TopLevelEntity) CustomUnmarshalJSON(u jsonutil.CustomUnmarshaler, b []byte) error {
 	err := u.Unmarshal(b, (*JsonTopLevelEntity)(t))
 	if err != nil {
 		return err

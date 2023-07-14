@@ -222,8 +222,8 @@ func (router *PubblrRouter) GetInboxPage(r *http.Request) (*activitystreams.Coll
 			Ordered: true,
 			Items:   items,
 		},
-		PartOf: either.Left[activitystreams.Collection, activitystreams.Link](
-			activitystreams.Collection{
+		PartOf: either.Left[*activitystreams.Collection, activitystreams.LinkIface](
+			&activitystreams.Collection{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: actor.Id + "/inbox",
@@ -342,8 +342,8 @@ func (router *PubblrRouter) GetOutboxPage(r *http.Request) (*activitystreams.Col
 			Ordered: true,
 			Items:   items,
 		},
-		PartOf: either.Left[activitystreams.Collection, activitystreams.Link](
-			activitystreams.Collection{
+		PartOf: either.Left[*activitystreams.Collection, activitystreams.LinkIface](
+			&activitystreams.Collection{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: actor.Id + "/outbox",

@@ -28,34 +28,6 @@ var _ = Describe("Entity", func() {
 		MediaType: "text/plain",
 	}
 
-	Describe("MarshalEntity", func() {
-		It("should correctly marshal non-entity embedded type", func() {
-			actual := testStruct{
-				Entity: activitystreams.Entity{
-					Id: "http://example.com/thing",
-				},
-				TestEmbeddedStruct: TestEmbeddedStruct{
-					A: "a",
-					B: "b",
-				},
-				B: "c",
-			}
-			expectedMap := map[string]interface{}{
-				"id":   "http://example.com/thing",
-				"A":    "a",
-				"B":    "c",
-				"type": "testStruct",
-			}
-
-			actualJSON, err := activitystreams.MarshalEntity(&actual)
-			Expect(err).ToNot(HaveOccurred())
-			var actualMap map[string]interface{}
-			err = json.Unmarshal(actualJSON, &actualMap)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(actualMap).To(Equal(expectedMap))
-		})
-	})
-
 	Describe("TopLevelEntity", func() {
 		tle := activitystreams.TopLevelEntity{
 			EntityIface: &activitystreams.Object{
@@ -106,21 +78,3 @@ var _ = Describe("Entity", func() {
 		})
 	})
 })
-
-type TestEmbeddedStruct struct {
-	A string
-	B string
-}
-type testStruct struct {
-	activitystreams.Entity
-	TestEmbeddedStruct
-	B string
-}
-
-func (t *testStruct) Type() (string, error) {
-	return "testStruct", nil
-}
-
-func (t *testStruct) MarshalJSON() ([]byte, error) {
-	return activitystreams.MarshalEntity(t)
-}
