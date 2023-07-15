@@ -29,7 +29,7 @@ func (a *IntransitiveActivity) intransitiveActivity() *IntransitiveActivity {
 }
 
 func (a *IntransitiveActivity) MarshalJSON() ([]byte, error) {
-	objJson, err := json.Marshal(a.Object)
+	objJson, err := json.Marshal(&a.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ type TransitiveActivity struct {
 }
 
 func (a *TransitiveActivity) MarshalJSON() ([]byte, error) {
-	intransitiveActivityJson, err := json.Marshal(a.IntransitiveActivity)
+	intransitiveActivityJson, err := json.Marshal(&a.IntransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -87,14 +87,10 @@ func (a *TransitiveActivity) MarshalJSON() ([]byte, error) {
 	}
 
 	if a.Object != nil {
-		objectJson, err := json.Marshal(a.Object)
-		if err != nil {
-			return nil, err
-		}
-		transitiveActivityMap["object"] = objectJson
+		transitiveActivityMap["object"] = []byte(fmt.Sprintf("%q", ToEntity(a.Object).Id))
 	}
 
-	transitiveActivityMap["type"] = json.RawMessage(fmt.Sprintf("%q", "TransitiveActivity"))
+	transitiveActivityMap["type"] = json.RawMessage(fmt.Sprintf("%q", "Activity"))
 
 	return json.Marshal(transitiveActivityMap)
 }
@@ -108,7 +104,7 @@ type Accept struct {
 }
 
 func (a *Accept) MarshalJSON() ([]byte, error) {
-	accept, err := json.Marshal(a.TransitiveActivity)
+	accept, err := json.Marshal(&a.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +129,7 @@ type TentativeAccept struct {
 }
 
 func (a *TentativeAccept) MarshalJSON() ([]byte, error) {
-	tAccept, err := json.Marshal(a.Accept)
+	tAccept, err := json.Marshal(&a.Accept)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +158,7 @@ func (a *Add) Type() (string, error) {
 }
 
 func (a *Add) MarshalJSON() ([]byte, error) {
-	add, err := json.Marshal(a.TransitiveActivity)
+	add, err := json.Marshal(&a.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +183,7 @@ func (a *Arrive) Type() (string, error) {
 }
 
 func (a *Arrive) MarshalJSON() ([]byte, error) {
-	arrive, err := json.Marshal(a.IntransitiveActivity)
+	arrive, err := json.Marshal(&a.IntransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +208,7 @@ func (c *Create) Type() (string, error) {
 }
 
 func (c *Create) MarshalJSON() ([]byte, error) {
-	create, err := json.Marshal(c.TransitiveActivity)
+	create, err := json.Marshal(&c.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +220,7 @@ func (c *Create) MarshalJSON() ([]byte, error) {
 	}
 
 	if c.Object != nil {
-		createdObjectJSON, err := json.Marshal(c.Object)
+		createdObjectJSON, err := json.Marshal(&c.Object)
 		if err != nil {
 			return nil, err
 		}
@@ -241,7 +237,7 @@ type Delete struct {
 }
 
 func (d *Delete) MarshalJSON() ([]byte, error) {
-	delete, err := json.Marshal(d.TransitiveActivity)
+	delete, err := json.Marshal(&d.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +266,7 @@ func (f *Follow) Type() (string, error) {
 }
 
 func (f *Follow) MarshalJSON() ([]byte, error) {
-	follow, err := json.Marshal(f.TransitiveActivity)
+	follow, err := json.Marshal(&f.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -295,7 +291,7 @@ func (i *Ignore) Type() (string, error) {
 }
 
 func (i *Ignore) MarshalJSON() ([]byte, error) {
-	ignore, err := json.Marshal(i.TransitiveActivity)
+	ignore, err := json.Marshal(&i.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -320,7 +316,7 @@ func (j *Join) Type() (string, error) {
 }
 
 func (j *Join) MarshalJSON() ([]byte, error) {
-	join, err := json.Marshal(j.TransitiveActivity)
+	join, err := json.Marshal(&j.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -345,7 +341,7 @@ func (l *Leave) Type() (string, error) {
 }
 
 func (l *Leave) MarshalJSON() ([]byte, error) {
-	leave, err := json.Marshal(l.TransitiveActivity)
+	leave, err := json.Marshal(&l.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -370,7 +366,7 @@ func (l *Like) Type() (string, error) {
 }
 
 func (l *Like) MarshalJSON() ([]byte, error) {
-	like, err := json.Marshal(l.TransitiveActivity)
+	like, err := json.Marshal(&l.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -395,7 +391,7 @@ func (o *Offer) Type() (string, error) {
 }
 
 func (o *Offer) MarshalJSON() ([]byte, error) {
-	offer, err := json.Marshal(o.TransitiveActivity)
+	offer, err := json.Marshal(&o.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -406,7 +402,7 @@ func (o *Offer) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	offerMap["type"] = json.RawMessage(fmt.Sprintf("%q", "Like"))
+	offerMap["type"] = json.RawMessage(fmt.Sprintf("%q", "Offer"))
 
 	return json.Marshal(offerMap)
 }
@@ -420,7 +416,7 @@ func (i *Invite) Type() (string, error) {
 }
 
 func (i *Invite) MarshalJSON() ([]byte, error) {
-	invite, err := json.Marshal(i.TransitiveActivity)
+	invite, err := json.Marshal(&i.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -445,7 +441,7 @@ func (r *Reject) Type() (string, error) {
 }
 
 func (r *Reject) MarshalJSON() ([]byte, error) {
-	reject, err := json.Marshal(r.TransitiveActivity)
+	reject, err := json.Marshal(&r.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -470,7 +466,7 @@ func (t *TentativeReject) Type() (string, error) {
 }
 
 func (t *TentativeReject) MarshalJSON() ([]byte, error) {
-	tentativeReject, err := json.Marshal(t.Reject.TransitiveActivity)
+	tentativeReject, err := json.Marshal(&t.Reject)
 	if err != nil {
 		return nil, err
 	}
@@ -495,7 +491,7 @@ func (r *Remove) Type() (string, error) {
 }
 
 func (r *Remove) MarshalJSON() ([]byte, error) {
-	remove, err := json.Marshal(r.TransitiveActivity)
+	remove, err := json.Marshal(&r.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -520,7 +516,7 @@ func (u *Undo) Type() (string, error) {
 }
 
 func (u *Undo) MarshalJSON() ([]byte, error) {
-	undo, err := json.Marshal(u.TransitiveActivity)
+	undo, err := json.Marshal(&u.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -545,7 +541,7 @@ func (u *Update) Type() (string, error) {
 }
 
 func (u *Update) MarshalJSON() ([]byte, error) {
-	update, err := json.Marshal(u.TransitiveActivity)
+	update, err := json.Marshal(&u.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -570,7 +566,7 @@ func (v *View) Type() (string, error) {
 }
 
 func (v *View) MarshalJSON() ([]byte, error) {
-	view, err := json.Marshal(v.TransitiveActivity)
+	view, err := json.Marshal(&v.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -595,7 +591,7 @@ func (l *Listen) Type() (string, error) {
 }
 
 func (l *Listen) MarshalJSON() ([]byte, error) {
-	listen, err := json.Marshal(l.IntransitiveActivity)
+	listen, err := json.Marshal(&l.IntransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -620,7 +616,7 @@ func (r *Read) Type() (string, error) {
 }
 
 func (r *Read) MarshalJSON() ([]byte, error) {
-	read, err := json.Marshal(r.IntransitiveActivity)
+	read, err := json.Marshal(&r.IntransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -645,7 +641,7 @@ func (m *Move) Type() (string, error) {
 }
 
 func (m *Move) MarshalJSON() ([]byte, error) {
-	move, err := json.Marshal(m.TransitiveActivity)
+	move, err := json.Marshal(&m.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -670,7 +666,7 @@ func (t *Travel) Type() (string, error) {
 }
 
 func (t *Travel) MarshalJSON() ([]byte, error) {
-	travel, err := json.Marshal(t.IntransitiveActivity)
+	travel, err := json.Marshal(&t.IntransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -695,7 +691,7 @@ func (a *Announce) Type() (string, error) {
 }
 
 func (a *Announce) MarshalJSON() ([]byte, error) {
-	announce, err := json.Marshal(a.TransitiveActivity)
+	announce, err := json.Marshal(&a.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -720,7 +716,7 @@ func (b *Block) Type() (string, error) {
 }
 
 func (b *Block) MarshalJSON() ([]byte, error) {
-	block, err := json.Marshal(b.Ignore.TransitiveActivity)
+	block, err := json.Marshal(&b.Ignore)
 	if err != nil {
 		return nil, err
 	}
@@ -745,7 +741,7 @@ func (f *Flag) Type() (string, error) {
 }
 
 func (f *Flag) MarshalJSON() ([]byte, error) {
-	flag, err := json.Marshal(f.TransitiveActivity)
+	flag, err := json.Marshal(&f.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -770,7 +766,7 @@ func (d *Dislike) Type() (string, error) {
 }
 
 func (d *Dislike) MarshalJSON() ([]byte, error) {
-	dislike, err := json.Marshal(d.TransitiveActivity)
+	dislike, err := json.Marshal(&d.TransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -795,7 +791,7 @@ func (q *Question) Type() (string, error) {
 }
 
 func (q *Question) MarshalJSON() ([]byte, error) {
-	question, err := json.Marshal(q.IntransitiveActivity)
+	question, err := json.Marshal(&q.IntransitiveActivity)
 	if err != nil {
 		return nil, err
 	}
@@ -817,7 +813,7 @@ type SingleAnswerQuestion struct {
 }
 
 func (q *SingleAnswerQuestion) MarshalJSON() ([]byte, error) {
-	singleAnswerQuestion, err := json.Marshal(q.Question.IntransitiveActivity)
+	singleAnswerQuestion, err := json.Marshal(&q.Question)
 	if err != nil {
 		return nil, err
 	}
@@ -828,7 +824,7 @@ func (q *SingleAnswerQuestion) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	singleAnswerQuestionMap["type"] = json.RawMessage(fmt.Sprintf("%q", "SingleAnswerQuestion"))
+	singleAnswerQuestionMap["type"] = json.RawMessage(fmt.Sprintf("%q", "Question"))
 
 	if q.OneOf != nil {
 		oneOf, err := json.Marshal(q.OneOf)
@@ -848,7 +844,7 @@ type MultiAnswerQuestion struct {
 }
 
 func (q *MultiAnswerQuestion) MarshalJSON() ([]byte, error) {
-	multiAnswerQuestion, err := json.Marshal(q.Question.IntransitiveActivity)
+	multiAnswerQuestion, err := json.Marshal(&q.Question)
 	if err != nil {
 		return nil, err
 	}
@@ -859,7 +855,7 @@ func (q *MultiAnswerQuestion) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	multiAnswerQuestionMap["type"] = json.RawMessage(fmt.Sprintf("%q", "MultiAnswerQuestion"))
+	multiAnswerQuestionMap["type"] = json.RawMessage(fmt.Sprintf("%q", "Question"))
 
 	if q.AnyOf != nil {
 		anyOf, err := json.Marshal(q.AnyOf)
@@ -879,7 +875,7 @@ type ClosedQuestion struct {
 }
 
 func (q *ClosedQuestion) MarshalJSON() ([]byte, error) {
-	closedQuestion, err := json.Marshal(q.Question.IntransitiveActivity)
+	closedQuestion, err := json.Marshal(&q.Question)
 	if err != nil {
 		return nil, err
 	}
@@ -890,7 +886,7 @@ func (q *ClosedQuestion) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	closedQuestionMap["type"] = json.RawMessage(fmt.Sprintf("%q", "ClosedQuestion"))
+	closedQuestionMap["type"] = json.RawMessage(fmt.Sprintf("%q", "Question"))
 
 	if q.Closed != nil {
 		closed, err := json.Marshal(q.Closed)

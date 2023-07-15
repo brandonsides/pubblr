@@ -60,7 +60,7 @@ func (o *Object) Type() (string, error) {
 }
 
 func (o *Object) MarshalJSON() ([]byte, error) {
-	object, err := json.Marshal(o.Entity)
+	object, err := json.Marshal(&o.Entity)
 	if err != nil {
 		return nil, err
 	}
@@ -259,7 +259,7 @@ func (r *Relationship) Type() (string, error) {
 }
 
 func (r *Relationship) MarshalJSON() ([]byte, error) {
-	relationship, err := json.Marshal(r.Object)
+	relationship, err := json.Marshal(&r.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -309,7 +309,7 @@ func (a *Article) Type() (string, error) {
 }
 
 func (a *Article) MarshalJSON() ([]byte, error) {
-	article, err := json.Marshal(a.Object)
+	article, err := json.Marshal(&a.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -335,7 +335,7 @@ func (d *Document) Type() (string, error) {
 }
 
 func (d *Document) MarshalJSON() ([]byte, error) {
-	document, err := json.Marshal(d.Object)
+	document, err := json.Marshal(&d.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +361,7 @@ func (a *Audio) Type() (string, error) {
 }
 
 func (a *Audio) MarshalJSON() ([]byte, error) {
-	audio, err := json.Marshal(a.Object)
+	audio, err := json.Marshal(&a.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -387,7 +387,7 @@ func (i *Image) Type() (string, error) {
 }
 
 func (i *Image) MarshalJSON() ([]byte, error) {
-	image, err := json.Marshal(i.Object)
+	image, err := json.Marshal(&i.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -413,7 +413,7 @@ func (v *Video) Type() (string, error) {
 }
 
 func (v *Video) MarshalJSON() ([]byte, error) {
-	video, err := json.Marshal(v.Object)
+	video, err := json.Marshal(&v.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -439,7 +439,7 @@ func (n *Note) Type() (string, error) {
 }
 
 func (n *Note) MarshalJSON() ([]byte, error) {
-	note, err := json.Marshal(n.Object)
+	note, err := json.Marshal(&n.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -465,7 +465,7 @@ func (p *Page) Type() (string, error) {
 }
 
 func (p *Page) MarshalJSON() ([]byte, error) {
-	page, err := json.Marshal(p.Object)
+	page, err := json.Marshal(&p.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -491,7 +491,7 @@ func (e *Event) Type() (string, error) {
 }
 
 func (e *Event) MarshalJSON() ([]byte, error) {
-	event, err := json.Marshal(e.Object)
+	event, err := json.Marshal(&e.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -523,7 +523,7 @@ func (p *Place) Type() (string, error) {
 }
 
 func (p *Place) MarshalJSON() ([]byte, error) {
-	place, err := json.Marshal(p.Object)
+	place, err := json.Marshal(&p.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -574,7 +574,7 @@ func (p *Profile) Type() (string, error) {
 }
 
 func (p *Profile) MarshalJSON() ([]byte, error) {
-	profile, err := json.Marshal(p.Object)
+	profile, err := json.Marshal(&p.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -606,7 +606,7 @@ func (t *Tombstone) Type() (string, error) {
 }
 
 func (t *Tombstone) MarshalJSON() ([]byte, error) {
-	tombstone, err := json.Marshal(t.Object)
+	tombstone, err := json.Marshal(&t.Object)
 	if err != nil {
 		return nil, err
 	}

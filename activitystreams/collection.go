@@ -36,7 +36,7 @@ func (c *Collection) collection() *Collection {
 }
 
 func (c *Collection) MarshalJSON() ([]byte, error) {
-	collection, err := json.Marshal(c.Object)
+	collection, err := json.Marshal(&c.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +135,7 @@ func (c *CollectionPage) Type() (string, error) {
 }
 
 func (c *CollectionPage) MarshalJSON() ([]byte, error) {
-	collectionPage, err := json.Marshal(c.Collection)
+	collectionPage, err := json.Marshal(&c.Collection)
 	if err != nil {
 		return nil, err
 	}

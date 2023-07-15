@@ -207,7 +207,7 @@ var _ = Describe("Actor", func() {
 		"url":       "http://example.org/~john",
 		"content":   "This is a simple note",
 		"name":      "A Simple Note",
-		"duration":  float64(time.Second * 60),
+		"duration":  duration.String(),
 		"endTime":   "2023-06-18T09:48:00Z",
 		"published": "2023-06-18T09:46:00Z",
 		"startTime": "2023-06-18T09:47:00Z",

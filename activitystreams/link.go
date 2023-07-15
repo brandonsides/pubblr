@@ -34,7 +34,7 @@ func (l *Link) Type() (string, error) {
 }
 
 func (l *Link) MarshalJSON() ([]byte, error) {
-	link, err := json.Marshal(l.Entity)
+	link, err := json.Marshal(&l.Entity)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (m *Mention) Type() (string, error) {
 }
 
 func (l *Mention) MarshalJSON() ([]byte, error) {
-	mention, err := json.Marshal(l.Link)
+	mention, err := json.Marshal(&l.Link)
 	if err != nil {
 		return nil, err
 	}

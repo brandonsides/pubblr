@@ -29,9 +29,17 @@ func (e *Entity) entity() *Entity {
 
 func (e *Entity) MarshalJSON() ([]byte, error) {
 	entityMap := make(map[string]json.RawMessage)
-	entityMap["id"] = []byte(fmt.Sprintf("%q", e.Id))
+
+	if e.Id != "" {
+		entityMap["id"] = []byte(fmt.Sprintf("%q", e.Id))
+	}
+
 	if len(e.AttributedTo) > 0 {
-		attributedTo, err := json.Marshal(e.AttributedTo)
+		attributedToIds := make([]string, len(e.AttributedTo))
+		for i, attributedTo := range e.AttributedTo {
+			attributedToIds[i] = ToEntity(attributedTo).Id
+		}
+		attributedTo, err := json.Marshal(attributedToIds)
 		if err != nil {
 			return nil, err
 		}
@@ -45,16 +53,6 @@ func (e *Entity) MarshalJSON() ([]byte, error) {
 	if e.MediaType != "" {
 		entityMap["mediaType"] = []byte(fmt.Sprintf("%q", e.MediaType))
 	}
-
-	attributedToIds := make([]string, len(e.AttributedTo))
-	for i, attributedTo := range e.AttributedTo {
-		attributedToIds[i] = ToEntity(attributedTo).Id
-	}
-	attributedTo, err := json.Marshal(attributedToIds)
-	if err != nil {
-		return nil, err
-	}
-	entityMap["attributedTo"] = attributedTo
 
 	return json.Marshal(entityMap)
 }

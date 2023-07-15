@@ -175,8 +175,16 @@ var _ = Describe("Activity", func() {
 
 				BeforeEach(func() {
 					expectedSingleAnswerQuestionMap["oneOf"] = []interface{}{
-						"http://example.org/john/objects/2",
-						"http://example.org/john/objects/3",
+						map[string]interface{}{
+							"id":      "http://example.org/john/objects/2",
+							"content": "Hello world!",
+							"type":    "Object",
+						},
+						map[string]interface{}{
+							"id":   "http://example.org/john/objects/3",
+							"href": "http://example.org/john/objects/3",
+							"type": "Link",
+						},
 					}
 				})
 
@@ -210,8 +218,16 @@ var _ = Describe("Activity", func() {
 
 				BeforeEach(func() {
 					expectedMultiAnswerQuestionMap["anyOf"] = []interface{}{
-						"http://example.org/john/objects/2",
-						"http://example.org/john/objects/3",
+						map[string]interface{}{
+							"id":      "http://example.org/john/objects/2",
+							"content": "Hello world!",
+							"type":    "Object",
+						},
+						map[string]interface{}{
+							"id":   "http://example.org/john/objects/3",
+							"href": "http://example.org/john/objects/3",
+							"type": "Link",
+						},
 					}
 				})
 
@@ -236,7 +252,11 @@ var _ = Describe("Activity", func() {
 				expectedClosedQuestionMap := expectedQuestionMap
 
 				BeforeEach(func() {
-					expectedClosedQuestionMap["closed"] = "http://example.org/john/objects/2"
+					expectedClosedQuestionMap["closed"] = map[string]interface{}{
+						"id":      "http://example.org/john/objects/2",
+						"content": "Hello world!",
+						"type":    "Object",
+					}
 				})
 
 				AfterEach(func() {
@@ -323,13 +343,21 @@ var _ = Describe("Activity", func() {
 			Describe("Create", func() {
 				actualCreate := activitystreams.Create{actualActivity}
 				expectedCreateMap := expectedActivityMap
+				var oldObject interface{}
 
 				BeforeEach(func() {
 					expectedCreateMap["type"] = "Create"
+					oldObject = expectedCreateMap["object"]
+					expectedCreateMap["object"] = map[string]interface{}{
+						"id":      "http://example.org/john/objects/2",
+						"content": "Hello world!",
+						"type":    "Object",
+					}
 				})
 
 				AfterEach(func() {
 					expectedCreateMap["type"] = "Activity"
+					expectedCreateMap["object"] = oldObject
 				})
 
 				testutil.CheckActivityStreamsEntity("Create", &actualCreate, expectedCreateMap)

@@ -18,7 +18,7 @@ type Actor struct {
 }
 
 func (a *Actor) MarshalJSON() ([]byte, error) {
-	actor, err := json.Marshal(a.Object)
+	actor, err := json.Marshal(&a.Object)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (a *Application) Type() (string, error) {
 }
 
 func (a *Application) MarshalJSON() ([]byte, error) {
-	application, err := json.Marshal(a.Actor)
+	application, err := json.Marshal(&a.Actor)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (g *Group) Type() (string, error) {
 }
 
 func (g *Group) MarshalJSON() ([]byte, error) {
-	group, err := json.Marshal(g.Actor)
+	group, err := json.Marshal(&g.Actor)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func (o *Organization) Type() (string, error) {
 }
 
 func (o *Organization) MarshalJSON() ([]byte, error) {
-	organization, err := json.Marshal(o.Actor)
+	organization, err := json.Marshal(&o.Actor)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func (p *Person) Type() (string, error) {
 }
 
 func (p *Person) MarshalJSON() ([]byte, error) {
-	person, err := json.Marshal(p.Actor)
+	person, err := json.Marshal(&p.Actor)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +200,7 @@ func (s *Service) Type() (string, error) {
 }
 
 func (s *Service) MarshalJSON() ([]byte, error) {
-	service, err := json.Marshal(s.Actor)
+	service, err := json.Marshal(&s.Actor)
 	if err != nil {
 		return nil, err
 	}
