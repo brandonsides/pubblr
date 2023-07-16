@@ -21,6 +21,7 @@ Alpha phase is reached, focus will shift to testing, bug fixes and incremental i
     - [x] Local Delivery
     - [ ] Remote Delivery
 - [x] Object Retrieval
+- [ ] Object Validation
 - [ ] Activity Processing
     - [ ] Client-to-Server
         - [x] Create
