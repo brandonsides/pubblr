@@ -47,8 +47,7 @@ func CheckActivityStreamsEntity(objectType string, actual activitystreams.Entity
 			jsonObject, err := json.Marshal(expected)
 			Expect(err).ToNot(HaveOccurred())
 
-			var unmarshalled interface{}
-			err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(jsonObject, &unmarshalled)
+			unmarshalled, err := activitystreams.DefaultEntityUnmarshaler.UnmarshalEntity(jsonObject)
 			Expect(err).ToNot(HaveOccurred())
 			diff := deep.Equal(unmarshalled, actual)
 			if diff != nil {

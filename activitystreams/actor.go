@@ -68,6 +68,107 @@ func (a *Actor) MarshalJSON() ([]byte, error) {
 	return json.Marshal(actorMap)
 }
 
+func (a *Actor) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	err := a.Object.UnmarshalEntity(u, b)
+	if err != nil {
+		return err
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return nil
+	}
+
+	if inbox, ok := objMap["inbox"]; ok {
+		inboxEntityIface, err := u.UnmarshalEntity(inbox)
+		if err != nil {
+			return err
+		}
+
+		a.Inbox, ok = inboxEntityIface.(CollectionIface)
+		if !ok {
+			a.Inbox = &Collection{Object: Object{Entity: Entity{Id: ToEntity(inboxEntityIface).Id}}}
+		}
+	}
+
+	if outbox, ok := objMap["outbox"]; ok {
+		outboxEntityIface, err := u.UnmarshalEntity(outbox)
+		if err != nil {
+			return err
+		}
+
+		a.Outbox, ok = outboxEntityIface.(CollectionIface)
+		if !ok {
+			a.Outbox = &Collection{Object: Object{Entity: Entity{Id: ToEntity(outboxEntityIface).Id}}}
+		}
+	}
+
+	if following, ok := objMap["following"]; ok {
+		followingEntityIface, err := u.UnmarshalEntity(following)
+		if err != nil {
+			return err
+		}
+
+		a.Following, ok = followingEntityIface.(CollectionIface)
+		if !ok {
+			a.Following = &Collection{Object: Object{Entity: Entity{Id: ToEntity(followingEntityIface).Id}}}
+		}
+	}
+
+	if followers, ok := objMap["followers"]; ok {
+		followersEntityIface, err := u.UnmarshalEntity(followers)
+		if err != nil {
+			return err
+		}
+
+		a.Followers, ok = followersEntityIface.(CollectionIface)
+		if !ok {
+			a.Followers = &Collection{Object: Object{Entity: Entity{Id: ToEntity(followersEntityIface).Id}}}
+		}
+	}
+
+	if liked, ok := objMap["liked"]; ok {
+		likedEntityIface, err := u.UnmarshalEntity(liked)
+		if err != nil {
+			return err
+		}
+
+		a.Liked, ok = likedEntityIface.(CollectionIface)
+		if !ok {
+			a.Liked = &Collection{Object: Object{Entity: Entity{Id: ToEntity(likedEntityIface).Id}}}
+		}
+	}
+
+	if streams, ok := objMap["streams"]; ok {
+		streamsEntityIface, err := u.UnmarshalEntity(streams)
+		if err != nil {
+			return err
+		}
+
+		a.Streams, ok = streamsEntityIface.(CollectionIface)
+		if !ok {
+			a.Streams = &Collection{Object: Object{Entity: Entity{Id: ToEntity(streamsEntityIface).Id}}}
+		}
+	}
+
+	if preferredUsername, ok := objMap["preferredUsername"]; ok {
+		err = json.Unmarshal(preferredUsername, &a.PreferredUsername)
+		if err != nil {
+			return err
+		}
+	}
+
+	if endpoints, ok := objMap["endpoints"]; ok {
+		err = json.Unmarshal(endpoints, &a.Endpoints)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type ActorEndpoints struct {
 	ProxyUrl                   string `json:"proxyUrl,omitempty"`
 	OauthAuthorizationEndpoint string `json:"oauthAuthorizationEndpoint,omitempty"`

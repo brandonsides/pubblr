@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"encoding/json"
-
-	jsonutil "github.com/brandonsides/pubblr/util/json"
 )
 
 // Represents an entity at the top level of an ActivityStreams document,
@@ -15,8 +13,6 @@ type TopLevelEntity struct {
 	EntityIface
 	Context string `json:"@context,omitempty"`
 }
-
-type JsonTopLevelEntity TopLevelEntity
 
 func (t *TopLevelEntity) MarshalJSON() ([]byte, error) {
 	if t.EntityIface == nil {
@@ -47,14 +43,25 @@ func (t *TopLevelEntity) Type() (string, error) {
 	return "", errors.New("No EntityIface set on TopLevelEntity")
 }
 
-func (t *TopLevelEntity) CustomUnmarshalJSON(u jsonutil.CustomUnmarshaler, b []byte) error {
-	err := u.Unmarshal(b, (*JsonTopLevelEntity)(t))
+func (t *TopLevelEntity) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	var err error
+	t.EntityIface, err = u.UnmarshalEntity(b)
 	if err != nil {
 		return err
 	}
 
-	if t.Context == "" {
-		return errors.New("No @context field")
+	var topLevelEntityMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &topLevelEntityMap)
+	if err != nil {
+		return err
 	}
+
+	if context, ok := topLevelEntityMap["@context"]; ok {
+		err = json.Unmarshal(context, &t.Context)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

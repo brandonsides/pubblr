@@ -2,11 +2,13 @@ package activitystreams
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
 type EntityIface interface {
 	json.Marshaler
+	UnmarshalEntity(*EntityUnmarshaler, []byte) error
 	Type() (string, error)
 	entity() *Entity
 }
@@ -25,6 +27,10 @@ type Entity struct {
 
 func (e *Entity) entity() *Entity {
 	return e
+}
+
+func (e *Entity) Type() (string, error) {
+	return "", errors.New("Untyped ActivityStreams Entity")
 }
 
 func (e *Entity) MarshalJSON() ([]byte, error) {
@@ -55,4 +61,59 @@ func (e *Entity) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(entityMap)
+}
+
+func (e *Entity) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	var idString string
+	err := json.Unmarshal(b, &idString)
+	if err == nil {
+		e.Id = idString
+		return nil
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return err
+	}
+
+	if id, ok := objMap["id"]; ok {
+		err = json.Unmarshal(id, &e.Id)
+		if err != nil {
+			return err
+		}
+	}
+
+	if attributedTo, ok := objMap["attributedTo"]; ok {
+		var rawAttributions []json.RawMessage
+		err = json.Unmarshal(attributedTo, &rawAttributions)
+		if err != nil {
+			return err
+		}
+		e.AttributedTo = make([]EntityIface, 0, len(rawAttributions))
+		for _, item := range rawAttributions {
+			var attributedToEntity Entity
+			err = attributedToEntity.UnmarshalEntity(u, item)
+			if err != nil {
+				return err
+			}
+			e.AttributedTo = append(e.AttributedTo, &attributedToEntity)
+		}
+	}
+
+	if name, ok := objMap["name"]; ok {
+		err = json.Unmarshal(name, &e.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	if mediaType, ok := objMap["mediaType"]; ok {
+		err = json.Unmarshal(mediaType, &e.MediaType)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

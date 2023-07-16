@@ -20,21 +20,21 @@ var _ = Describe("Collection", func() {
 		},
 		TotalItems: 2,
 		Ordered:    false,
-		Items: []*either.Either[activitystreams.ObjectIface, activitystreams.LinkIface]{
-			either.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Note{
+		Items: []activitystreams.EntityIface{
+			&activitystreams.Note{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/note/1",
 					},
 				},
-			}),
-			either.Left[activitystreams.ObjectIface, activitystreams.LinkIface](&activitystreams.Image{
+			},
+			&activitystreams.Image{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{
 						Id: "http://example.org/image/1",
 					},
 				},
-			}),
+			},
 		},
 		Current: either.Left[*activitystreams.CollectionPage, activitystreams.LinkIface](&activitystreams.CollectionPage{
 			Collection: activitystreams.Collection{

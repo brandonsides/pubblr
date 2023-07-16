@@ -84,6 +84,41 @@ type CreateAccountRequest struct {
 	Actor    activitystreams.ActorIface `json:"actor"`
 }
 
+func (car *CreateAccountRequest) UnmarshalEntity(u *activitystreams.EntityUnmarshaler, b []byte) error {
+	var objMap map[string]json.RawMessage
+	err := json.Unmarshal(b, &objMap)
+	if err != nil {
+		return err
+	}
+
+	if password, ok := objMap["password"]; ok {
+		err = json.Unmarshal(password, &car.Password)
+		if err != nil {
+			return err
+		}
+	}
+
+	if actor, ok := objMap["actor"]; ok {
+		actorEntity, err := u.UnmarshalEntity(actor)
+		if err != nil {
+			return err
+		}
+
+		car.Actor, ok = actorEntity.(activitystreams.ActorIface)
+		if !ok {
+			car.Actor = &activitystreams.Actor{
+				Object: activitystreams.Object{
+					Entity: activitystreams.Entity{
+						Id: activitystreams.ToEntity(actorEntity).Id,
+					},
+				},
+			}
+		}
+	}
+
+	return nil
+}
+
 type CreateAccountResponse struct {
 	Actor activitystreams.ActorIface `json:"actor"`
 	JWT   string                     `json:"jwt"`
@@ -97,7 +132,7 @@ func (router *PubblrRouter) PostUser(r *http.Request) (*CreateAccountResponse, h
 	}
 
 	var createAccountRequest CreateAccountRequest
-	err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(b, &createAccountRequest)
+	createAccountRequest.UnmarshalEntity(activitystreams.DefaultEntityUnmarshaler, b)
 	if err != nil {
 		return nil, nil, apiutil.Statusf(http.StatusBadRequest, "invalid ActivityStreams actor: %w", err)
 	}
@@ -204,12 +239,12 @@ func (router *PubblrRouter) GetInboxPage(r *http.Request) (*activitystreams.Coll
 		return nil, nil, apiutil.NewStatusFromError(http.StatusInternalServerError, err)
 	}
 
-	items := make([]*either.Either[activitystreams.ObjectIface, activitystreams.LinkIface], len(posts))
+	items := make([]activitystreams.EntityIface, len(posts))
 	for i, post := range posts {
 		obj := activitystreams.ToObject(post)
 		obj.Bcc = nil
 		obj.Bto = nil
-		items[i] = either.Left[activitystreams.ObjectIface, activitystreams.LinkIface](post)
+		items[i] = post
 	}
 
 	return &activitystreams.CollectionPage{
@@ -322,12 +357,12 @@ func (router *PubblrRouter) GetOutboxPage(r *http.Request) (*activitystreams.Col
 		return nil, nil, apiutil.NewStatusFromError(http.StatusInternalServerError, err)
 	}
 
-	items := make([]*either.Either[activitystreams.ObjectIface, activitystreams.LinkIface], len(posts))
+	items := make([]activitystreams.EntityIface, len(posts))
 	for i, post := range posts {
 		obj := activitystreams.ToObject(post)
 		obj.Bcc = nil
 		obj.Bto = nil
-		items[i] = either.Left[activitystreams.ObjectIface, activitystreams.LinkIface](post)
+		items[i] = post
 	}
 
 	return &activitystreams.CollectionPage{
@@ -365,7 +400,7 @@ func (router *PubblrRouter) PostObject(r *http.Request) (activitystreams.ObjectI
 	}
 
 	var e activitystreams.TopLevelEntity
-	err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(b, &e)
+	err = e.UnmarshalEntity(activitystreams.DefaultEntityUnmarshaler, b)
 	if err != nil {
 		return nil, nil, apiutil.Statusf(http.StatusBadRequest, "invalid ActivityStreams entity: %w", err)
 	}

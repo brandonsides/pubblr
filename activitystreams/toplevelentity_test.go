@@ -130,8 +130,7 @@ var _ = Describe("Toplevelentity", func() {
 			jsonObject, err := json.Marshal(expected)
 			Expect(err).ToNot(HaveOccurred())
 
-			var unmarshalled activitystreams.TopLevelEntity
-			err = activitystreams.DefaultEntityUnmarshaler.Unmarshal(jsonObject, &unmarshalled)
+			unmarshalled, err := activitystreams.DefaultEntityUnmarshaler.UnmarshalEntity(jsonObject)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(unmarshalled).To(Equal(actual))
 		})

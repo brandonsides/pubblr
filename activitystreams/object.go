@@ -246,6 +246,342 @@ func (o *Object) MarshalJSON() ([]byte, error) {
 	return json.Marshal(objectMap)
 }
 
+func (o *Object) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	err := o.Entity.UnmarshalEntity(u, b)
+	if err != nil {
+		return err
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return nil
+	}
+
+	if attachment, ok := objMap["attachment"]; ok {
+		var rawAttachments []json.RawMessage
+		err = json.Unmarshal(attachment, &rawAttachments)
+		if err != nil {
+			return err
+		}
+
+		attachments := make([]EntityIface, len(rawAttachments))
+		for i, rawAttachment := range rawAttachments {
+			attachment, err := u.UnmarshalEntity(rawAttachment)
+			if err != nil {
+				return err
+			}
+			attachments[i] = attachment
+		}
+
+		o.Attachment = attachments
+	}
+
+	if audience, ok := objMap["audience"]; ok {
+		var rawAudiences []json.RawMessage
+		err = json.Unmarshal(audience, &rawAudiences)
+		if err != nil {
+			return err
+		}
+
+		audiences := make([]EntityIface, len(rawAudiences))
+		for i, rawAudience := range rawAudiences {
+			audience, err := u.UnmarshalEntity(rawAudience)
+			if err != nil {
+				return err
+			}
+			audiences[i] = audience
+		}
+
+		o.Audience = audiences
+	}
+
+	if bcc, ok := objMap["bcc"]; ok {
+		var rawBccs []json.RawMessage
+		err = json.Unmarshal(bcc, &rawBccs)
+		if err != nil {
+			return err
+		}
+
+		bccs := make([]EntityIface, len(rawBccs))
+		for i, rawBcc := range rawBccs {
+			bcc, err := u.UnmarshalEntity(rawBcc)
+			if err != nil {
+				return err
+			}
+			bccs[i] = bcc
+		}
+
+		o.Bcc = bccs
+	}
+
+	if bto, ok := objMap["bto"]; ok {
+		var rawBtos []json.RawMessage
+		err = json.Unmarshal(bto, &rawBtos)
+		if err != nil {
+			return err
+		}
+
+		btos := make([]EntityIface, len(rawBtos))
+		for i, rawBto := range rawBtos {
+			bto, err := u.UnmarshalEntity(rawBto)
+			if err != nil {
+				return err
+			}
+			btos[i] = bto
+		}
+
+		o.Bto = btos
+	}
+
+	if cc, ok := objMap["cc"]; ok {
+		var rawCcs []json.RawMessage
+		err = json.Unmarshal(cc, &rawCcs)
+		if err != nil {
+			return err
+		}
+
+		ccs := make([]EntityIface, len(rawCcs))
+		for i, rawCc := range rawCcs {
+			cc, err := u.UnmarshalEntity(rawCc)
+			if err != nil {
+				return err
+			}
+			ccs[i] = cc
+		}
+
+		o.Cc = ccs
+	}
+
+	if context, ok := objMap["context"]; ok {
+		o.Context, err = u.UnmarshalEntity(context)
+		if err != nil {
+			return err
+		}
+	}
+
+	if generator, ok := objMap["generator"]; ok {
+		o.Generator, err = u.UnmarshalEntity(generator)
+		if err != nil {
+			return err
+		}
+	}
+
+	if icon, ok := objMap["icon"]; ok {
+		o.Icon, err = u.UnmarshalEntity(icon)
+		if err != nil {
+			return err
+		}
+	}
+
+	if image, ok := objMap["image"]; ok {
+		o.Image, err = u.UnmarshalEntity(image)
+		if err != nil {
+			return err
+		}
+	}
+
+	if inReplyTo, ok := objMap["inReplyTo"]; ok {
+		var rawInReplyTos []json.RawMessage
+		err = json.Unmarshal(inReplyTo, &rawInReplyTos)
+		if err != nil {
+			return err
+		}
+
+		inReplyTos := make([]EntityIface, len(rawInReplyTos))
+		for i, rawInReplyTo := range rawInReplyTos {
+			inReplyTo, err := u.UnmarshalEntity(rawInReplyTo)
+			if err != nil {
+				return err
+			}
+			inReplyTos[i] = inReplyTo
+		}
+
+		o.InReplyTo = inReplyTos
+	}
+
+	if location, ok := objMap["location"]; ok {
+		var rawLocations []json.RawMessage
+		err = json.Unmarshal(location, &rawLocations)
+		if err != nil {
+			return err
+		}
+
+		locations := make([]EntityIface, len(rawLocations))
+		for i, rawLocation := range rawLocations {
+			location, err := u.UnmarshalEntity(rawLocation)
+			if err != nil {
+				return err
+			}
+			locations[i] = location
+		}
+
+		o.Location = locations
+	}
+
+	if preview, ok := objMap["preview"]; ok {
+		o.Preview, err = u.UnmarshalEntity(preview)
+		if err != nil {
+			return err
+		}
+	}
+
+	if replies, ok := objMap["replies"]; ok {
+		repliesEntity, err := u.UnmarshalEntity(replies)
+		if err != nil {
+			return err
+		}
+
+		o.Replies, ok = repliesEntity.(CollectionIface)
+		if !ok {
+			o.Replies = &Collection{Object: Object{Entity: *ToEntity(repliesEntity)}}
+		}
+	}
+
+	if tag, ok := objMap["tag"]; ok {
+		var rawTags []json.RawMessage
+		err = json.Unmarshal(tag, &rawTags)
+		if err != nil {
+			return err
+		}
+
+		tags := make([]EntityIface, len(rawTags))
+		for i, rawTag := range rawTags {
+			tag, err := u.UnmarshalEntity(rawTag)
+			if err != nil {
+				return err
+			}
+			tags[i] = tag
+		}
+
+		o.Tag = tags
+	}
+
+	if to, ok := objMap["to"]; ok {
+		var rawTos []json.RawMessage
+		err = json.Unmarshal(to, &rawTos)
+		if err != nil {
+			return err
+		}
+
+		tos := make([]EntityIface, len(rawTos))
+		for i, rawTo := range rawTos {
+			to, err := u.UnmarshalEntity(rawTo)
+			if err != nil {
+				return err
+			}
+			tos[i] = to
+		}
+
+		o.To = tos
+	}
+
+	if url, ok := objMap["url"]; ok {
+		urlEntity, err := u.UnmarshalEntity(url)
+		if err != nil {
+			return err
+		}
+
+		urlLinkIface, ok := urlEntity.(LinkIface)
+		if !ok {
+			urlLinkIface = &Link{Entity: *ToEntity(urlEntity)}
+		}
+
+		o.URL = either.Right[string](urlLinkIface)
+	}
+
+	if content, ok := objMap["content"]; ok {
+		err = json.Unmarshal(content, &o.Content)
+		if err != nil {
+			return err
+		}
+	}
+
+	if duration, ok := objMap["duration"]; ok {
+		var rawDuration string
+		err = json.Unmarshal(duration, &rawDuration)
+		if err != nil {
+			return err
+		}
+
+		parsedDuration, err := time.ParseDuration(rawDuration)
+		if err != nil {
+			return err
+		}
+
+		o.Duration = &parsedDuration
+	}
+
+	if endTime, ok := objMap["endTime"]; ok {
+		var rawEndTime string
+		err = json.Unmarshal(endTime, &rawEndTime)
+		if err != nil {
+			return err
+		}
+
+		parsedEndTime, err := time.Parse(time.RFC3339, rawEndTime)
+		if err != nil {
+			return err
+		}
+
+		o.EndTime = &parsedEndTime
+	}
+
+	if published, ok := objMap["published"]; ok {
+		var rawPublished string
+		err = json.Unmarshal(published, &rawPublished)
+		if err != nil {
+			return err
+		}
+
+		parsedPublished, err := time.Parse(time.RFC3339, rawPublished)
+		if err != nil {
+			return err
+		}
+
+		o.Published = &parsedPublished
+	}
+
+	if startTime, ok := objMap["startTime"]; ok {
+		var rawStartTime string
+		err = json.Unmarshal(startTime, &rawStartTime)
+		if err != nil {
+			return err
+		}
+
+		parsedStartTime, err := time.Parse(time.RFC3339, rawStartTime)
+		if err != nil {
+			return err
+		}
+
+		o.StartTime = &parsedStartTime
+	}
+
+	if summary, ok := objMap["summary"]; ok {
+		err = json.Unmarshal(summary, &o.Summary)
+		if err != nil {
+			return err
+		}
+	}
+
+	if updated, ok := objMap["updated"]; ok {
+		var rawUpdated string
+		err = json.Unmarshal(updated, &rawUpdated)
+		if err != nil {
+			return err
+		}
+
+		parsedUpdated, err := time.Parse(time.RFC3339, rawUpdated)
+		if err != nil {
+			return err
+		}
+
+		o.Updated = &parsedUpdated
+	}
+
+	return nil
+}
+
 // Represents an ActivityStreams Relationship object
 type Relationship struct {
 	Object

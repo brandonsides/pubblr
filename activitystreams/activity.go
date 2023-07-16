@@ -65,6 +65,56 @@ func (a *IntransitiveActivity) MarshalJSON() ([]byte, error) {
 	return json.Marshal(objMap)
 }
 
+func (a *IntransitiveActivity) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	err := a.Object.UnmarshalEntity(u, b)
+	if err != nil {
+		return err
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return nil
+	}
+
+	if actor, ok := objMap["actor"]; ok {
+		a.Actor, err = u.UnmarshalEntity(actor)
+		if err != nil {
+			return err
+		}
+	}
+
+	if target, ok := objMap["target"]; ok {
+		a.Target, err = u.UnmarshalEntity(target)
+		if err != nil {
+			return err
+		}
+	}
+
+	if result, ok := objMap["result"]; ok {
+		a.Result, err = u.UnmarshalEntity(result)
+		if err != nil {
+			return err
+		}
+	}
+
+	if origin, ok := objMap["origin"]; ok {
+		a.Origin, err = u.UnmarshalEntity(origin)
+		if err != nil {
+			return err
+		}
+	}
+
+	if instrument, ok := objMap["instrument"]; ok {
+		a.Instrument, err = u.UnmarshalEntity(instrument)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (a *IntransitiveActivity) Type() (string, error) {
 	return "IntransitiveActivity", nil
 }
@@ -93,6 +143,28 @@ func (a *TransitiveActivity) MarshalJSON() ([]byte, error) {
 	transitiveActivityMap["type"] = json.RawMessage(fmt.Sprintf("%q", "Activity"))
 
 	return json.Marshal(transitiveActivityMap)
+}
+
+func (a *TransitiveActivity) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	err := a.IntransitiveActivity.UnmarshalEntity(u, b)
+	if err != nil {
+		return err
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return nil
+	}
+
+	if object, ok := objMap["object"]; ok {
+		a.Object, err = u.UnmarshalEntity(object)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (a *TransitiveActivity) Type() (string, error) {
@@ -838,6 +910,28 @@ func (q *SingleAnswerQuestion) MarshalJSON() ([]byte, error) {
 	return json.Marshal(singleAnswerQuestionMap)
 }
 
+func (q *SingleAnswerQuestion) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	err := q.Question.UnmarshalEntity(u, b)
+	if err != nil {
+		return err
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return nil
+	}
+
+	if oneOf, ok := objMap["oneOf"]; ok {
+		err = json.Unmarshal(oneOf, &q.OneOf)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type MultiAnswerQuestion struct {
 	Question
 	AnyOf []EntityIface `json:"anyOf,omitempty"`
@@ -869,6 +963,28 @@ func (q *MultiAnswerQuestion) MarshalJSON() ([]byte, error) {
 	return json.Marshal(multiAnswerQuestionMap)
 }
 
+func (q *MultiAnswerQuestion) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	err := q.Question.UnmarshalEntity(u, b)
+	if err != nil {
+		return err
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return nil
+	}
+
+	if anyOf, ok := objMap["anyOf"]; ok {
+		err = json.Unmarshal(anyOf, &q.AnyOf)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type ClosedQuestion struct {
 	Question
 	Closed EntityIface `json:"closed,omitempty"`
@@ -898,4 +1014,26 @@ func (q *ClosedQuestion) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(closedQuestionMap)
+}
+
+func (q *ClosedQuestion) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	err := q.Question.UnmarshalEntity(u, b)
+	if err != nil {
+		return err
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return nil
+	}
+
+	if closed, ok := objMap["closed"]; ok {
+		err = json.Unmarshal(closed, &q.Closed)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

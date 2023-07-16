@@ -78,6 +78,63 @@ func (l *Link) MarshalJSON() ([]byte, error) {
 	return json.Marshal(linkMap)
 }
 
+func (l *Link) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	err := l.Entity.UnmarshalEntity(u, b)
+	if err != nil {
+		return err
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return nil
+	}
+
+	if preview, ok := objMap["preview"]; ok {
+		l.Preview, err = u.UnmarshalEntity(preview)
+		if err != nil {
+			return err
+		}
+	}
+
+	if height, ok := objMap["height"]; ok {
+		err = json.Unmarshal(height, &l.Height)
+		if err != nil {
+			return err
+		}
+	}
+
+	if href, ok := objMap["href"]; ok {
+		err = json.Unmarshal(href, &l.Href)
+		if err != nil {
+			return err
+		}
+	}
+
+	if hreflang, ok := objMap["hreflang"]; ok {
+		err = json.Unmarshal(hreflang, &l.HrefLang)
+		if err != nil {
+			return err
+		}
+	}
+
+	if rel, ok := objMap["rel"]; ok {
+		err = json.Unmarshal(rel, &l.Rel)
+		if err != nil {
+			return err
+		}
+	}
+
+	if width, ok := objMap["width"]; ok {
+		err = json.Unmarshal(width, &l.Width)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type Mention struct {
 	Link
 }

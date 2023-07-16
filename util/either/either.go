@@ -3,8 +3,6 @@ package either
 import (
 	"encoding/json"
 	"fmt"
-
-	jsonutil "github.com/brandonsides/pubblr/util/json"
 )
 
 type Either[A, B any] struct {
@@ -59,21 +57,6 @@ func (e *Either[A, B]) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 	if err := json.Unmarshal(data, &b); err == nil {
-		*e = *Right[A](b)
-		return nil
-	}
-	return fmt.Errorf("Could not unmarshal Either[%T, %T]", a, b)
-}
-
-func (e *Either[A, B]) CustomUnmarshalJSON(u jsonutil.CustomUnmarshaler, data []byte) error {
-	var a A
-	var b B
-
-	if err := u.Unmarshal(data, &a); err == nil {
-		*e = *Left[A, B](a)
-		return nil
-	}
-	if err := u.Unmarshal(data, &b); err == nil {
 		*e = *Right[A](b)
 		return nil
 	}

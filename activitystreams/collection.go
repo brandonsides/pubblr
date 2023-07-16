@@ -2,6 +2,7 @@ package activitystreams
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/brandonsides/pubblr/util/either"
@@ -28,7 +29,7 @@ type Collection struct {
 	Current    *either.Either[*CollectionPage, LinkIface] `json:"current,omitempty"`
 	First      *either.Either[*CollectionPage, LinkIface] `json:"first,omitempty"`
 	Last       *either.Either[*CollectionPage, LinkIface] `json:"last,omitempty"`
-	Items      []*either.Either[ObjectIface, LinkIface]   `json:"items,omitempty"`
+	Items      []EntityIface                              `json:"items,omitempty"`
 }
 
 func (c *Collection) collection() *Collection {
@@ -89,11 +90,7 @@ func (c *Collection) MarshalJSON() ([]byte, error) {
 
 		itemIds := make([]string, len(c.Items))
 		for i, item := range c.Items {
-			if item.IsLeft() {
-				itemIds[i] = ToEntity(*item.Left()).Id
-			} else {
-				itemIds[i] = ToEntity(*item.Right()).Id
-			}
+			itemIds[i] = ToEntity(item).Id
 		}
 
 		items, err := json.Marshal(itemIds)
@@ -111,6 +108,99 @@ func (c *Collection) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(collectionMap)
+}
+
+func (c *Collection) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	err := c.Object.UnmarshalEntity(u, b)
+	if err != nil {
+		return err
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return nil
+	}
+
+	jsonType, ok := objMap["type"]
+	if !ok {
+		return errors.New("Collection has no type")
+	}
+	var typ string
+	err = json.Unmarshal(jsonType, &typ)
+	if err != nil {
+		return err
+	}
+
+	switch typ {
+	case CollectionTypeOrdered:
+		c.Ordered = true
+	case CollectionTypeUnordered:
+		c.Ordered = false
+	default:
+		return errors.New("Collection has invalid type: " + typ)
+	}
+
+	itemsKey := "items"
+	if c.Ordered {
+		itemsKey = "orderedItems"
+	}
+
+	if totalItems, ok := objMap["totalItems"]; ok {
+		err = json.Unmarshal(totalItems, &c.TotalItems)
+		if err != nil {
+			return err
+		}
+	}
+
+	if current, ok := objMap["current"]; ok {
+		var unmarshalledCurrent CollectionPage
+		err = unmarshalledCurrent.UnmarshalEntity(u, current)
+		if err != nil {
+			return err
+		}
+
+		c.Current = either.Left[*CollectionPage, LinkIface](&unmarshalledCurrent)
+	}
+
+	if first, ok := objMap["first"]; ok {
+		var unmarshalledFirst CollectionPage
+		err = unmarshalledFirst.UnmarshalEntity(u, first)
+		if err != nil {
+			return err
+		}
+
+		c.First = either.Left[*CollectionPage, LinkIface](&unmarshalledFirst)
+	}
+
+	if last, ok := objMap["last"]; ok {
+		var unmarshalledLast CollectionPage
+		err = unmarshalledLast.UnmarshalEntity(u, last)
+		if err != nil {
+			return err
+		}
+
+		c.Last = either.Left[*CollectionPage, LinkIface](&unmarshalledLast)
+	}
+
+	if items, ok := objMap[itemsKey]; ok {
+		var jsonItems []json.RawMessage
+		err = json.Unmarshal(items, &jsonItems)
+		if err != nil {
+			return err
+		}
+
+		for _, jsonItem := range jsonItems {
+			item, err := u.UnmarshalEntity(jsonItem)
+			if err != nil {
+				return err
+			}
+
+			c.Items = append(c.Items, item)
+		}
+	}
+
+	return nil
 }
 
 func (c *Collection) Type() (string, error) {
@@ -183,4 +273,49 @@ func (c *CollectionPage) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(collectionPageMap)
+}
+
+func (c *CollectionPage) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
+	err := c.Collection.UnmarshalEntity(u, b)
+	if err != nil {
+		return err
+	}
+
+	var objMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &objMap)
+	if err != nil {
+		return nil
+	}
+
+	if partOf, ok := objMap["partOf"]; ok {
+		var unmarshalledPartOf Collection
+		err = unmarshalledPartOf.UnmarshalEntity(u, partOf)
+		if err != nil {
+			return err
+		}
+
+		c.PartOf = either.Left[*Collection, LinkIface](&unmarshalledPartOf)
+	}
+
+	if next, ok := objMap["next"]; ok {
+		var unmarshalledNext CollectionPage
+		err = unmarshalledNext.UnmarshalEntity(u, next)
+		if err != nil {
+			return err
+		}
+
+		c.Next = either.Left[*CollectionPage, LinkIface](&unmarshalledNext)
+	}
+
+	if prev, ok := objMap["prev"]; ok {
+		var unmarshalledPrev CollectionPage
+		err = unmarshalledPrev.UnmarshalEntity(u, prev)
+		if err != nil {
+			return err
+		}
+
+		c.Prev = either.Left[*CollectionPage, LinkIface](&unmarshalledPrev)
+	}
+
+	return nil
 }
