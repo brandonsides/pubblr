@@ -32,6 +32,11 @@ var _ = Describe("Object", func() {
 				},
 			},
 			Name: "A Simple Note",
+			Preview: &activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/~john/preview",
+				},
+			},
 		},
 		Attachment: []activitystreams.EntityIface{
 			&activitystreams.Image{
@@ -125,11 +130,6 @@ var _ = Describe("Object", func() {
 						Id:   "http://example.org/~john/location",
 					},
 				},
-			},
-		},
-		Preview: &activitystreams.Object{
-			Entity: activitystreams.Entity{
-				Id: "http://example.org/~john/preview",
 			},
 		},
 		Replies: &activitystreams.Collection{

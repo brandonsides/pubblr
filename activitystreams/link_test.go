@@ -26,17 +26,17 @@ var _ = Describe("Link", func() {
 			},
 			Name:      "A Link",
 			MediaType: "text/html",
+			Preview: &activitystreams.Object{
+				Entity: activitystreams.Entity{
+					Id: "http://example.org/~john/preview",
+				},
+			},
 		},
 		Href:     "http://example.com/abc",
 		HrefLang: "en",
-		Preview: &activitystreams.Object{
-			Entity: activitystreams.Entity{
-				Id: "http://example.com/abc/preview",
-			},
-		},
-		Height: &height,
-		Width:  &width,
-		Rel:    []string{"me"},
+		Height:   &height,
+		Width:    &width,
+		Rel:      []string{"me"},
 	}
 	expectedLinkMap := map[string]interface{}{
 		"id": "http://example.com/abc",

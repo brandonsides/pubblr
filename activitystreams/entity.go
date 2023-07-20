@@ -19,10 +19,12 @@ func ToEntity(e EntityIface) *Entity {
 }
 
 type Entity struct {
-	Id           string        `json:"id,omitempty"`
-	AttributedTo []EntityIface `json:"attributedTo,omitempty"`
-	Name         string        `json:"name,omitempty"`
-	MediaType    string        `json:"mediaType,omitempty"`
+	dbId         uint
+	Id           string
+	AttributedTo []EntityIface
+	Name         string
+	MediaType    string
+	Preview      EntityIface
 }
 
 func (e *Entity) entity() *Entity {

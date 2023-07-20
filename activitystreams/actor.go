@@ -7,14 +7,14 @@ import (
 
 type Actor struct {
 	Object
-	Inbox             CollectionIface `json:"inbox,omitempty"`
-	Outbox            CollectionIface `json:"outbox,omitempty"`
-	Following         CollectionIface `json:"following,omitempty"`
-	Followers         CollectionIface `json:"followers,omitempty"`
-	Liked             CollectionIface `json:"liked,omitempty"`
-	Streams           CollectionIface `json:"streams,omitempty"`
-	PreferredUsername string          `json:"preferredUsername,omitempty"`
-	Endpoints         *ActorEndpoints `json:"endpoints,omitempty"`
+	Inbox             CollectionIface
+	Outbox            CollectionIface
+	Following         CollectionIface
+	Followers         CollectionIface
+	Liked             CollectionIface
+	Streams           CollectionIface
+	PreferredUsername string
+	Endpoints         *ActorEndpoints
 }
 
 func (a *Actor) MarshalJSON() ([]byte, error) {

@@ -26,29 +26,28 @@ func ToObject[O ObjectIface](o O) *Object {
 // Concrete type representing an ActivityStreams Object
 type Object struct {
 	Entity
-	Attachment []EntityIface                     `json:"attachment,omitempty"`
-	Audience   []EntityIface                     `json:"audience,omitempty"`
-	Bcc        []EntityIface                     `json:"bcc,omitempty"`
-	Bto        []EntityIface                     `json:"bto,omitempty"`
-	Cc         []EntityIface                     `json:"cc,omitempty"`
-	Context    EntityIface                       `json:"context,omitempty"`
-	Generator  EntityIface                       `json:"generator,omitempty"`
-	Icon       EntityIface                       `json:"icon,omitempty"`
-	Image      EntityIface                       `json:"image,omitempty"`
-	InReplyTo  []EntityIface                     `json:"inReplyTo,omitempty"`
-	Location   []EntityIface                     `json:"location,omitempty"`
-	Preview    EntityIface                       `json:"preview,omitempty"`
-	Replies    CollectionIface                   `json:"replies,omitempty"`
-	Tag        []EntityIface                     `json:"tag,omitempty"`
-	To         []EntityIface                     `json:"to,omitempty"`
-	URL        *either.Either[string, LinkIface] `json:"url,omitempty"`
-	Content    string                            `json:"content,omitempty"`
-	Duration   *time.Duration                    `json:"duration,omitempty"`
-	EndTime    *time.Time                        `json:"endTime,omitempty"`
-	Published  *time.Time                        `json:"published,omitempty"`
-	StartTime  *time.Time                        `json:"startTime,omitempty"`
-	Summary    string                            `json:"summary,omitempty"`
-	Updated    *time.Time                        `json:"updated,omitempty"`
+	Attachment []EntityIface
+	Audience   []EntityIface
+	Bcc        []EntityIface
+	Bto        []EntityIface
+	Cc         []EntityIface
+	Context    EntityIface
+	Generator  EntityIface
+	Icon       EntityIface
+	Image      EntityIface
+	InReplyTo  []EntityIface
+	Location   []EntityIface
+	Replies    CollectionIface
+	Tag        []EntityIface
+	To         []EntityIface
+	URL        *either.Either[string, LinkIface]
+	Content    string
+	Duration   *time.Duration
+	EndTime    *time.Time
+	Published  *time.Time
+	StartTime  *time.Time
+	Summary    string
+	Updated    *time.Time
 }
 
 func (o *Object) object() *Object {

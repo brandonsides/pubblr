@@ -17,12 +17,11 @@ type LinkIface interface {
 
 type Link struct {
 	Entity
-	Preview  EntityIface `json:"preview,omitempty"`
-	Height   *uint64     `json:"height,omitempty"`
-	Href     string      `json:"href,omitempty"`
-	HrefLang string      `json:"hreflang,omitempty"`
-	Rel      []string    `json:"rel,omitempty"`
-	Width    *uint64     `json:"width,omitempty"`
+	Height   *uint64
+	Href     string
+	HrefLang string
+	Rel      []string
+	Width    *uint64
 }
 
 func (l *Link) link() *Link {

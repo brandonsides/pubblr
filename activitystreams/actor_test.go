@@ -128,11 +128,6 @@ var _ = Describe("Actor", func() {
 					},
 				},
 			},
-			Preview: &activitystreams.Object{
-				Entity: activitystreams.Entity{
-					Id: "http://example.org/~john/preview",
-				},
-			},
 			Replies: &activitystreams.Collection{
 				Object: activitystreams.Object{
 					Entity: activitystreams.Entity{

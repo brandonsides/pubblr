@@ -23,7 +23,11 @@ var _ = Describe("Entity", func() {
 				},
 			},
 		},
-
+		Preview: &activitystreams.Object{
+			Entity: activitystreams.Entity{
+				Id: "http://example.org/~john/preview",
+			},
+		},
 		Name:      "thing",
 		MediaType: "text/plain",
 	}
