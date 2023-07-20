@@ -59,12 +59,17 @@ func NewPubblrRouter(cfg PubblrRouterConfig, baseRouter chi.Router) (chi.Router,
 
 	auth, err := auth.NewAuth(cfg.Auth)
 	if err != nil {
-		panic(err)
+		return nil, err
+	}
+
+	db, err := database.NewPubblrDatabase(cfg.Database)
+	if err != nil {
+		return nil, err
 	}
 
 	router := PubblrRouter{
 		Router:   chi.NewRouter(),
-		Database: database.NewPubblrDatabase(cfg.Database),
+		Database: db,
 		Logger:   logging.NewStandardPubblrLogger(cfg.Logger),
 		Auth:     auth,
 		baseUrl: url.URL{
