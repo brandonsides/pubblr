@@ -1,6 +1,7 @@
 package database
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"net/url"
@@ -16,7 +17,9 @@ type PubblrDatabaseConfig struct {
 	Pass string
 }
 
-type PubblrDatabase gorm.DB
+type PubblrDatabase struct {
+	db gorm.DB
+}
 
 func NewPubblrDatabase(config PubblrDatabaseConfig) (*PubblrDatabase, error) {
 	db, err := gorm.Open(mysql.Open(fmt.Sprintf("%s:%s@tcp(%s)/pubblr?charset=utf8&parseTime=True&loc=Local", config.User, config.Pass, config.Addr)))
@@ -24,7 +27,7 @@ func NewPubblrDatabase(config PubblrDatabaseConfig) (*PubblrDatabase, error) {
 		return nil, fmt.Errorf("Failed to connect to database: %w", err)
 	}
 
-	return (*PubblrDatabase)(db), nil
+	return &PubblrDatabase{*db}, nil
 }
 
 func (d *PubblrDatabase) CreateObject(post activitystreams.ObjectIface, user string, baseUrl url.URL) (activitystreams.ObjectIface, error) {
@@ -269,8 +272,33 @@ func (d *PubblrDatabase) GetObject(user, typ, id string) (activitystreams.Object
 	return nil, errors.New("Not implemented")
 }
 
-func (d *PubblrDatabase) CreateUser(user activitystreams.ActorIface, username, password string, baseUrl url.URL) (activitystreams.ActorIface, error) {
-	return nil, errors.New("Not implemented")
+func (d *PubblrDatabase) CreateUser(user activitystreams.ActorIface, email, password string, baseUrl url.URL) (activitystreams.ActorIface, error) {
+	actorDbEntity, err := toDBEntity(user)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to convert actor to db entity: %w", err)
+	}
+
+	dbActor, ok := actorDbEntity.Rest.(*dbActor)
+	if !ok {
+		return nil, fmt.Errorf("Failed to convert actor to db actor")
+	}
+
+	salt := GenerateSalt()
+	saltedPassword := password + salt
+	hasher := sha256.New()
+	hasher.Write([]byte(saltedPassword))
+	saltedPasswordHash := string(hasher.Sum(nil))
+
+	dbUser := dbUser{
+		Actor:              dbActor,
+		SaltedPasswordHash: saltedPasswordHash,
+		Salt:               salt,
+		Email:              email,
+	}
+
+	d.db.Save(dbUser)
+
+	return user, nil
 }
 
 func (d *PubblrDatabase) GetUser(username string) (activitystreams.ActorIface, error) {
