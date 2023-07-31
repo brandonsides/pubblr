@@ -3,17 +3,17 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/brandonsides/pubblr/activitystreams"
 	"github.com/brandonsides/pubblr/database/util"
+	"github.com/brandonsides/pubblr/util/either"
 )
 
 func toDBEntity(entity activitystreams.EntityIface) (dbEntity, error) {
-	var typ sql.NullString
-	var err error
-	typ.String, err = entity.Type()
+	typ, err := entity.Type()
 	if err != nil {
-		typ.Valid = false
+		return dbEntity{}, err
 	}
 
 	e := activitystreams.ToEntity(entity)
@@ -28,9 +28,14 @@ func toDBEntity(entity activitystreams.EntityIface) (dbEntity, error) {
 			return dbEntity{}, err
 		}
 	}
+	name := sql.NullString{
+		String: e.Name,
+		Valid:  e.Name != "",
+	}
 
 	ret := dbEntity{
 		Type: typ,
+		Name: name,
 		MediaType: sql.NullString{
 			String: e.MediaType,
 			Valid:  true,
@@ -40,31 +45,76 @@ func toDBEntity(entity activitystreams.EntityIface) (dbEntity, error) {
 	}
 
 	var rest interface{} = nil
-	if typ.Valid {
-		switch typ.String {
-		case "Link", "Mention":
-			linkIface, ok := entity.(activitystreams.LinkIface)
-			if !ok {
-				return dbEntity{}, errors.New("Could not convert entity to LinkIface")
-			}
-			dbLink := toDBLink(linkIface)
-			dbLink.Entity = &ret
-			rest = dbLink
-		default:
-			objectIface, ok := entity.(activitystreams.ObjectIface)
-			if !ok {
-				return dbEntity{}, errors.New("Could not convert entity to ObjectIface")
-			}
-			dbObj, err := toDBObject(objectIface)
-			if err != nil {
-				return dbEntity{}, err
-			}
-			dbObj.Entity = &ret
-			rest = dbObj
+	switch typ {
+	case "Link", "Mention":
+		linkIface, ok := entity.(activitystreams.LinkIface)
+		if !ok {
+			return dbEntity{}, errors.New("Could not convert entity to LinkIface")
 		}
+		dbLink := toDBLink(linkIface)
+		dbLink.Entity = &ret
+		rest = dbLink
+	default:
+		objectIface, ok := entity.(activitystreams.ObjectIface)
+		if !ok {
+			return dbEntity{}, errors.New("Could not convert entity to ObjectIface")
+		}
+		dbObj, err := toDBObject(objectIface)
+		if err != nil {
+			return dbEntity{}, err
+		}
+		dbObj.Entity = &ret
+		rest = dbObj
 	}
 	ret.Rest = rest
 
+	return ret, nil
+}
+
+func fromDBEntity(entity dbEntity) (activitystreams.EntityIface, error) {
+	var retEntity activitystreams.Entity
+	retEntity.MediaType = entity.MediaType.String
+	retEntity.Name = entity.Name.String
+	var err error
+	retEntity.Preview, err = fromDBEntity(*entity.Preview)
+	if err != nil {
+		return nil, err
+	}
+	retEntity.AttributedTo = make([]activitystreams.EntityIface, len(entity.AttributedTo))
+	for i, v := range entity.AttributedTo {
+		retEntity.AttributedTo[i], err = fromDBEntity(v)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var ret activitystreams.EntityIface
+	switch entity.Type {
+	case "Link", "Mention":
+		var err error
+		restLink, ok := entity.Rest.(dbLink)
+		if !ok {
+			return nil, errors.New("Could not convert entity.Rest to dbLink")
+		}
+		retLink, err := fromDBLink(restLink)
+		if err != nil {
+			return nil, err
+		}
+		activitystreams.ToLink(retLink).Entity = retEntity
+		ret = retLink
+	default:
+		var err error
+		restObject, ok := entity.Rest.(dbObject)
+		if !ok {
+			return nil, errors.New("Could not convert entity.Rest to dbObject")
+		}
+		retObject, err := fromDBObject(restObject)
+		if err != nil {
+			return nil, err
+		}
+		activitystreams.ToObject(retObject).Entity = retEntity
+		ret = retObject
+	}
 	return ret, nil
 }
 
@@ -87,6 +137,24 @@ func toDBLink(link activitystreams.LinkIface) dbLink {
 		Height: l.Height,
 		Width:  l.Width,
 	}
+}
+
+func fromDBLink(link dbLink) (activitystreams.LinkIface, error) {
+	var l activitystreams.LinkIface = &activitystreams.Link{
+		Href:     link.Href.String,
+		HrefLang: link.Hreflang.String,
+		Rel:      util.StringArray(link.Rel),
+		Height:   link.Height,
+		Width:    link.Width,
+	}
+
+	if link.Entity.Type == "Mention" {
+		l = &activitystreams.Mention{
+			Link: *activitystreams.ToLink(l),
+		}
+	}
+
+	return l, nil
 }
 
 func toDBObject(object activitystreams.ObjectIface) (dbObject, error) {
@@ -326,6 +394,233 @@ func toDBObject(object activitystreams.ObjectIface) (dbObject, error) {
 	return ret, nil
 }
 
+func fromDBObject(object dbObject) (activitystreams.ObjectIface, error) {
+	var retObject activitystreams.Object
+
+	retObject.Attachment = make([]activitystreams.EntityIface, len(object.Attachment))
+	for _, v := range object.Attachment {
+		attachment, err := fromDBEntity(v)
+		if err != nil {
+			return nil, err
+		}
+		retObject.Attachment = append(retObject.Attachment, attachment)
+	}
+
+	retObject.Audience = make([]activitystreams.EntityIface, len(object.Audience))
+	for _, v := range object.Audience {
+		audienceMember, err := fromDBEntity(v)
+		if err != nil {
+			return nil, err
+		}
+		retObject.Audience = append(retObject.Audience, audienceMember)
+	}
+
+	retObject.Bcc = make([]activitystreams.EntityIface, len(object.Bcc))
+	for _, v := range object.Bcc {
+		bccMember, err := fromDBEntity(v)
+		if err != nil {
+			return nil, err
+		}
+		retObject.Bcc = append(retObject.Bcc, bccMember)
+	}
+
+	retObject.Bto = make([]activitystreams.EntityIface, len(object.Bto))
+	for _, v := range object.Bto {
+		btoMember, err := fromDBEntity(v)
+		if err != nil {
+			return nil, err
+		}
+		retObject.Bto = append(retObject.Bto, btoMember)
+	}
+
+	retObject.Cc = make([]activitystreams.EntityIface, len(object.Cc))
+	for _, v := range object.Cc {
+		ccMember, err := fromDBEntity(v)
+		if err != nil {
+			return nil, err
+		}
+		retObject.Cc = append(retObject.Cc, ccMember)
+	}
+
+	retObject.InReplyTo = make([]activitystreams.EntityIface, len(object.InReplyTo))
+	for _, v := range object.InReplyTo {
+		inReplyTo, err := fromDBEntity(v)
+		if err != nil {
+			return nil, err
+		}
+		retObject.InReplyTo = append(retObject.InReplyTo, inReplyTo)
+	}
+
+	retObject.Location = make([]activitystreams.EntityIface, len(object.Location))
+	for _, v := range object.Location {
+		location, err := fromDBEntity(v)
+		if err != nil {
+			return nil, err
+		}
+		retObject.Location = append(retObject.Location, location)
+	}
+
+	retObject.Tag = make([]activitystreams.EntityIface, len(object.Tag))
+	for _, v := range object.Tag {
+		tag, err := fromDBEntity(v)
+		if err != nil {
+			return nil, err
+		}
+		retObject.Tag = append(retObject.Tag, tag)
+	}
+
+	retObject.To = make([]activitystreams.EntityIface, len(object.To))
+	for _, v := range object.To {
+		toMember, err := fromDBEntity(v)
+		if err != nil {
+			return nil, err
+		}
+		retObject.To = append(retObject.To, toMember)
+	}
+
+	var err error
+	retObject.Context, err = fromDBEntity(*object.Context)
+	if err != nil {
+		return nil, err
+	}
+
+	retObject.Generator, err = fromDBEntity(*object.Generator)
+	if err != nil {
+		return nil, err
+	}
+
+	retObject.Icon, err = fromDBEntity(*object.Icon)
+	if err != nil {
+		return nil, err
+	}
+
+	retObject.Image, err = fromDBEntity(*object.Image)
+	if err != nil {
+		return nil, err
+	}
+
+	if object.LinkUrl != nil {
+		linkUrl, err := fromDBLink(*object.LinkUrl)
+		if err != nil {
+			return nil, err
+		}
+		retObject.URL = either.Right[string](linkUrl)
+	} else {
+		retObject.URL = either.Left[string, activitystreams.LinkIface](object.StringUrl.String)
+	}
+
+	retObject.Content = object.Content.String
+
+	retObject.Duration = (*time.Duration)(&object.Duration.Int64)
+
+	retObject.EndTime = &object.EndTime.Time
+
+	retObject.Published = &object.Entity.CreatedAt
+
+	retObject.StartTime = &object.StartTime.Time
+
+	retObject.Summary = object.Summary.String
+
+	retObject.Updated = &object.Entity.UpdatedAt
+
+	var ret activitystreams.ObjectIface
+	switch object.Entity.Type {
+	case "Object":
+		ret = &retObject
+	case "Relationship":
+		rel, ok := object.Rest.(dbRelationship)
+		if !ok {
+			return nil, errors.New("Could not convert object.Rest to dbRelationship")
+		}
+		retRel, err := fromDBRelationship(rel)
+		if err != nil {
+			return nil, err
+		}
+		retRel.Object = retObject
+		ret = retRel
+	case "Article":
+		ret = &activitystreams.Article{
+			Object: retObject,
+		}
+	case "Document":
+		ret = &activitystreams.Document{
+			Object: retObject,
+		}
+	case "Audio":
+		ret = &activitystreams.Audio{
+			Object: retObject,
+		}
+	case "Image":
+		ret = &activitystreams.Image{
+			Object: retObject,
+		}
+	case "Video":
+		ret = &activitystreams.Video{
+			Object: retObject,
+		}
+	case "Note":
+		ret = &activitystreams.Note{
+			Object: retObject,
+		}
+	case "Page":
+		ret = &activitystreams.Page{
+			Object: retObject,
+		}
+	case "Event":
+		ret = &activitystreams.Event{
+			Object: retObject,
+		}
+	case "Place":
+		place, ok := object.Rest.(dbPlace)
+		if !ok {
+			return nil, errors.New("Could not convert object.Rest to dbPlace")
+		}
+		retPlace := fromDBPlace(place)
+		retPlace.Object = retObject
+		ret = retPlace
+	case "Profile":
+		profile, ok := object.Rest.(dbProfile)
+		if !ok {
+			return nil, errors.New("Could not convert object.Rest to dbProfile")
+		}
+		retProfile, err := fromDBProfile(profile)
+		if err != nil {
+			return nil, err
+		}
+		retProfile.Object = retObject
+		ret = retProfile
+	case "Person", "Service", "Group", "Organization", "Application":
+		actor, ok := object.Rest.(dbActor)
+		if !ok {
+			return nil, errors.New("Could not convert object.Rest to dbActor")
+		}
+		retActor := fromDBActor(actor)
+		activitystreams.ToActor(retActor).Object = retObject
+		ret = retActor
+	case "Collection", "OrderedCollection":
+		collection, ok := object.Rest.(dbCollection)
+		if !ok {
+			return nil, errors.New("Could not convert object.Rest to dbCollection")
+		}
+		retCollection := fromDBCollection(collection)
+		activitystreams.ToCollection(retCollection).Object = retObject
+		ret = retCollection
+	default:
+		activity, ok := object.Rest.(dbActivity)
+		if !ok {
+			return nil, errors.New("Could not convert object.Rest to dbActivity")
+		}
+		retActivity, err := fromDBActivity(activity)
+		if err != nil {
+			return nil, err
+		}
+		activitystreams.ToIntransitiveActivity(retActivity).Object = retObject
+		ret = retActivity
+	}
+
+	return ret, nil
+}
+
 func toDBRelationship(relationship *activitystreams.Relationship) (dbRelationship, error) {
 	subj, err := toDBEntity(relationship.Subject)
 	if err != nil {
@@ -346,6 +641,29 @@ func toDBRelationship(relationship *activitystreams.Relationship) (dbRelationshi
 		Subject:      &subj,
 		Obj:          &obj,
 		Relationship: &rel,
+	}, nil
+}
+
+func fromDBRelationship(relationship dbRelationship) (*activitystreams.Relationship, error) {
+	subj, err := fromDBEntity(*relationship.Subject)
+	if err != nil {
+		return nil, err
+	}
+
+	obj, err := fromDBEntity(*relationship.Obj)
+	if err != nil {
+		return nil, err
+	}
+
+	rel, err := fromDBObject(*relationship.Relationship)
+	if err != nil {
+		return nil, err
+	}
+
+	return &activitystreams.Relationship{
+		Subject:      subj,
+		Obj:          obj,
+		Relationship: rel,
 	}, nil
 }
 
@@ -378,6 +696,17 @@ func toDBPlace(place *activitystreams.Place) dbPlace {
 	}
 }
 
+func fromDBPlace(place dbPlace) *activitystreams.Place {
+	return &activitystreams.Place{
+		Accuracy:  place.Accuracy.Float64,
+		Altitude:  place.Altitude.Float64,
+		Latitude:  place.Latitude.Float64,
+		Longitude: place.Longitude.Float64,
+		Radius:    place.Radius.Float64,
+		Units:     place.Units.String,
+	}
+}
+
 func toDBProfile(profile *activitystreams.Profile) dbProfile {
 	describes, err := toDBEntity(profile.Describes)
 	if err != nil {
@@ -387,6 +716,21 @@ func toDBProfile(profile *activitystreams.Profile) dbProfile {
 	return dbProfile{
 		Describes: &describes,
 	}
+}
+
+func fromDBProfile(profile dbProfile) (*activitystreams.Profile, error) {
+	describedEntity, err := fromDBEntity(*profile.Describes)
+	if err != nil {
+		return nil, err
+	}
+	describes, ok := describedEntity.(activitystreams.ObjectIface)
+	if !ok {
+		return nil, errors.New("Could not convert described entity to ObjectIface")
+	}
+
+	return &activitystreams.Profile{
+		Describes: describes,
+	}, nil
 }
 
 func toDBActivity(activity activitystreams.ActivityIface) (dbActivity, error) {
@@ -468,6 +812,79 @@ func toDBActivity(activity activitystreams.ActivityIface) (dbActivity, error) {
 	return ret, nil
 }
 
+func fromDBActivity(activity dbActivity) (activitystreams.ActivityIface, error) {
+	var a activitystreams.IntransitiveActivity
+
+	var err error
+	a.Actor, err = fromDBEntity(*activity.Actor)
+	if err != nil {
+		return nil, err
+	}
+
+	a.Target, err = fromDBEntity(*activity.Target)
+	if err != nil {
+		return nil, err
+	}
+
+	a.Result, err = fromDBEntity(*activity.Result)
+	if err != nil {
+		return nil, err
+	}
+
+	a.Origin, err = fromDBEntity(*activity.Origin)
+	if err != nil {
+		return nil, err
+	}
+
+	a.Instrument, err = fromDBEntity(*activity.Instrument)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret activitystreams.ActivityIface
+	switch activity.Object.Entity.Type {
+	case "IntransitiveActivity":
+		ret = &a
+	case "Arrive":
+		ret = &activitystreams.Arrive{
+			IntransitiveActivity: a,
+		}
+	case "Listen":
+		ret = &activitystreams.Listen{
+			IntransitiveActivity: a,
+		}
+	case "Read":
+		ret = &activitystreams.Read{
+			IntransitiveActivity: a,
+		}
+	case "Travel":
+		ret = &activitystreams.Travel{
+			IntransitiveActivity: a,
+		}
+	case "Question":
+		question, ok := activity.Rest.(dbQuestion)
+		if !ok {
+			return nil, errors.New("Could not convert activity.Rest to dbQuestion")
+		}
+		retQuestion := fromDBQuestion(question)
+		retQuestion.IntransitiveActivity = a
+		ret = retQuestion
+	default:
+		transitiveActivity, ok := activity.Rest.(dbTransitiveActivity)
+		if !ok {
+			return nil, errors.New("Could not convert activity.Rest to dbTransitiveActivity")
+		}
+		retTransitiveActivity, err := fromDBTransitiveActivity(transitiveActivity)
+		if err != nil {
+			return nil, err
+		}
+		activitystreams.ToTransitiveActivity(retTransitiveActivity).IntransitiveActivity = a
+		ret = retTransitiveActivity
+	}
+
+	return ret, nil
+}
+
 func toDBTransitiveActivity(activity activitystreams.TransitiveActivityIface) (dbTransitiveActivity, error) {
 	concreteActivity := activitystreams.ToTransitiveActivity(activity)
 
@@ -481,8 +898,132 @@ func toDBTransitiveActivity(activity activitystreams.TransitiveActivityIface) (d
 	}, nil
 }
 
+func fromDBTransitiveActivity(activity dbTransitiveActivity) (activitystreams.TransitiveActivityIface, error) {
+	var a activitystreams.TransitiveActivity
+
+	var err error
+	a.Object, err = fromDBEntity(*activity.Object)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret activitystreams.TransitiveActivityIface
+	switch activity.Activity.Object.Entity.Type {
+	case "Activity":
+		ret = &a
+	case "Accept":
+		ret = &activitystreams.Accept{
+			TransitiveActivity: a,
+		}
+	case "TentativeAccept":
+		ret = &activitystreams.TentativeAccept{
+			Accept: activitystreams.Accept{
+				TransitiveActivity: a,
+			},
+		}
+	case "Add":
+		ret = &activitystreams.Add{
+			TransitiveActivity: a,
+		}
+	case "Create":
+		ret = &activitystreams.Create{
+			TransitiveActivity: a,
+		}
+	case "Delete":
+		ret = &activitystreams.Delete{
+			TransitiveActivity: a,
+		}
+	case "Follow":
+		ret = &activitystreams.Follow{
+			TransitiveActivity: a,
+		}
+	case "Ignore":
+		ret = &activitystreams.Ignore{
+			TransitiveActivity: a,
+		}
+	case "Join":
+		ret = &activitystreams.Join{
+			TransitiveActivity: a,
+		}
+	case "Leave":
+		ret = &activitystreams.Leave{
+			TransitiveActivity: a,
+		}
+	case "Like":
+		ret = &activitystreams.Like{
+			TransitiveActivity: a,
+		}
+	case "Offer":
+		ret = &activitystreams.Offer{
+			TransitiveActivity: a,
+		}
+	case "Invite":
+		ret = &activitystreams.Invite{
+			Offer: activitystreams.Offer{
+				TransitiveActivity: a,
+			},
+		}
+	case "Reject":
+		ret = &activitystreams.Reject{
+			TransitiveActivity: a,
+		}
+	case "TentativeReject":
+		ret = &activitystreams.TentativeReject{
+			Reject: activitystreams.Reject{
+				TransitiveActivity: a,
+			},
+		}
+	case "Remove":
+		ret = &activitystreams.Remove{
+			TransitiveActivity: a,
+		}
+	case "Undo":
+		ret = &activitystreams.Undo{
+			TransitiveActivity: a,
+		}
+	case "Update":
+		ret = &activitystreams.Update{
+			TransitiveActivity: a,
+		}
+	case "View":
+		ret = &activitystreams.View{
+			TransitiveActivity: a,
+		}
+	case "Move":
+		ret = &activitystreams.Move{
+			TransitiveActivity: a,
+		}
+	case "Announce":
+		ret = &activitystreams.Announce{
+			TransitiveActivity: a,
+		}
+	case "Block":
+		ret = &activitystreams.Block{
+			Ignore: activitystreams.Ignore{
+				TransitiveActivity: a,
+			},
+		}
+	case "Flag":
+		ret = &activitystreams.Flag{
+			TransitiveActivity: a,
+		}
+	case "Dislike":
+		ret = &activitystreams.Dislike{
+			TransitiveActivity: a,
+		}
+	default:
+		return nil, errors.New("Unknown activity type")
+	}
+
+	return ret, nil
+}
+
 func toDBQuestion(question *activitystreams.Question) dbQuestion {
 	return dbQuestion{}
+}
+
+func fromDBQuestion(question dbQuestion) *activitystreams.Question {
+	return &activitystreams.Question{}
 }
 
 func toDBActor(actor activitystreams.ActorIface) dbActor {
@@ -491,6 +1032,14 @@ func toDBActor(actor activitystreams.ActorIface) dbActor {
 	return dbActor
 }
 
+func fromDBActor(actor dbActor) activitystreams.ActorIface {
+	return nil
+}
+
 func toDBCollection(collection activitystreams.CollectionIface) dbCollection {
 	return dbCollection{}
+}
+
+func fromDBCollection(collection dbCollection) activitystreams.CollectionIface {
+	return nil
 }

@@ -9,8 +9,9 @@ import (
 
 type dbEntity struct {
 	gorm.Model
-	Type         sql.NullString // `gorm:"column:entity_type"`
+	Type         string // `gorm:"column:entity_type"`
 	MediaType    sql.NullString
+	Name         sql.NullString
 	PreviewID    *uint
 	Preview      *dbEntity  //  `gorm:"foreignKey:PreviewID"`
 	AttributedTo []dbEntity `gorm:"many2many:attributions;"`
