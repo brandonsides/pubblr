@@ -8,7 +8,6 @@ import (
 type ActivityIface interface {
 	ObjectIface
 	intransitiveActivity() *IntransitiveActivity
-	Type() (string, error)
 }
 
 func ToIntransitiveActivity(a ActivityIface) *IntransitiveActivity {
@@ -119,9 +118,22 @@ func (a *IntransitiveActivity) Type() (string, error) {
 	return "IntransitiveActivity", nil
 }
 
+type TransitiveActivityIface interface {
+	ActivityIface
+	transitiveActivity() *TransitiveActivity
+}
+
+func ToTransitiveActivity(a TransitiveActivityIface) *TransitiveActivity {
+	return a.transitiveActivity()
+}
+
 type TransitiveActivity struct {
 	IntransitiveActivity
 	Object EntityIface `json:"object,omitempty"`
+}
+
+func (a *TransitiveActivity) transitiveActivity() *TransitiveActivity {
+	return a
 }
 
 func (a *TransitiveActivity) MarshalJSON() ([]byte, error) {

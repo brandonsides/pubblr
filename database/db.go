@@ -24,21 +24,6 @@ func NewPubblrDatabase(config PubblrDatabaseConfig) (*PubblrDatabase, error) {
 		return nil, fmt.Errorf("Failed to connect to database: %w", err)
 	}
 
-	db.AutoMigrate(
-		&dbObject{},
-		&dbLink{},
-		&dbEntity{},
-		&dbRelationship{},
-		&dbPlace{},
-		&dbProfile{},
-		&dbActivity{},
-		&dbQuestion{},
-		&dbAnswer{},
-		&dbActor{},
-		&dbUser{},
-		&dbCollection{},
-	)
-
 	return (*PubblrDatabase)(db), nil
 }
 
@@ -285,27 +270,6 @@ func (d *PubblrDatabase) GetObject(user, typ, id string) (activitystreams.Object
 }
 
 func (d *PubblrDatabase) CreateUser(user activitystreams.ActorIface, username, password string, baseUrl url.URL) (activitystreams.ActorIface, error) {
-	/*
-		if d.users == nil {
-			d.users = make(map[string]UserData)
-		}
-
-		_, ok := d.users[username]
-		if ok {
-			return nil, fmt.Errorf("User %s already exists", username)
-		}
-
-		baseUrl.Path = path.Join(baseUrl.Path, username)
-		id := baseUrl.String()
-
-		activitystreams.ToObject(user).Id = id
-
-		userdata := d.users[username]
-		userdata.Actor = user
-		userdata.Password = password
-		d.users[username] = userdata
-		return user, nil
-	*/
 	return nil, errors.New("Not implemented")
 }
 

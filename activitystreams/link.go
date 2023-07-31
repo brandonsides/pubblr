@@ -28,6 +28,10 @@ func (l *Link) link() *Link {
 	return l
 }
 
+func ToLink(link LinkIface) *Link {
+	return link.link()
+}
+
 func (l *Link) Type() (string, error) {
 	return LinkTypeLink, nil
 }

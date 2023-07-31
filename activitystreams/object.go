@@ -584,9 +584,9 @@ func (o *Object) UnmarshalEntity(u *EntityUnmarshaler, b []byte) error {
 // Represents an ActivityStreams Relationship object
 type Relationship struct {
 	Object
-	Subject      *either.Either[ObjectIface, LinkIface] `json:"subject,omitempty"`
-	Obj          *either.Either[ObjectIface, LinkIface] `json:"object,omitempty"`
-	Relationship ObjectIface                            `json:"relationship,omitempty"`
+	Subject      EntityIface `json:"subject,omitempty"`
+	Obj          EntityIface `json:"object,omitempty"`
+	Relationship ObjectIface `json:"relationship,omitempty"`
 }
 
 func (r *Relationship) Type() (string, error) {
@@ -606,23 +606,11 @@ func (r *Relationship) MarshalJSON() ([]byte, error) {
 	}
 
 	if r.Subject != nil {
-		var subject EntityIface
-		if r.Subject.IsLeft() {
-			subject = *r.Subject.Left()
-		} else {
-			subject = *r.Subject.Right()
-		}
-		relationshipMap["subject"] = []byte(fmt.Sprintf("%q", ToEntity(subject).Id))
+		relationshipMap["subject"] = []byte(fmt.Sprintf("%q", ToEntity(r.Subject).Id))
 	}
 
 	if r.Obj != nil {
-		var obj EntityIface
-		if r.Obj.IsLeft() {
-			obj = *r.Obj.Left()
-		} else {
-			obj = *r.Obj.Right()
-		}
-		relationshipMap["object"] = []byte(fmt.Sprintf("%q", ToEntity(obj).Id))
+		relationshipMap["object"] = []byte(fmt.Sprintf("%q", ToEntity(r.Obj).Id))
 	}
 
 	if r.Relationship != nil {
