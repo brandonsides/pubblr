@@ -1,7 +1,10 @@
 package server
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/url"
+	"os"
 	"strconv"
 
 	"github.com/brandonsides/pubblr/activitystreams"
@@ -10,6 +13,7 @@ import (
 	"github.com/brandonsides/pubblr/server/apiutil"
 	"github.com/brandonsides/pubblr/server/auth"
 	"github.com/go-chi/chi"
+	"gopkg.in/yaml.v2"
 )
 
 type DB interface {
@@ -43,34 +47,52 @@ type PubblrRouter struct {
 }
 
 type PubblrRouterConfig struct {
-	MountPath string                        `json:"mountPath"`
-	Database  database.PubblrDatabaseConfig `json:"database"`
-	Logger    logging.PubblrLoggerConfig    `json:"logger"`
-	Auth      auth.AuthConfig               `json:"auth"`
-	Host      string                        `json:"host"`
-	Port      int                           `json:"port"`
-	PageSize  int                           `json:"pageSize"`
+	MountPath string                        `yaml:"mountPath"`
+	Database  database.PubblrDatabaseConfig `yaml:"database"`
+	Logger    logging.PubblrLoggerConfig    `yaml:"logger"`
+	Auth      auth.AuthConfig               `yaml:"auth"`
+	Host      string                        `yaml:"host"`
+	Port      int                           `yaml:"port"`
+	PageSize  int                           `yaml:"pageSize"`
 }
 
-func NewPubblrRouter(cfg PubblrRouterConfig, baseRouter chi.Router) (chi.Router, error) {
+func LoadPubblrRouterConfig(path string) (PubblrRouterConfig, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return PubblrRouterConfig{}, err
+	}
+	defer f.Close()
+
+	bytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return PubblrRouterConfig{}, err
+	}
+
+	var config PubblrRouterConfig
+	err = yaml.Unmarshal(bytes, &config)
+
+	return config, err
+}
+
+func NewPubblrRouter(cfg PubblrRouterConfig, baseRouter chi.Router, logger apiutil.Logger) (chi.Router, error) {
 	if cfg.PageSize == 0 {
 		cfg.PageSize = 50
 	}
 
 	auth, err := auth.NewAuth(cfg.Auth)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create authenticator: %w", err)
 	}
 
 	db, err := database.NewPubblrDatabase(cfg.Database)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create pubblr database: %w", err)
 	}
 
 	router := PubblrRouter{
 		Router:   chi.NewRouter(),
 		Database: db,
-		Logger:   logging.NewStandardPubblrLogger(cfg.Logger),
+		Logger:   logger,
 		Auth:     auth,
 		baseUrl: url.URL{
 			Scheme: "http",

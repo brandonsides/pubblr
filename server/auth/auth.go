@@ -16,8 +16,8 @@ type Auth struct {
 }
 
 type AuthConfig struct {
-	AuthKeyLocation       string        `json:"authKeyLocation"`
-	JWTExpirationDuration time.Duration `json:"jwtExpirationDuration"`
+	AuthKeyLocation       string        `yaml:"authKeyLocation"`
+	JWTExpirationDuration time.Duration `yaml:"jwtExpirationDuration"`
 }
 
 func loadKey(keyLocation string) (*rsa.PrivateKey, error) {
@@ -32,7 +32,7 @@ func loadKey(keyLocation string) (*rsa.PrivateKey, error) {
 func NewAuth(config AuthConfig) (*Auth, error) {
 	authKey, err := loadKey(config.AuthKeyLocation)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load auth key from %s: %w", config.AuthKeyLocation, err)
 	}
 
 	return &Auth{

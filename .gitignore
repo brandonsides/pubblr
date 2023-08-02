@@ -6,3 +6,4 @@ pubblr
 *.pem*
 *.key*
 */main*
+conf.*

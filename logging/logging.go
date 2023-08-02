@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 type LogLevel int
@@ -16,6 +17,50 @@ const (
 	Fatal
 )
 
+func (l LogLevel) String() string {
+	switch l {
+	case Debug:
+		return "DEBUG"
+	case Info:
+		return "INFO"
+	case Warn:
+		return "WARN"
+	case Error:
+		return "ERROR"
+	case Fatal:
+		return "FATAL"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+func (l *LogLevel) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var str string
+	err := unmarshal(&str)
+	if err != nil {
+		return err
+	}
+
+	str = strings.ToUpper(str)
+
+	switch str {
+	case "DEBUG":
+		*l = Debug
+	case "INFO":
+		*l = Info
+	case "WARN":
+		*l = Warn
+	case "ERROR":
+		*l = Error
+	case "FATAL":
+		*l = Fatal
+	default:
+		*l = Debug
+	}
+
+	return nil
+}
+
 type PubblrLogger struct {
 	out   io.Writer
 	err   io.Writer
@@ -23,7 +68,7 @@ type PubblrLogger struct {
 }
 
 type PubblrLoggerConfig struct {
-	Level LogLevel `json:"level"`
+	Level LogLevel `yaml:"level"`
 }
 
 func NewStandardPubblrLogger(config PubblrLoggerConfig) *PubblrLogger {

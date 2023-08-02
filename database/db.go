@@ -2,6 +2,7 @@ package database
 
 import (
 	"crypto/sha256"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/url"
@@ -12,9 +13,9 @@ import (
 )
 
 type PubblrDatabaseConfig struct {
-	Addr string
-	User string
-	Pass string
+	Addr string `yaml:"address"`
+	User string `yaml:"username"`
+	Pass string `yaml:"password"`
 }
 
 type PubblrDatabase struct {
@@ -296,34 +297,55 @@ func (d *PubblrDatabase) CreateUser(user activitystreams.ActorIface, email, pass
 		Email:              email,
 	}
 
-	d.db.Save(dbUser)
+	err = d.db.Save(dbUser).Error
+	if err != nil {
+		return nil, fmt.Errorf("Failed to save user: %w", err)
+	}
 
 	return user, nil
 }
 
 func (d *PubblrDatabase) GetUser(username string) (activitystreams.ActorIface, error) {
-	/*
-		userData, ok := d.users[username]
-		if !ok {
-			return nil, fmt.Errorf("User %s does not exist", username)
-		}
-		user := userData.Actor
-		return user, nil
-	*/
-	return nil, errors.New("Not implemented")
+	conds := dbActor{
+		PreferredUsername: sql.NullString{
+			String: username,
+			Valid:  true,
+		},
+	}
+
+	dest := activitystreams.Actor{}
+
+	err := d.db.First(&dest, conds).Error
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get user: %w", err)
+	}
+
+	return &dest, nil
 }
 
 func (d *PubblrDatabase) CheckPassword(username, password string) error {
-	/*
-		userData, ok := d.users[username]
-		if !ok {
-			return fmt.Errorf("User %s does not exist", username)
-		}
+	conds := dbActor{
+		PreferredUsername: sql.NullString{
+			String: username,
+			Valid:  true,
+		},
+	}
 
-		if userData.Password != password {
-			return fmt.Errorf("Wrong password")
-		}
-	*/
+	dest := dbUser{}
 
-	return errors.New("Not implemented")
+	err := d.db.First(&dest, conds).Error
+	if err != nil {
+		return fmt.Errorf("Failed to get user: %w", err)
+	}
+
+	saltedPassword := password + dest.Salt
+	hasher := sha256.New()
+	hasher.Write([]byte(saltedPassword))
+	saltedPasswordHash := string(hasher.Sum(nil))
+
+	if saltedPasswordHash != dest.SaltedPasswordHash {
+		return fmt.Errorf("Incorrect password")
+	}
+
+	return nil
 }
