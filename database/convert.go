@@ -10,22 +10,29 @@ import (
 	"github.com/brandonsides/pubblr/util/either"
 )
 
-func toDBEntity(entity activitystreams.EntityIface) (dbEntity, error) {
+func toDBEntity(entity activitystreams.EntityIface) (*dbEntity, error) {
+	if entity == nil {
+		return nil, nil
+	}
+
 	typ, err := entity.Type()
 	if err != nil {
-		return dbEntity{}, err
+		return nil, err
 	}
 
 	e := activitystreams.ToEntity(entity)
 	preview, err := toDBEntity(e.Preview)
 	if err != nil {
-		return dbEntity{}, err
+		return nil, err
 	}
 	attributedTo := make([]dbEntity, len(e.AttributedTo))
 	for i, v := range e.AttributedTo {
-		attributedTo[i], err = toDBEntity(v)
+		dbV, err := toDBEntity(v)
 		if err != nil {
-			return dbEntity{}, err
+			return nil, err
+		}
+		if dbV != nil {
+			attributedTo[i] = *dbV
 		}
 	}
 	name := sql.NullString{
@@ -40,7 +47,7 @@ func toDBEntity(entity activitystreams.EntityIface) (dbEntity, error) {
 			String: e.MediaType,
 			Valid:  true,
 		},
-		Preview:      &preview,
+		Preview:      preview,
 		AttributedTo: attributedTo,
 	}
 
@@ -49,26 +56,29 @@ func toDBEntity(entity activitystreams.EntityIface) (dbEntity, error) {
 	case "Link", "Mention":
 		linkIface, ok := entity.(activitystreams.LinkIface)
 		if !ok {
-			return dbEntity{}, errors.New("Could not convert entity to LinkIface")
+			return nil, errors.New("Could not convert entity to LinkIface")
 		}
-		dbLink := toDBLink(linkIface)
+		dbLink, err := toDBLink(linkIface)
+		if err != nil {
+			return nil, err
+		}
 		dbLink.Entity = &ret
 		rest = dbLink
 	default:
 		objectIface, ok := entity.(activitystreams.ObjectIface)
 		if !ok {
-			return dbEntity{}, errors.New("Could not convert entity to ObjectIface")
+			return nil, errors.New("Could not convert entity to ObjectIface")
 		}
 		dbObj, err := toDBObject(objectIface)
 		if err != nil {
-			return dbEntity{}, err
+			return nil, err
 		}
 		dbObj.Entity = &ret
 		rest = dbObj
 	}
 	ret.Rest = rest
 
-	return ret, nil
+	return &ret, nil
 }
 
 func fromDBEntity(entity dbEntity) (activitystreams.EntityIface, error) {
@@ -118,9 +128,13 @@ func fromDBEntity(entity dbEntity) (activitystreams.EntityIface, error) {
 	return ret, nil
 }
 
-func toDBLink(link activitystreams.LinkIface) dbLink {
+func toDBLink(link activitystreams.LinkIface) (*dbLink, error) {
+	if link == nil {
+		return nil, nil
+	}
+
 	l := activitystreams.ToLink(link)
-	return dbLink{
+	return &dbLink{
 		Href: sql.NullString{
 			String: l.Href,
 			Valid:  l.Href != "",
@@ -136,7 +150,7 @@ func toDBLink(link activitystreams.LinkIface) dbLink {
 		Rel:    util.StringArray(l.Rel),
 		Height: l.Height,
 		Width:  l.Width,
-	}
+	}, nil
 }
 
 func fromDBLink(link dbLink) (activitystreams.LinkIface, error) {
@@ -157,113 +171,135 @@ func fromDBLink(link dbLink) (activitystreams.LinkIface, error) {
 	return l, nil
 }
 
-func toDBObject(object activitystreams.ObjectIface) (dbObject, error) {
+func toDBObject(object activitystreams.ObjectIface) (*dbObject, error) {
+	if object == nil {
+		return nil, nil
+	}
+
 	typ, err := object.Type()
 	if err != nil {
-		return dbObject{}, err
+		return nil, err
 	}
 
 	o := activitystreams.ToObject(object)
 
 	attachments := make([]dbEntity, len(o.Attachment))
 	for i, v := range o.Attachment {
-		var err error
-		attachments[i], err = toDBEntity(v)
+		attachment, err := toDBEntity(v)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
+		}
+		if attachment != nil {
+			attachments[i] = *attachment
 		}
 	}
 
 	audience := make([]dbEntity, len(o.Audience))
 	for i, v := range o.Audience {
-		var err error
-		audience[i], err = toDBEntity(v)
+		audienceMember, err := toDBEntity(v)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
+		}
+		if audienceMember != nil {
+			audience[i] = *audienceMember
 		}
 	}
 
 	bcc := make([]dbEntity, len(o.Bcc))
 	for i, v := range o.Bcc {
-		var err error
-		bcc[i], err = toDBEntity(v)
+		bccMember, err := toDBEntity(v)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
+		}
+		if bccMember != nil {
+			bcc[i] = *bccMember
 		}
 	}
 
 	bto := make([]dbEntity, len(o.Bto))
 	for i, v := range o.Bto {
-		var err error
-		bto[i], err = toDBEntity(v)
+		btoMember, err := toDBEntity(v)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
+		}
+		if btoMember != nil {
+			bto[i] = *btoMember
 		}
 	}
 
 	cc := make([]dbEntity, len(o.Cc))
 	for i, v := range o.Cc {
-		var err error
-		cc[i], err = toDBEntity(v)
+		ccMember, err := toDBEntity(v)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
+		}
+		if ccMember != nil {
+			cc[i] = *ccMember
 		}
 	}
 
 	inReplyTo := make([]dbEntity, len(o.InReplyTo))
 	for i, v := range o.InReplyTo {
-		var err error
-		inReplyTo[i], err = toDBEntity(v)
+		inReplyToMember, err := toDBEntity(v)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
+		}
+		if inReplyToMember != nil {
+			inReplyTo[i] = *inReplyToMember
 		}
 	}
 
 	tags := make([]dbEntity, len(o.Tag))
 	for i, v := range o.Tag {
-		var err error
-		tags[i], err = toDBEntity(v)
+		tag, err := toDBEntity(v)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
+		}
+		if tag != nil {
+			tags[i] = *tag
 		}
 	}
 
 	to := make([]dbEntity, len(o.To))
 	for i, v := range o.To {
-		var err error
-		to[i], err = toDBEntity(v)
+		toMember, err := toDBEntity(v)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
+		}
+		if toMember != nil {
+			tags[i] = *toMember
 		}
 	}
 
 	locations := make([]dbEntity, len(o.Location))
 	for i, v := range o.Location {
-		var err error
-		locations[i], err = toDBEntity(v)
+		location, err := toDBEntity(v)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
+		}
+		if location != nil {
+			locations[i] = *location
 		}
 	}
 
 	context, err := toDBEntity(o.Context)
 	if err != nil {
-		return dbObject{}, err
+		return nil, err
 	}
 
 	generator, err := toDBEntity(o.Generator)
 	if err != nil {
-		return dbObject{}, err
+		return nil, err
 	}
 
 	icon, err := toDBEntity(o.Icon)
 	if err != nil {
-		return dbObject{}, err
+		return nil, err
 	}
 
 	image, err := toDBEntity(o.Image)
 	if err != nil {
-		return dbObject{}, err
+		return nil, err
 	}
 
 	var linkUrl *dbLink = nil
@@ -274,8 +310,10 @@ func toDBObject(object activitystreams.ObjectIface) (dbObject, error) {
 			Valid:  true,
 		}
 	} else {
-		linkUrl = &dbLink{}
-		*linkUrl = toDBLink(activitystreams.ToLink(*o.URL.Right()))
+		linkUrl, err = toDBLink(activitystreams.ToLink(*o.URL.Right()))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var startTime sql.NullTime
@@ -303,10 +341,10 @@ func toDBObject(object activitystreams.ObjectIface) (dbObject, error) {
 	}
 
 	ret := dbObject{
-		Context:   &context,
-		Generator: &generator,
-		Icon:      &icon,
-		Image:     &image,
+		Context:   context,
+		Generator: generator,
+		Icon:      icon,
+		Image:     image,
 		Location:  locations,
 		LinkUrl:   linkUrl,
 		StringUrl: stringUrl,
@@ -337,18 +375,18 @@ func toDBObject(object activitystreams.ObjectIface) (dbObject, error) {
 	case "Relationship":
 		r, ok := object.(*activitystreams.Relationship)
 		if !ok {
-			return dbObject{}, errors.New("Could not convert object to Relationship")
+			return nil, errors.New("Could not convert object to Relationship")
 		}
 		dbRel, err := toDBRelationship(r)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
 		}
 		dbRel.Object = &ret
 		rest = dbRel
 	case "Place":
 		p, ok := object.(*activitystreams.Place)
 		if !ok {
-			return dbObject{}, errors.New("Could not convert object to Place")
+			return nil, errors.New("Could not convert object to Place")
 		}
 		dbPlace := toDBPlace(p)
 		dbPlace.Object = &ret
@@ -356,42 +394,51 @@ func toDBObject(object activitystreams.ObjectIface) (dbObject, error) {
 	case "Profile":
 		p, ok := object.(*activitystreams.Profile)
 		if !ok {
-			return dbObject{}, errors.New("Could not convert object to Profile")
+			return nil, errors.New("Could not convert object to Profile")
 		}
-		dbProf := toDBProfile(p)
+		dbProf, err := toDBProfile(p)
+		if err != nil {
+			return nil, err
+		}
 		dbProf.Object = &ret
 		rest = dbProf
 	case "Person", "Service", "Group", "Organization", "Application":
 		a, ok := object.(activitystreams.ActorIface)
 		if !ok {
-			return dbObject{}, errors.New("Could not convert object to ActorIface")
+			return nil, errors.New("Could not convert object to ActorIface")
 		}
-		dbActor := toDBActor(a)
+		dbActor, err := toDBActor(a)
+		if err != nil {
+			return nil, err
+		}
 		dbActor.Object = &ret
 		rest = dbActor
 	case "Collection", "OrderedCollection":
 		c, ok := object.(activitystreams.CollectionIface)
 		if !ok {
-			return dbObject{}, errors.New("Could not convert object to CollectionIface")
+			return nil, errors.New("Could not convert object to CollectionIface")
 		}
-		dbColl := toDBCollection(c)
+		dbColl, err := toDBCollection(c)
+		if err != nil {
+			return nil, err
+		}
 		dbColl.Object = &ret
 		rest = dbColl
 	default:
 		a, ok := object.(activitystreams.ActivityIface)
 		if !ok {
-			return dbObject{}, errors.New("Could not convert object to ActivityIface")
+			return nil, errors.New("Could not convert object to ActivityIface")
 		}
 		dbActv, err := toDBActivity(a)
 		if err != nil {
-			return dbObject{}, err
+			return nil, err
 		}
 		dbActv.Object = &ret
 		rest = dbActv
 	}
 	ret.Rest = rest
 
-	return ret, nil
+	return &ret, nil
 }
 
 func fromDBObject(object dbObject) (activitystreams.ObjectIface, error) {
@@ -621,26 +668,30 @@ func fromDBObject(object dbObject) (activitystreams.ObjectIface, error) {
 	return ret, nil
 }
 
-func toDBRelationship(relationship *activitystreams.Relationship) (dbRelationship, error) {
+func toDBRelationship(relationship *activitystreams.Relationship) (*dbRelationship, error) {
+	if relationship == nil {
+		return nil, nil
+	}
+
 	subj, err := toDBEntity(relationship.Subject)
 	if err != nil {
-		return dbRelationship{}, err
+		return nil, err
 	}
 
 	obj, err := toDBEntity(relationship.Obj)
 	if err != nil {
-		return dbRelationship{}, err
+		return nil, err
 	}
 
 	rel, err := toDBObject(relationship.Relationship)
 	if err != nil {
-		return dbRelationship{}, err
+		return nil, err
 	}
 
-	return dbRelationship{
-		Subject:      &subj,
-		Obj:          &obj,
-		Relationship: &rel,
+	return &dbRelationship{
+		Subject:      subj,
+		Obj:          obj,
+		Relationship: rel,
 	}, nil
 }
 
@@ -707,15 +758,19 @@ func fromDBPlace(place dbPlace) *activitystreams.Place {
 	}
 }
 
-func toDBProfile(profile *activitystreams.Profile) dbProfile {
-	describes, err := toDBEntity(profile.Describes)
-	if err != nil {
-		return dbProfile{}
+func toDBProfile(profile *activitystreams.Profile) (*dbProfile, error) {
+	if profile == nil {
+		return nil, nil
 	}
 
-	return dbProfile{
-		Describes: &describes,
+	describes, err := toDBEntity(profile.Describes)
+	if err != nil {
+		return nil, err
 	}
+
+	return &dbProfile{
+		Describes: describes,
+	}, nil
 }
 
 func fromDBProfile(profile dbProfile) (*activitystreams.Profile, error) {
@@ -733,55 +788,59 @@ func fromDBProfile(profile dbProfile) (*activitystreams.Profile, error) {
 	}, nil
 }
 
-func toDBActivity(activity activitystreams.ActivityIface) (dbActivity, error) {
+func toDBActivity(activity activitystreams.ActivityIface) (*dbActivity, error) {
+	if activity == nil {
+		return nil, nil
+	}
+
 	typ, err := activity.Type()
 	if err != nil {
-		return dbActivity{}, err
+		return nil, err
 	}
 
 	a := activitystreams.ToIntransitiveActivity(activity)
 
 	actor, err := toDBEntity(a.Actor)
 	if err != nil {
-		return dbActivity{}, err
+		return nil, err
 	}
 
 	objEnt, err := toDBEntity(&a.Object)
 	if err != nil {
-		return dbActivity{}, err
+		return nil, err
 	}
 	object, ok := objEnt.Rest.(dbObject)
 	if !ok {
-		return dbActivity{}, errors.New("Could not convert object to dbObject")
+		return nil, errors.New("Could not convert object to dbObject")
 	}
 
 	target, err := toDBEntity(a.Target)
 	if err != nil {
-		return dbActivity{}, err
+		return nil, err
 	}
 
 	result, err := toDBEntity(a.Result)
 	if err != nil {
-		return dbActivity{}, err
+		return nil, err
 	}
 
 	origin, err := toDBEntity(a.Origin)
 	if err != nil {
-		return dbActivity{}, err
+		return nil, err
 	}
 
 	instrument, err := toDBEntity(a.Instrument)
 	if err != nil {
-		return dbActivity{}, err
+		return nil, err
 	}
 
 	ret := dbActivity{
-		Actor:      &actor,
+		Actor:      actor,
 		Object:     &object,
-		Target:     &target,
-		Result:     &result,
-		Origin:     &origin,
-		Instrument: &instrument,
+		Target:     target,
+		Result:     result,
+		Origin:     origin,
+		Instrument: instrument,
 	}
 
 	var rest interface{}
@@ -790,29 +849,29 @@ func toDBActivity(activity activitystreams.ActivityIface) (dbActivity, error) {
 	case "Activity", "Accept", "Add", "Announce", "Block", "Create", "Delete", "Dislike", "Flag", "Follow", "Ignore", "Invite", "Join", "Leave", "Like", "Move", "Offer", "Reject", "Remove", "TentativeReject", "TentativeAccept", "Undo", "Update", "View":
 		a, ok := activity.(activitystreams.TransitiveActivityIface)
 		if !ok {
-			return dbActivity{}, errors.New("Could not convert activity to TransitiveActivityIface")
+			return nil, errors.New("Could not convert activity to TransitiveActivityIface")
 		}
 		dbActv, err := toDBTransitiveActivity(a)
 		if err != nil {
-			return dbActivity{}, err
+			return nil, err
 		}
 		dbActv.Activity = &ret
 		rest = dbActv
 	case "Question":
 		q, ok := activity.(*activitystreams.Question)
 		if !ok {
-			return dbActivity{}, errors.New("Could not convert activity to Question")
+			return nil, errors.New("Could not convert activity to Question")
 		}
 		dbQ, err := toDBQuestion(q)
 		if err != nil {
-			return dbActivity{}, err
+			return nil, err
 		}
 		dbQ.Activity = &ret
 		rest = dbQ
 	}
 	ret.Rest = rest
 
-	return ret, nil
+	return &ret, nil
 }
 
 func fromDBActivity(activity dbActivity) (activitystreams.ActivityIface, error) {
@@ -891,16 +950,20 @@ func fromDBActivity(activity dbActivity) (activitystreams.ActivityIface, error) 
 	return ret, nil
 }
 
-func toDBTransitiveActivity(activity activitystreams.TransitiveActivityIface) (dbTransitiveActivity, error) {
+func toDBTransitiveActivity(activity activitystreams.TransitiveActivityIface) (*dbTransitiveActivity, error) {
+	if activity == nil {
+		return nil, nil
+	}
+
 	concreteActivity := activitystreams.ToTransitiveActivity(activity)
 
 	object, err := toDBEntity(concreteActivity.Object)
 	if err != nil {
-		return dbTransitiveActivity{}, err
+		return nil, err
 	}
 
-	return dbTransitiveActivity{
-		Object: &object,
+	return &dbTransitiveActivity{
+		Object: object,
 	}, nil
 }
 
@@ -1024,7 +1087,11 @@ func fromDBTransitiveActivity(activity dbTransitiveActivity) (activitystreams.Tr
 	return ret, nil
 }
 
-func toDBQuestion(question activitystreams.QuestionIface) (dbQuestion, error) {
+func toDBQuestion(question activitystreams.QuestionIface) (*dbQuestion, error) {
+	if question == nil {
+		return nil, nil
+	}
+
 	var ret dbQuestion
 
 	multiQ, ok := question.(*activitystreams.MultiAnswerQuestion)
@@ -1036,11 +1103,13 @@ func toDBQuestion(question activitystreams.QuestionIface) (dbQuestion, error) {
 		for _, answer := range multiQ.AnyOf {
 			dbAnswer, err := toDBEntity(answer)
 			if err != nil {
-				return dbQuestion{}, err
+				return nil, err
 			}
-			ret.Answers = append(ret.Answers, dbAnswer)
+			if dbAnswer != nil {
+				ret.Answers = append(ret.Answers, *dbAnswer)
+			}
 		}
-		return ret, nil
+		return &ret, nil
 	}
 
 	singleQ, ok := question.(*activitystreams.SingleAnswerQuestion)
@@ -1052,11 +1121,13 @@ func toDBQuestion(question activitystreams.QuestionIface) (dbQuestion, error) {
 		for _, answer := range singleQ.OneOf {
 			dbAnswer, err := toDBEntity(answer)
 			if err != nil {
-				return dbQuestion{}, err
+				return nil, err
 			}
-			ret.Answers = append(ret.Answers, dbAnswer)
+			if dbAnswer != nil {
+				ret.Answers = append(ret.Answers, *dbAnswer)
+			}
 		}
-		return ret, nil
+		return &ret, nil
 	}
 
 	closedQ, ok := question.(*activitystreams.ClosedQuestion)
@@ -1067,17 +1138,19 @@ func toDBQuestion(question activitystreams.QuestionIface) (dbQuestion, error) {
 		}
 		answer, err := toDBEntity(closedQ.Closed)
 		if err != nil {
-			return dbQuestion{}, err
+			return nil, err
 		}
-		ret.Answers = append(ret.Answers, answer)
-		return ret, nil
+		if answer != nil {
+			ret.Answers = append(ret.Answers, *answer)
+		}
+		return &ret, nil
 	}
 
 	ret.QuestionType = sql.NullString{
 		String: "Question",
 		Valid:  true,
 	}
-	return ret, nil
+	return &ret, nil
 }
 
 func fromDBQuestion(question dbQuestion) (activitystreams.QuestionIface, error) {
@@ -1111,14 +1184,18 @@ func fromDBQuestion(question dbQuestion) (activitystreams.QuestionIface, error) 
 	}
 }
 
-func toDBActor(actor activitystreams.ActorIface) dbActor {
+func toDBActor(actor activitystreams.ActorIface) (*dbActor, error) {
+	if actor == nil {
+		return nil, nil
+	}
+
 	concreteActor := activitystreams.ToActor(actor)
-	return dbActor{
+	return &dbActor{
 		PreferredUsername: sql.NullString{
 			String: concreteActor.PreferredUsername,
 			Valid:  concreteActor.PreferredUsername != "",
 		},
-	}
+	}, nil
 }
 
 func fromDBActor(dbactor dbActor) activitystreams.ActorIface {
@@ -1151,22 +1228,28 @@ func fromDBActor(dbactor dbActor) activitystreams.ActorIface {
 	}
 }
 
-func toDBCollection(collection activitystreams.CollectionIface) dbCollection {
+func toDBCollection(collection activitystreams.CollectionIface) (*dbCollection, error) {
+	if collection == nil {
+		return nil, nil
+	}
+
 	concreteCollection := activitystreams.ToCollection(collection)
 
 	items := make([]dbEntity, len(concreteCollection.Items))
 	for i, v := range concreteCollection.Items {
-		var err error
-		items[i], err = toDBEntity(v)
+		item, err := toDBEntity(v)
 		if err != nil {
-			return dbCollection{}
+			return nil, err
+		}
+		if item != nil {
+			items[i] = *item
 		}
 	}
 
-	return dbCollection{
+	return &dbCollection{
 		Items:   items,
 		Ordered: concreteCollection.Ordered,
-	}
+	}, nil
 }
 
 func fromDBCollection(collection dbCollection) activitystreams.CollectionIface {
