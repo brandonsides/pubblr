@@ -125,12 +125,13 @@ type dbQuestion struct {
 	Activity     *dbActivity `gorm:"foreignKey:ID;polymorphic:Rest;polymorphicValue:question;"`
 	QuestionType sql.NullString
 	Answers      []dbEntity `gorm:"many2many:answers;"`
+	Closed       bool
 }
 
 type dbActor struct {
-	ID               uint      `gorm:"primaryKey;column:id;"`
-	Object           *dbObject `gorm:"foreignKey:ID;polymorphic:Rest;polymorphicValue:actor;"`
-	PreferreUsername sql.NullString
+	ID                uint      `gorm:"primaryKey;column:id;"`
+	Object            *dbObject `gorm:"foreignKey:ID;polymorphic:Rest;polymorphicValue:actor;"`
+	PreferredUsername sql.NullString
 }
 
 type dbUser struct {

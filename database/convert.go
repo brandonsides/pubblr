@@ -803,7 +803,10 @@ func toDBActivity(activity activitystreams.ActivityIface) (dbActivity, error) {
 		if !ok {
 			return dbActivity{}, errors.New("Could not convert activity to Question")
 		}
-		dbQ := toDBQuestion(q)
+		dbQ, err := toDBQuestion(q)
+		if err != nil {
+			return dbActivity{}, err
+		}
 		dbQ.Activity = &ret
 		rest = dbQ
 	}
@@ -866,8 +869,11 @@ func fromDBActivity(activity dbActivity) (activitystreams.ActivityIface, error) 
 		if !ok {
 			return nil, errors.New("Could not convert activity.Rest to dbQuestion")
 		}
-		retQuestion := fromDBQuestion(question)
-		retQuestion.IntransitiveActivity = a
+		retQuestion, err := fromDBQuestion(question)
+		if err != nil {
+			return nil, err
+		}
+		activitystreams.ToQuestion(retQuestion).IntransitiveActivity = a
 		ret = retQuestion
 	default:
 		transitiveActivity, ok := activity.Rest.(dbTransitiveActivity)
@@ -1018,28 +1024,163 @@ func fromDBTransitiveActivity(activity dbTransitiveActivity) (activitystreams.Tr
 	return ret, nil
 }
 
-func toDBQuestion(question *activitystreams.Question) dbQuestion {
-	return dbQuestion{}
+func toDBQuestion(question activitystreams.QuestionIface) (dbQuestion, error) {
+	var ret dbQuestion
+
+	multiQ, ok := question.(*activitystreams.MultiAnswerQuestion)
+	if ok {
+		ret.QuestionType = sql.NullString{
+			String: "MultiAnswerQuestion",
+			Valid:  true,
+		}
+		for _, answer := range multiQ.AnyOf {
+			dbAnswer, err := toDBEntity(answer)
+			if err != nil {
+				return dbQuestion{}, err
+			}
+			ret.Answers = append(ret.Answers, dbAnswer)
+		}
+		return ret, nil
+	}
+
+	singleQ, ok := question.(*activitystreams.SingleAnswerQuestion)
+	if ok {
+		ret.QuestionType = sql.NullString{
+			String: "SingleAnswerQuestion",
+			Valid:  true,
+		}
+		for _, answer := range singleQ.OneOf {
+			dbAnswer, err := toDBEntity(answer)
+			if err != nil {
+				return dbQuestion{}, err
+			}
+			ret.Answers = append(ret.Answers, dbAnswer)
+		}
+		return ret, nil
+	}
+
+	closedQ, ok := question.(*activitystreams.ClosedQuestion)
+	if ok {
+		ret.QuestionType = sql.NullString{
+			String: "ClosedQuestion",
+			Valid:  true,
+		}
+		answer, err := toDBEntity(closedQ.Closed)
+		if err != nil {
+			return dbQuestion{}, err
+		}
+		ret.Answers = append(ret.Answers, answer)
+		return ret, nil
+	}
+
+	ret.QuestionType = sql.NullString{
+		String: "Question",
+		Valid:  true,
+	}
+	return ret, nil
 }
 
-func fromDBQuestion(question dbQuestion) *activitystreams.Question {
-	return &activitystreams.Question{}
+func fromDBQuestion(question dbQuestion) (activitystreams.QuestionIface, error) {
+	var answers []activitystreams.EntityIface
+	for _, dbanswer := range question.Answers {
+		answer, err := fromDBEntity(dbanswer)
+		if err != nil {
+			return nil, err
+		}
+		answers = append(answers, answer)
+	}
+
+	switch question.QuestionType.String {
+	case "MultiAnswerQuestion":
+		return &activitystreams.MultiAnswerQuestion{
+			AnyOf: answers,
+		}, nil
+	case "SingleAnswerQuestion":
+		return &activitystreams.SingleAnswerQuestion{
+			OneOf: answers,
+		}, nil
+	case "ClosedQuestion":
+		if len(answers) != 1 {
+			return nil, errors.New("ClosedQuestion must have exactly one answer")
+		}
+		return &activitystreams.ClosedQuestion{
+			Closed: answers[0],
+		}, nil
+	default:
+		return &activitystreams.Question{}, nil
+	}
 }
 
 func toDBActor(actor activitystreams.ActorIface) dbActor {
-	dbActor := dbActor{}
-
-	return dbActor
+	concreteActor := activitystreams.ToActor(actor)
+	return dbActor{
+		PreferredUsername: sql.NullString{
+			String: concreteActor.PreferredUsername,
+			Valid:  concreteActor.PreferredUsername != "",
+		},
+	}
 }
 
-func fromDBActor(actor dbActor) activitystreams.ActorIface {
-	return nil
+func fromDBActor(dbactor dbActor) activitystreams.ActorIface {
+	actor := activitystreams.Actor{
+		PreferredUsername: dbactor.PreferredUsername.String,
+	}
+	switch dbactor.Object.Entity.Type {
+	case "Person":
+		return &activitystreams.Person{
+			Actor: actor,
+		}
+	case "Service":
+		return &activitystreams.Service{
+			Actor: actor,
+		}
+	case "Group":
+		return &activitystreams.Group{
+			Actor: actor,
+		}
+	case "Organization":
+		return &activitystreams.Organization{
+			Actor: actor,
+		}
+	case "Application":
+		return &activitystreams.Application{
+			Actor: actor,
+		}
+	default:
+		return &actor
+	}
 }
 
 func toDBCollection(collection activitystreams.CollectionIface) dbCollection {
-	return dbCollection{}
+	concreteCollection := activitystreams.ToCollection(collection)
+
+	items := make([]dbEntity, len(concreteCollection.Items))
+	for i, v := range concreteCollection.Items {
+		var err error
+		items[i], err = toDBEntity(v)
+		if err != nil {
+			return dbCollection{}
+		}
+	}
+
+	return dbCollection{
+		Items:   items,
+		Ordered: concreteCollection.Ordered,
+	}
 }
 
 func fromDBCollection(collection dbCollection) activitystreams.CollectionIface {
-	return nil
+	items := make([]activitystreams.EntityIface, len(collection.Items))
+	for i, v := range collection.Items {
+		var err error
+		items[i], err = fromDBEntity(v)
+		if err != nil {
+			return nil
+		}
+	}
+
+	return &activitystreams.Collection{
+		Items:   items,
+		Ordered: collection.Ordered,
+	}
 }

@@ -866,8 +866,21 @@ func (d *Dislike) MarshalJSON() ([]byte, error) {
 	return json.Marshal(dislikeMap)
 }
 
+type QuestionIface interface {
+	ActivityIface
+	question() *Question
+}
+
+func ToQuestion(q QuestionIface) *Question {
+	return q.question()
+}
+
 type Question struct {
 	IntransitiveActivity
+}
+
+func (q *Question) question() *Question {
+	return q
 }
 
 func (q *Question) Type() (string, error) {
